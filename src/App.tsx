@@ -1,8 +1,15 @@
 import React from 'react';
-import logo from './logo.svg';
 
+import Canva from './components/Canva';
 function App() {
-  return <div></div>;
+  return (
+    <div style={{ display: 'flex', width: '100vw', height: '100vh' }}>
+      <div className='canvaArea' style={{ flexGrow: 1 }}>
+        <Canva />
+      </div>
+      <div style={{ width: '25%' }}></div>
+    </div>
+  );
 }
 
 export default App;
