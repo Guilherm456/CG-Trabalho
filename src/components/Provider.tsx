@@ -1,13 +1,15 @@
 import Sphere from 'geometry/spheres';
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 interface ObjectsProviderInterface {
   objects: Sphere[];
   setObjects: React.Dispatch<React.SetStateAction<Sphere[]>>;
+  cleanScene: () => void;
 }
 const ObjectsProviderInitial: ObjectsProviderInterface = {
   objects: [],
   setObjects: () => {},
+  cleanScene: () => {},
 };
 const ObjectsP = createContext<ObjectsProviderInterface>(
   ObjectsProviderInitial
@@ -23,9 +25,19 @@ interface Props {
 
 export function ObjectsProvider({ children }: Props) {
   const [objects, setObjects] = useState<Sphere[]>([]);
+
+  const cleanScene = () => {
+    setObjects([]);
+  };
+
+  useEffect(() => {
+    console.log(objects);
+  }, [objects]);
+
   const values = {
     objects,
     setObjects,
+    cleanScene,
   };
   return <ObjectsP.Provider value={values}>{children}</ObjectsP.Provider>;
 }
