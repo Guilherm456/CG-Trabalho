@@ -9,6 +9,7 @@ interface SphereProps {
   color: string;
   intensityM: number;
   intensityP: number;
+  name: string;
 }
 
 export default class Sphere {
@@ -19,8 +20,10 @@ export default class Sphere {
 
   color: string;
 
-  private intensityM: number;
-  private intensityP: number;
+  name: string;
+
+  intensityM: number;
+  intensityP: number;
 
   extremes: [Coord[]];
 
@@ -31,9 +34,10 @@ export default class Sphere {
     this.color = props.color;
     this.intensityM = props.intensityM;
     this.intensityP = props.intensityP;
+    this.name = props.name;
 
     const intM = 360 / props.intensityM;
-    const intP = 180 / props.intensityP;
+    const intP = 180 / (props.intensityP + 1);
 
     this.extremes = numJS
       .zeros(props.intensityM * props.intensityP * 3)
@@ -69,7 +73,24 @@ export default class Sphere {
   }
 
   drawSphere(p5: p5Types) {
+    p5.push();
+
     p5.stroke(this.color);
+
+    const extremes = [
+      [this.center[0], this.center[1] + this.radius, this.center[2]],
+      [this.center[0], this.center[1] - this.radius, this.center[2]],
+    ];
+    p5.beginShape();
+    for (let i = 0; i < 2; i++) {
+      const extreme =
+        i === 0 ? this.extremes[0] : this.extremes[this.extremes.length - 1];
+      for (let j = 0; j < extreme.length; j++) {
+        p5.vertex(extreme[j][0], extreme[j][1], extreme[j][2]);
+        p5.vertex(extremes[i][0], extremes[i][1], extremes[i][2]);
+      }
+    }
+    p5.endShape(p5.CLOSE);
 
     for (let i = 0; i < this.extremes!.length; i++) {
       p5.beginShape();
@@ -88,5 +109,6 @@ export default class Sphere {
       }
       p5.endShape(p5.CLOSE);
     }
+    p5.pop();
   }
 }
