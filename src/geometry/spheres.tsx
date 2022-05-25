@@ -1,5 +1,6 @@
 import { Coord } from 'utils/interfaces';
 import p5Types from 'p5';
+import { translate, toDegrees, rotate, scale } from 'utils/calculate';
 
 interface SphereProps {
   center: Coord;
@@ -17,7 +18,7 @@ export default class Sphere {
 
   color: string;
 
-  extremes: [Coord[]] = [[]];
+  extremes: Coord[][] = [[]];
 
   constructor(props: SphereProps) {
     this.id = this.generateID(2);
@@ -28,30 +29,20 @@ export default class Sphere {
     const intM = 360 / props.intensityM;
     const intP = 180 / props.intensityP;
 
-    for (let i = 0; i < 180; i += intP) {
+    for (let i = 0, index = 0; i < 180; i += intP, index++) {
       const actual: Coord[] = [];
-      for (let t = 0; t < 360; t += intM) {
-        let x = props.radius * Math.cos(this.toDegrees(i));
-        let y =
-          props.radius *
-          Math.sin(this.toDegrees(i)) *
-          Math.sin(this.toDegrees(t));
-        let z =
-          props.radius *
-          Math.sin(this.toDegrees(i)) *
-          Math.cos(this.toDegrees(t));
-        actual.push([
+      for (let t = 0, index2 = 0; t < 360; t += intM, index2++) {
+        let x = props.radius * Math.sin(toDegrees(i)) * Math.sin(toDegrees(t));
+        let y = props.radius * Math.cos(toDegrees(i));
+        let z = props.radius * Math.sin(toDegrees(i)) * Math.cos(toDegrees(t));
+        actual[index2] = [
           x + this.center[0],
           y + this.center[1],
           z + this.center[2],
-        ]);
+        ];
       }
-      this.extremes.push(actual);
+      this.extremes[index] = actual;
     }
-  }
-
-  toDegrees(angle: number) {
-    return angle * (Math.PI / 180);
   }
 
   generateID(length: number): string {
@@ -72,5 +63,17 @@ export default class Sphere {
       }
       p5.endShape(p5.CLOSE);
     }
+  }
+
+  translateSphere(tX: number, tY: number, tZ: number) {
+    this.extremes = this.extremes.map((coord) => translate(coord, tX, tY, tZ));
+  }
+
+  rotateSphere(angle: number, option: 'X' | 'Y' | 'Z') {
+    this.extremes = this.extremes.map((coord) => rotate(coord, angle, option));
+  }
+
+  scaleSphere(sX: number, sY: number, sZ: number) {
+    this.extremes = this.extremes.map((coord) => scale(coord, sX, sY, sZ));
   }
 }
