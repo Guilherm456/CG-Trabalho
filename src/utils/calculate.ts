@@ -30,28 +30,31 @@ export function rotate(
   ang = toDegrees(ang);
   if (option === 'X') {
     rotO = [
-      [1, 0, 0],
-      [0, Math.cos(ang), -Math.sin(ang)],
-      [0, Math.sin(ang), Math.cos(ang)],
+      [1, 0, 0, 0],
+      [0, Math.cos(ang), -Math.sin(ang), 0],
+      [0, Math.sin(ang), Math.cos(ang), 0],
+      [0, 0, 0, 1],
     ];
   } else if (option === 'Y') {
     rotO = [
-      [Math.cos(ang), 0, Math.sin(ang)],
-      [0, 1, 0],
-      [-Math.sin(ang), 0, Math.cos(ang)],
+      [Math.cos(ang), 0, Math.sin(ang), 0],
+      [0, 1, 0, 0],
+      [-Math.sin(ang), 0, Math.cos(ang), 0],
+      [0, 0, 0, 1],
     ];
   } else if (option === 'Z') {
     rotO = [
-      [Math.cos(ang), -Math.sin(ang), 0],
-      [Math.sin(ang), Math.cos(ang), 0],
-      [0, 0, 1],
+      [Math.cos(ang), -Math.sin(ang), 0, 0],
+      [Math.sin(ang), Math.cos(ang), 0, 0],
+      [0, 0, 1, 0],
+      [0, 0, 0, 1],
     ];
   } else {
     return matrix;
   }
 
   return matrix.map((coord) => {
-    return numjs.dot(rotO, numjs.array<any>(coord)).tolist();
+    return matrixMul(coord, rotO);
   }) as Coord[];
 }
 
