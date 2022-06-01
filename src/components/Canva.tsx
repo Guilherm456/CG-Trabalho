@@ -12,7 +12,8 @@ export default function Canva() {
       parentCanvas
     );
     p5.noFill();
-
+    p5.debugMode();
+    p5.camera();
     p5.frameRate(60);
   };
 

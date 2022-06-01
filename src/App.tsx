@@ -6,12 +6,12 @@ import {
   IconButton,
   Modal,
   Panel,
+  PrimaryButton,
   Slider,
   Stack,
   Text,
   TextField,
   initializeIcons,
-  PrimaryButton,
   ChoiceGroup,
   VerticalDivider,
 } from '@fluentui/react';
@@ -20,7 +20,6 @@ import Canva from './components/Canva';
 import { ObjectsProviderContext } from 'components/Provider';
 
 import Sphere from 'geometry/spheres';
-import { concatMatrix } from 'utils/calculate';
 
 initializeIcons();
 function App() {
@@ -41,11 +40,14 @@ function App() {
     const [intP, setIntP] = useState(36);
     const [color, setColor] = useState('');
 
+    const [name, setName] = useState('Esfera X');
+
     const [x, setX] = useState('0');
     const [y, setY] = useState('0');
     const [z, setZ] = useState('0');
 
     const onCreate = () => {
+      if (name === '') setName('Esfera X');
       const [sX, sY, sZ] = [Number(x), Number(y), Number(z)];
       const newSphere = new Sphere({
         center: [sX, sY, sZ],
@@ -53,6 +55,7 @@ function App() {
         color: '#' + color,
         intensityM: intM,
         intensityP: intP,
+        name: name,
       });
       setObjects([...objects, newSphere]);
       setModalOpen(false);
@@ -72,8 +75,6 @@ function App() {
               iconProps={{ iconName: 'Cancel' }}
             ></IconButton>
           </Stack>
-        </div>
-        <div style={{ padding: 16 }}>
           <Stack tokens={{ childrenGap: 5 }}>
             <Slider
               label='Raio'
@@ -90,17 +91,23 @@ function App() {
                 alphaType='none'
               />
             </>
+            <TextField
+              label='Nome da esfera'
+              value={name}
+              onChange={(e, v) => setName(v!)}
+            />
+
             <Slider
               min={3}
               max={50}
-              label='Intensividade de meridianos'
+              label='Intensidade de meridianos'
               value={intM}
               onChange={(e, v) => setIntM(e)}
             />
             <Slider
               min={3}
               max={50}
-              label='Intensividade de paralelos'
+              label='Intensidade de paralelos'
               value={intP}
               onChange={(e, v) => setIntP(e)}
             />

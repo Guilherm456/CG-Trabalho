@@ -1,5 +1,5 @@
 import Sphere from 'geometry/spheres';
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 interface ObjectsProviderInterface {
   objects: Sphere[];
