@@ -4,10 +4,12 @@ import { createContext, useContext, useState } from 'react';
 interface ObjectsProviderInterface {
   objects: Sphere[];
   setObjects: React.Dispatch<React.SetStateAction<Sphere[]>>;
+  handleClear: () => void;
 }
 const ObjectsProviderInitial: ObjectsProviderInterface = {
   objects: [],
   setObjects: () => {},
+  handleClear: () => {},
 };
 const ObjectsP = createContext<ObjectsProviderInterface>(
   ObjectsProviderInitial
@@ -23,9 +25,14 @@ interface Props {
 
 export function ObjectsProvider({ children }: Props) {
   const [objects, setObjects] = useState<Sphere[]>([]);
+
+  const handleClear = () => {
+    setObjects([]);
+  };
   const values = {
     objects,
     setObjects,
+    handleClear,
   };
   return <ObjectsP.Provider value={values}>{children}</ObjectsP.Provider>;
 }

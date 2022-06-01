@@ -1,10 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ColorPicker,
-  ContextualMenu,
   DefaultButton,
   Dropdown,
-  getTheme,
   IconButton,
   Modal,
   Panel,
@@ -12,20 +10,30 @@ import {
   Stack,
   Text,
   TextField,
+  initializeIcons,
+  PrimaryButton,
+  ChoiceGroup,
+  VerticalDivider,
 } from '@fluentui/react';
-import { CancelIcon } from '@fluentui/react-icons-mdl2';
 
 import Canva from './components/Canva';
 import { ObjectsProviderContext } from 'components/Provider';
 
 import Sphere from 'geometry/spheres';
+import { concatMatrix } from 'utils/calculate';
 
+initializeIcons();
 function App() {
-  const { objects, setObjects } = ObjectsProviderContext();
+  const { objects, setObjects, handleClear } = ObjectsProviderContext();
   const [modalOpen, setModalOpen] = useState(false);
 
   const handleOpen = () => setModalOpen(!modalOpen);
-  const theme = getTheme();
+
+  useEffect(() => {
+    objects.forEach((object) => console.log(object));
+    // if (objects.length > 0)
+    //   concatMatrix(objects[0].extremes, 'RX', 10, objects[0].center);
+  }, [objects]);
 
   const ModalContent = () => {
     const [radius, setRadius] = useState(100);
@@ -59,9 +67,10 @@ function App() {
             horizontalAlign='space-between'
           >
             <h2>Opções da esfera</h2>
-            <IconButton onClick={handleOpen}>
-              <CancelIcon color={theme.palette.neutralLighter} />
-            </IconButton>
+            <IconButton
+              onClick={handleOpen}
+              iconProps={{ iconName: 'Cancel' }}
+            ></IconButton>
           </Stack>
         </div>
         <div style={{ padding: 16 }}>
@@ -124,34 +133,144 @@ function App() {
   };
 
   const OptionsPanel = () => {
+    const options = [
+      {
+        key: 'rotate',
+        text: 'Rotacionar',
+      },
+      { key: 'scale', text: 'Escalar' },
+      { key: 'translate', text: 'Transladar' },
+    ];
+    const [option, setOption] = useState('rotate');
+
+    const optionsRotation = [
+      { key: 'X', text: 'X' },
+      { key: 'Y', text: 'Y' },
+      { key: 'Z', text: 'Z' },
+    ];
+    const [optionRotation, setOptionRotation] = useState('X');
+
+    const [valueX, setValueX] = useState('0');
+    const [valueY, setValueY] = useState('0');
+    const [valueZ, setValueZ] = useState('0');
+
+    const [angle, setAngle] = useState(0);
+
+    const handleChange = () => {
+      if (option === '') return;
+      const object = objects[0];
+      if (!object) return;
+
+      switch (option) {
+        case 'rotate':
+          object.rotateSphere(angle, optionRotation as 'X' | 'Y' | 'Z');
+          break;
+        case 'scale':
+          object.scaleSphere(Number(valueX), Number(valueY), Number(valueZ));
+          break;
+        case 'translate':
+          object.translateSphere(
+            Number(valueX),
+            Number(valueY),
+            Number(valueZ)
+          );
+          break;
+      }
+      setAngle(0);
+      setValueX('0');
+      setValueY('0');
+      setValueZ('0');
+      setOptionRotation('X');
+      setOption('rotate');
+    };
+
     return (
-      <Stack>
-        <Dropdown
-          options={[
-            {
-              key: '1',
-              text: 'Opções',
-            },
-            {
-              key: '2',
-              text: 'Sair',
-            },
-          ]}
-          label='Selecione a esfera'
+      <Stack gap={5}>
+        <Text variant='xLarge'>Editar esfera</Text>
+        <Stack horizontal>
+          <Dropdown
+            label='Selecione uma esfera'
+            options={[{ key: '1', text: 'Esfera 1' }]}
+          />
+          <IconButton
+            split
+            title='Deletar esfera'
+            iconProps={{ iconName: 'Delete' }}
+          />
+        </Stack>
+        <ChoiceGroup
+          label='Selecione a opção desejada'
+          options={options}
+          selectedKey={option}
+          onChange={(e, v) => setOption(v!.key)}
+          required
         />
+        {option === 'rotate' ? (
+          <Stack>
+            <Slider
+              label='Angulo'
+              min={0}
+              max={360}
+              value={angle}
+              onChange={(v) => setAngle(v)}
+            />
+            <ChoiceGroup
+              label='Selecione o eixo da rotação'
+              options={optionsRotation}
+              selectedKey={optionRotation}
+              onChange={(e, v) => setOptionRotation(v!.key)}
+            />
+          </Stack>
+        ) : (
+          <Stack horizontal gap={2}>
+            <TextField
+              label='Valor X'
+              type='number'
+              value={valueX}
+              onChange={(e, n) => setValueX(n!)}
+            />
+            <TextField
+              label='Valor Y'
+              type='number'
+              value={valueY}
+              onChange={(e, n) => setValueY(n!)}
+            />
+            <TextField
+              label='Valor Z'
+              type='number'
+              value={valueZ}
+              onChange={(e, n) => setValueZ(n!)}
+            />
+          </Stack>
+        )}
+        <DefaultButton text='Aplicar' onClick={handleChange} />
       </Stack>
     );
   };
+
   return (
     <div style={{ display: 'flex', width: '100vw', height: '95vh' }}>
       <div className='canvaArea' style={{ flexGrow: 1 }}>
         <Canva />
       </div>
-      <Panel isOpen={true} isBlocking={false} headerText='Opções'>
+      <Panel isOpen={true} isBlocking={false}>
         <Stack>
-          <DefaultButton text='Criar esfera' onClick={handleOpen} />
+          <PrimaryButton
+            text='Criar esfera'
+            onClick={handleOpen}
+            iconProps={{ iconName: 'Add' }}
+          />
         </Stack>
+        <VerticalDivider />
         <OptionsPanel />
+        <VerticalDivider />
+        <Stack>
+          <DefaultButton
+            text='Limpar cena'
+            onClick={handleClear}
+            iconProps={{ iconName: 'Delete' }}
+          />
+        </Stack>
       </Panel>
 
       <ModalContent />
