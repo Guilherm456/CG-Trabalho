@@ -4,11 +4,11 @@ import * as numjs from 'numjs';
 type MatrixN = number[][];
 
 export function translate(
-  matrix: Coord[],
+  matrix: Coord[] | Coord,
   dx: number,
   dy: number,
   dz: number
-): Coord[] {
+) {
   const matrixCalc: MatrixN = [
     [1, 0, 0, dx],
     [0, 1, 0, dy],
@@ -16,16 +16,20 @@ export function translate(
     [0, 0, 0, 1],
   ];
 
-  return matrix.map((coord) => {
-    return matrixMul(coord, matrixCalc);
-  }) as Coord[];
+  //Verifica se é todas as posições ou apenas uma
+  if (matrix.length === 3) {
+    return matrixMul(matrix as Coord, matrixCalc);
+  } else
+    return matrix.map((coord) => {
+      return matrixMul(coord as Coord, matrixCalc);
+    }) as Coord[];
 }
 
 export function rotate(
-  matrix: Coord[],
+  matrix: Coord[] | Coord,
   ang: number,
   option: 'X' | 'Y' | 'Z'
-): Coord[] {
+) {
   let rotO: number[][];
   ang = toDegrees(ang);
   if (option === 'X') {
@@ -53,17 +57,21 @@ export function rotate(
     return matrix;
   }
 
-  return matrix.map((coord) => {
-    return matrixMul(coord, rotO);
-  }) as Coord[];
+  //Verifica se é todas as posições ou apenas uma
+  if (matrix.length === 3) {
+    return matrixMul(matrix as Coord, rotO);
+  } else
+    return matrix.map((coord) => {
+      return matrixMul(coord as Coord, rotO);
+    }) as Coord[];
 }
 
 export function scale(
-  matrix: Coord[],
+  matrix: Coord[] | Coord,
   sX: number,
   sY: number,
   sZ: number
-): Coord[] {
+) {
   const matrixCalc = [
     [sX, 0, 0, 0],
     [0, sY, 0, 0],
@@ -71,9 +79,13 @@ export function scale(
     [0, 0, 0, 1],
   ];
 
-  return matrix.map((coord) => {
-    return matrixMul(coord, matrixCalc);
-  }) as Coord[];
+  //Verifica se é todas as posições ou apenas uma
+  if (matrix.length === 3) {
+    return matrixMul(matrix as Coord, matrixCalc);
+  } else
+    return matrix.map((coord) => {
+      return matrixMul(coord as Coord, matrixCalc);
+    }) as Coord[];
 }
 
 //Faz a multiplicação de matrizes
@@ -84,6 +96,7 @@ function matrixMul(coord: Coord, matrixCalc: number[][]) {
   return (
     numjs
       .dot(matrixCalc, numjs.array<any>(coord))
+
       .tolist()
       //Corta o "1" que foi adicionado
       .slice(0, 3)

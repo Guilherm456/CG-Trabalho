@@ -54,14 +54,14 @@ export default class Sphere {
         let z = props.radius * Math.sin(angleP) * Math.cos(angleM);
         this.extremes[i][t] = [
           x + this.center[0],
-          y - this.center[1],
+          y + this.center[1],
           z + this.center[2],
         ];
       }
     }
   }
 
-  generateID(length: number): string {
+  private generateID(length: number): string {
     return Math.ceil(Math.random() * Date.now())
       .toPrecision(length)
       .toString()
@@ -73,20 +73,32 @@ export default class Sphere {
 
     p5.stroke(this.color);
 
-    const extremes = [
-      [this.center[0], this.center[1] + this.radius, this.center[2]],
-      [this.center[0], this.center[1] - this.radius, this.center[2]],
+    const [x, y, z] = this.center;
+    const extremesSphere = [
+      [x, y + this.radius, z],
+      [x, y - this.radius, z],
     ];
-    p5.beginShape();
+
     for (let i = 0; i < 2; i++) {
       const extreme =
-        i === 0 ? this.extremes[0] : this.extremes[this.extremes.length - 1];
+        i === 0 ? this.extremes[0] : this.extremes[this.intensityP - 1];
       for (let j = 0; j < extreme.length; j++) {
-        p5.vertex(extreme[j][0], extreme[j][1], extreme[j][2]);
-        p5.vertex(extremes[i][0], extremes[i][1], extremes[i][2]);
+        p5.line(
+          extremesSphere[i][0],
+          extremesSphere[i][1],
+          extremesSphere[i][2],
+          extreme[j][0],
+          extreme[j][1],
+          extreme[j][2]
+        );
+        // p5.vertex(extreme[j][0], extreme[j][1], extreme[j][2]);
+        // p5.vertex(
+        //   extremesSphere[i][0],
+        //   extremesSphere[i][1],
+        //   extremesSphere[i][2]
+        // );
       }
     }
-    p5.endShape(p5.CLOSE);
 
     for (let i = 0; i < this.extremes!.length; i++) {
       p5.beginShape();
@@ -103,20 +115,29 @@ export default class Sphere {
         const actual = this.extremes![j][i];
         p5.vertex(actual[0], actual[1], actual[2]);
       }
-      p5.endShape(p5.CLOSE);
+      p5.endShape();
     }
     p5.pop();
   }
 
   translateSphere(tX: number, tY: number, tZ: number) {
-    this.extremes = this.extremes.map((coord) => translate(coord, tX, tY, tZ));
+    this.center = translate(this.center, tX, tY, tZ) as Coord;
+    this.extremes = this.extremes.map((coord) =>
+      translate(coord, tX, tY, tZ)
+    ) as Coord[][];
   }
 
   rotateSphere(angle: number, option: 'X' | 'Y' | 'Z') {
-    this.extremes = this.extremes.map((coord) => rotate(coord, angle, option));
+    this.center = rotate(this.center, angle, option) as Coord;
+    this.extremes = this.extremes.map((coord) =>
+      rotate(coord, angle, option)
+    ) as Coord[][];
   }
 
   scaleSphere(sX: number, sY: number, sZ: number) {
-    this.extremes = this.extremes.map((coord) => scale(coord, sX, sY, sZ));
+    this.center = scale(this.center, sX, sY, sZ) as Coord;
+    this.extremes = this.extremes.map((coord) =>
+      scale(coord, sX, sY, sZ)
+    ) as Coord[][];
   }
 }

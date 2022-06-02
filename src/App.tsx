@@ -21,7 +21,8 @@ import { ObjectsProviderContext } from 'components/Provider';
 
 import Sphere from 'geometry/spheres';
 
-initializeIcons();
+const gapStack = { childrenGap: 5 };
+
 function App() {
   const { objects, setObjects, handleClear } = ObjectsProviderContext();
   const [modalOpen, setModalOpen] = useState(false);
@@ -34,10 +35,14 @@ function App() {
     //   concatMatrix(objects[0].extremes, 'RX', 10, objects[0].center);
   }, [objects]);
 
+  useEffect(() => {
+    initializeIcons();
+  }, []);
+
   const ModalContent = () => {
     const [radius, setRadius] = useState(100);
-    const [intM, setIntM] = useState(36);
-    const [intP, setIntP] = useState(36);
+    const [intM, setIntM] = useState(9);
+    const [intP, setIntP] = useState(9);
     const [color, setColor] = useState('');
 
     const [name, setName] = useState('Esfera X');
@@ -157,9 +162,9 @@ function App() {
     ];
     const [optionRotation, setOptionRotation] = useState('X');
 
-    const [valueX, setValueX] = useState('0');
-    const [valueY, setValueY] = useState('0');
-    const [valueZ, setValueZ] = useState('0');
+    const [valueX, setValueX] = useState('1');
+    const [valueY, setValueY] = useState('1');
+    const [valueZ, setValueZ] = useState('1');
 
     const [angle, setAngle] = useState(0);
 
@@ -181,18 +186,19 @@ function App() {
             Number(valueY),
             Number(valueZ)
           );
+
           break;
       }
       setAngle(0);
-      setValueX('0');
-      setValueY('0');
-      setValueZ('0');
+      setValueX('1');
+      setValueY('1');
+      setValueZ('1');
       setOptionRotation('X');
       setOption('rotate');
     };
 
     return (
-      <Stack gap={5}>
+      <Stack tokens={gapStack}>
         <Text variant='xLarge'>Editar esfera</Text>
         <Stack horizontal>
           <Dropdown
@@ -229,7 +235,7 @@ function App() {
             />
           </Stack>
         ) : (
-          <Stack horizontal gap={2}>
+          <Stack horizontal tokens={gapStack}>
             <TextField
               label='Valor X'
               type='number'
