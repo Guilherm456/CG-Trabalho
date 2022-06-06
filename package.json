@@ -1,6 +1,7 @@
 {
   "name": "cg-trabalho",
   "version": "0.1.0",
+  "homepage": "https://Guilherm456.github.io/CG-Trabalho/",
   "private": true,
   "dependencies": {
     "@fluentui/react": "^8.71.1",
@@ -24,9 +25,12 @@
     "@types/p5": "^1.4.2",
     "@types/react": "^18.0.9",
     "@types/react-dom": "^18.0.5",
-    "path-browserify": "^1.0.1"
+    "path-browserify": "^1.0.1",
+    "gh-pages": "^4.0.0"
   },
   "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
     "start": "react-app-rewired start",
     "build": "react-app-rewired build",
     "test": "react-app-rewired test",
