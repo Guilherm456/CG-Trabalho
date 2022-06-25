@@ -82,7 +82,7 @@ function App() {
               iconProps={{ iconName: 'Cancel' }}
             ></IconButton>
           </Stack>
-          <Stack tokens={{ childrenGap: 5 }}>
+          <Stack tokens={gapStack}>
             <Slider
               label='Raio'
               min={20}
@@ -303,31 +303,34 @@ function App() {
   };
 
   return (
-    <div style={{ display: 'flex', width: '100vw', height: '95vh' }}>
+    <div style={{ display: 'flex', height: '95vh' }}>
       <div className='canvaArea' style={{ flexGrow: 1 }}>
         <Canva />
       </div>
-      <Panel isOpen={true} isBlocking={false}>
-        <Stack>
-          <PrimaryButton
-            text='Criar esfera'
-            onClick={handleOpen}
-            iconProps={{ iconName: 'Add' }}
-          />
+      <div style={{ width: '25vw', height: '100%', padding: 8 }}>
+        <Stack tokens={gapStack} verticalAlign='start'>
+          <Text variant='xLarge'>Opções</Text>
+          <Stack>
+            <PrimaryButton
+              text='Criar esfera'
+              onClick={handleOpen}
+              iconProps={{ iconName: 'Add' }}
+            />
+          </Stack>
+          <VerticalDivider />
+          <OptionsPanel />
+          <VerticalDivider />
+          <Stack>
+            <DefaultButton
+              text='Limpar cena'
+              onClick={handleClear}
+              iconProps={{ iconName: 'Delete' }}
+            />
+          </Stack>
         </Stack>
-        <VerticalDivider />
-        <OptionsPanel />
-        <VerticalDivider />
-        <Stack>
-          <DefaultButton
-            text='Limpar cena'
-            onClick={handleClear}
-            iconProps={{ iconName: 'Delete' }}
-          />
-        </Stack>
-      </Panel>
 
-      <ModalContent />
+        <ModalContent />
+      </div>
     </div>
   );
 }
