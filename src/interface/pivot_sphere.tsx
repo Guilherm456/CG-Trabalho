@@ -41,7 +41,7 @@ export const PivotSphere = () => {
     }) as IDropdownOption[];
     temp.push({ key: 'clean', text: 'Limpar' });
     setOptionsSphere(temp);
-  }, [objects.length]);
+  }, [objects]);
 
   const optionsRotation = [
     { key: 'X', text: 'X' },
@@ -85,6 +85,21 @@ export const PivotSphere = () => {
     setSelectedSphere('');
   };
 
+  const handleChageDropdown = (
+    e: React.FormEvent<HTMLDivElement>,
+    option?: any
+  ) => {
+    if (!option) return;
+    if (option!.key === 'clean') setSelectedSphere('');
+    else setSelectedSphere(option!.key as string);
+  };
+
+  const handleRemoveSphereOption = () => {
+    if (selectedSphere === '') return;
+    handleRemoveSphere(selectedSphere);
+    setSelectedSphere('');
+  };
+
   return (
     <Stack tokens={gapStack}>
       <Text variant='xLarge'>Editar esfera</Text>
@@ -92,13 +107,9 @@ export const PivotSphere = () => {
         <Dropdown
           label='Selecione uma esfera'
           options={optionsSphere}
-          defaultValue={selectedSphere}
+          selectedKey={selectedSphere}
           //Função que define o valor selecionado
-          onChange={(e, i) => {
-            (i!.key as string) === 'clean'
-              ? setSelectedSphere('')
-              : setSelectedSphere(i!.key as string);
-          }}
+          onChange={handleChageDropdown}
           disabled={optionsSphere.length === 0}
         />
         <IconButton
@@ -106,7 +117,7 @@ export const PivotSphere = () => {
           title='Deletar esfera'
           iconProps={{ iconName: 'Delete' }}
           disabled={selectedSphere === ''}
-          onClick={() => handleRemoveSphere(selectedSphere)}
+          onClick={handleRemoveSphereOption}
         />
         <IconButton
           split
