@@ -103,6 +103,10 @@ function matrixMul(coord: Coord, matrixCalc: number[][]) {
   );
 }
 
+export function transpose(matrix: Coord[]): Coord[] {
+  return numjs.array(matrix).transpose().tolist();
+}
+
 export function toDegrees(angle: number) {
   return angle * (Math.PI / 180);
 }

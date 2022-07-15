@@ -1,9 +1,13 @@
 import Sphere from 'geometry/spheres';
 import { createContext, useContext, useState } from 'react';
+import { Camera } from './Camera';
+import p5Types from 'p5';
+import { Coord } from 'utils/interfaces';
 
 interface ObjectsProviderInterface {
   objects: Sphere[];
   setObjects: React.Dispatch<React.SetStateAction<Sphere[]>>;
+  camera: Camera;
   /**Limpar a cena */
   handleClear: () => void;
   /**Remove a esfera pelo ID
@@ -13,6 +17,7 @@ interface ObjectsProviderInterface {
 }
 const ObjectsProviderInitial: ObjectsProviderInterface = {
   objects: [],
+  camera: new Camera([0, 0, 0]),
   setObjects: () => {},
   handleClear: () => {},
   handleRemoveSphere: () => {},
@@ -29,11 +34,26 @@ interface Props {
   children: React.ReactNode;
 }
 
+const defaultVRP: Coord = [0, 0, 50];
+const defaultP: Coord = [0, 0, 0];
+
 export function ObjectsProvider({ children }: Props) {
-  const [objects, setObjects] = useState<Sphere[]>([]);
+  const [objects, setObjects] = useState<Sphere[]>([
+    new Sphere({
+      center: [0, 0, 0],
+      radius: 100,
+      color: '#000',
+      intensityM: 36,
+      intensityP: 36,
+      name: 'Sphere',
+    }),
+  ]);
+
+  const camera = new Camera(defaultVRP, defaultP);
 
   const handleClear = () => {
     setObjects([]);
+    camera.updateVRP_P(defaultVRP, defaultP);
   };
 
   const handleRemoveSphere = (id: string) => {
@@ -42,6 +62,7 @@ export function ObjectsProvider({ children }: Props) {
   const values = {
     objects,
     setObjects,
+    camera,
     handleClear,
     handleRemoveSphere,
   };
