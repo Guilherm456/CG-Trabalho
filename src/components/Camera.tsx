@@ -52,9 +52,9 @@ export class Camera {
     this.getAllValues();
   }
 
-  public setWindowSize(windowPort: Port, viewPort: Port) {
-    this.WindowPort = windowPort;
-    this.ViewPort = viewPort;
+  public setWindowSize(windowPort?: Port, viewPort?: Port) {
+    this.WindowPort = windowPort ?? this.WindowPort;
+    this.ViewPort = viewPort ?? this.ViewPort;
 
     this.matrixView = this.getMatrixView();
   }

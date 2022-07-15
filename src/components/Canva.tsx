@@ -5,6 +5,7 @@ import { ObjectsProviderContext } from './Provider';
 
 import { VertShader, FragShader } from '../utils/shader';
 import { transpose } from 'utils/calculate';
+import { Port } from 'utils/interfaces';
 
 let shaderInf: p5Types.Shader;
 
@@ -16,6 +17,7 @@ enum Direction {
 }
 
 const sensitivity = 1;
+
 export default function Canva() {
   const { objects, camera } = ObjectsProviderContext();
 
@@ -26,14 +28,12 @@ export default function Canva() {
       parentCanvas
     );
 
-    camera.WindowPort.width = [
-      -(parent.clientWidth / 2),
-      parent.clientWidth / 2,
-    ];
-    camera.WindowPort.height = [
-      -(parent.clientHeight / 2),
-      parent.clientHeight / 2,
-    ];
+    const newWidowPort: Port = {
+      width: [-(parent.clientWidth / 2), parent.clientWidth / 2],
+      height: [-(parent.clientHeight / 2), parent.clientHeight / 2],
+    };
+    camera.setWindowSize(newWidowPort);
+
     shaderInf = p5.createShader(VertShader, FragShader);
     p5.shader(shaderInf);
 
