@@ -1,4 +1,4 @@
-import { Coord } from 'utils/interfaces';
+import { Coord, Port } from 'utils/interfaces';
 
 import p5Types from 'p5';
 const p5 = p5Types.Vector;
@@ -11,15 +11,28 @@ export class Camera {
   private U: Coord = [0, 0, 0];
   private V: Coord = [0, 0, 0];
 
+  public ViewPort: Port;
+  public WindowPort: Port;
+
   public matrixSRUSRC: Coord[] = [[0, 0, 0]];
   public matrixProjection: Coord[] = [[0, 0, 0]];
-  // public matrix
+  public matrixView: number[][] = [[0, 0, 0, 0]];
 
-  constructor(position: Coord, target?: Coord) {
+  constructor(
+    position: Coord,
+    target: Coord,
+    viewport: Port,
+    windowPort: Port
+  ) {
     this.VRP = position;
     this.P = target ?? [0, 0, 0];
 
+    this.ViewPort = viewport;
+
+    this.WindowPort = windowPort;
+
     this.getAllValues();
+    this.matrixView = this.getMatrixView();
   }
 
   public setVRP(x: number, y: number, z: number) {
@@ -39,9 +52,11 @@ export class Camera {
     this.getAllValues();
   }
 
-  public setWindowSize(xMin: number, yMin: number, xMax: number, yMax: number) {
-    const matrix = this.getMatrixView(xMax, xMin, yMin, yMax, 0, 1, 0, 1);
-    // this.matrixProjection = matrix;
+  public setWindowSize(windowPort: Port, viewPort: Port) {
+    this.WindowPort = windowPort;
+    this.ViewPort = viewPort;
+
+    this.matrixView = this.getMatrixView();
   }
 
   private getAllValues(): void {
@@ -107,22 +122,19 @@ export class Camera {
     const matrixP = [
       [1, 0, 0, 0],
       [0, 1, 0, 0],
-      [0, 0, Zvp / Dp],
+      [0, 0, Zvp / Dp, 0],
       [0, 0, -1 / Dp, 0],
     ];
     return matrixP as Coord[];
   }
 
-  getMatrixView(
-    uMax: number,
-    uMin: number,
-    vMax: number,
-    vMin: number,
-    yMin: number,
-    yMax: number,
-    xMin: number,
-    xMax: number
-  ) {
+  getMatrixView() {
+    const { ViewPort, WindowPort } = this;
+    const [xMin, xMax] = WindowPort.width;
+    const [yMin, yMax] = WindowPort.height;
+
+    const [uMin, uMax] = ViewPort.width;
+    const [vMin, vMax] = ViewPort.height;
     const matrix = [
       [
         (uMax - uMin) / (xMax - xMin),
