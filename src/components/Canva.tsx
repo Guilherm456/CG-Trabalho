@@ -9,10 +9,10 @@ import { transpose } from 'utils/calculate';
 let shaderInf: p5Types.Shader;
 
 enum Direction {
-  FRONT = 87,
-  BACK = 83,
-  LEFT = 65,
-  RIGHT = 68,
+  FRONT = 38,
+  BACK = 40,
+  LEFT = 37,
+  RIGHT = 39,
 }
 
 const sensitivity = 1;
@@ -25,6 +25,15 @@ export default function Canva() {
     p5.createCanvas(parent.clientWidth, parent.clientHeight, p5.WEBGL).parent(
       parentCanvas
     );
+
+    camera.WindowPort.width = [
+      -(parent.clientWidth / 2),
+      parent.clientWidth / 2,
+    ];
+    camera.WindowPort.height = [
+      -(parent.clientHeight / 2),
+      parent.clientHeight / 2,
+    ];
     shaderInf = p5.createShader(VertShader, FragShader);
     p5.shader(shaderInf);
 
@@ -47,14 +56,12 @@ export default function Canva() {
 
     p5.push();
     shaderInf.setUniform('uColor', [1, 0, 0]);
-    shaderInf.setUniform('uScreenSize', [p5.width, p5.height]);
 
-    shaderInf.setUniform('vSRCMatrix', transpose(camera.matrixSRUSRC).flat());
+    shaderInf.setUniform('vSRCMatrix', camera.matrixSRUSRC.flat());
 
-    shaderInf.setUniform(
-      'vProjectionMatrix',
-      transpose(camera.matrixProjection).flat()
-    );
+    shaderInf.setUniform('vProjectionMatrix', camera.matrixProjection.flat());
+
+    shaderInf.setUniform('vViewMatrix', camera.matrixView.flat());
 
     objects.forEach((object) => object.drawSphere(p5));
 
@@ -73,6 +80,7 @@ export default function Canva() {
 
     if (key === Direction.RIGHT)
       camera.updatePositionCamera(sensitivity, 'X', true);
+    return false;
   };
 
   const windowResized = (val: any) => {
