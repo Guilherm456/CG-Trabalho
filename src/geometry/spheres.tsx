@@ -91,11 +91,7 @@ export default class Sphere {
 
     // p5.stroke(this.color);
 
-    const [x, y, z] = this.center;
-    const extremesSphere = [
-      [x, y + this.radius, z],
-      [x, y - this.radius, z],
-    ];
+    const extremesSphere = this.getExtremePoints();
 
     for (let i = 0; i < 2; i++) {
       const extreme =
@@ -155,11 +151,7 @@ export default class Sphere {
       p5.endShape(p5.CLOSE);
     }
 
-    const [x, y, z] = this.center;
-    const extremesSphere = [
-      [x, y + this.radius, z],
-      [x, y - this.radius, z],
-    ];
+    const extremesSphere = this.getExtremePoints();
 
     for (let j = 0; j < 2; j++) {
       const indexExtreme = j * (this.intensityP - 1);
@@ -186,6 +178,14 @@ export default class Sphere {
     }
 
     p5.pop();
+  }
+
+  getExtremePoints() {
+    const [x, y, z] = this.center;
+    return [
+      [x, y + this.radius, z],
+      [x, y - this.radius, z],
+    ];
   }
 
   translateSphere(tX: number, tY: number, tZ: number) {
