@@ -16,6 +16,7 @@ enum Direction {
   RIGHT = 39,
 }
 
+//Define a sensibilidade do movimento da câmera
 const sensitivity = 1;
 
 export default function Canva() {
@@ -38,7 +39,7 @@ export default function Canva() {
     p5.shader(shaderInf);
 
     // p5.debugMode();
-    p5.noStroke();
+    // p5.noStroke();
     // p5.noFill();
     // p5.camera();
     p5.frameRate(60);
@@ -63,7 +64,7 @@ export default function Canva() {
 
     shaderInf.setUniform('vViewMatrix', camera.matrixView.flat());
 
-    objects.forEach((object) => object.drawSphere(p5));
+    objects.forEach((object) => object.drawFaces(p5));
 
     p5.pop();
   };
@@ -100,6 +101,8 @@ export default function Canva() {
   const debug = (val: any) => {
     const p5 = val as p5Types;
     if (p5.keyCode === 8) {
+      console.log(objects);
+
       console.log(shaderInf);
       console.log('SRU');
       console.log(camera.matrixSRUSRC);
