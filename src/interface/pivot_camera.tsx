@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import {
   Stack,
   TextField,
@@ -6,6 +6,8 @@ import {
   Text,
   Label,
   VerticalDivider,
+  ChoiceGroup,
+  IChoiceGroupOption,
 } from '@fluentui/react';
 import { ObjectsProviderContext } from 'components/Provider';
 
@@ -13,8 +15,25 @@ import { Port } from 'utils/interfaces';
 
 const gapStack = { childrenGap: 5 };
 
+const optionsCamera = [
+  { key: 'p', text: 'Perspectiva' },
+  { key: 'a', text: 'Axométrica' },
+];
+
 export const PivotCamera = () => {
   const { camera } = ObjectsProviderContext();
+
+  const [perspective, setPerspective] = useState(
+    camera.perspective ? 'p' : 'a'
+  );
+
+  const handleChangePerspectiveType = (
+    event?: React.FormEvent,
+    option?: IChoiceGroupOption
+  ) => {
+    setPerspective(option?.key as string);
+    camera.setTypePerspective((option?.key as string) === 'p');
+  };
 
   const [xVRP, setXVRP] = useState(camera.VRP[0].toString());
   const [yVRP, setYVRP] = useState(camera.VRP[1].toString());
@@ -59,6 +78,13 @@ export const PivotCamera = () => {
   return (
     <Stack>
       <Text variant='xLarge'>Editar câmera</Text>
+      <ChoiceGroup
+        label='Selecione o tipo de visualização'
+        selectedKey={perspective}
+        onChange={handleChangePerspectiveType}
+        options={optionsCamera}
+      />
+      <VerticalDivider />
       <Label>VRP</Label>
       <Stack horizontal tokens={gapStack}>
         <TextField

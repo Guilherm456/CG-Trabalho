@@ -129,7 +129,7 @@ export const PivotScene = () => {
 
   return (
     <div>
-      <Stack>
+      <Stack style={{ gap: 10 }}>
         <PrimaryButton
           text='Criar esfera'
           onClick={handleOpen}
