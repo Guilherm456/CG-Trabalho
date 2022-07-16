@@ -24,7 +24,7 @@ function App() {
           <PivotItem headerText='Cena' style={p}>
             <PivotScene />
           </PivotItem>
-          <PivotItem headerText='Cena' style={p}>
+          <PivotItem headerText='Esfera' style={p}>
             <PivotSphere />
           </PivotItem>
           <PivotItem headerText='Câmera' style={p}>
