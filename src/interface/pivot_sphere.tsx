@@ -4,13 +4,12 @@ import {
   Dropdown,
   IconButton,
   IDropdownOption,
-  PivotItem,
   Slider,
   Stack,
   Text,
   TextField,
 } from '@fluentui/react';
-import { ObjectsProviderContext } from 'components/Provider';
+import { ObjectsProviderContext, ObjectsProvider } from 'components/Provider';
 import { useState, useEffect } from 'react';
 
 const gapStack = { childrenGap: 5 };
@@ -110,7 +109,7 @@ export const PivotSphere = () => {
           selectedKey={selectedSphere}
           //Função que define o valor selecionado
           onChange={handleChageDropdown}
-          disabled={optionsSphere.length === 0}
+          disabled={objects.length === 0}
         />
         <IconButton
           split
