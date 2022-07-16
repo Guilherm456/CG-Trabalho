@@ -1,7 +1,7 @@
 import Sphere from 'geometry/spheres';
 import { createContext, useContext, useState } from 'react';
 import { Camera } from './Camera';
-import p5Types from 'p5';
+
 import { Coord } from 'utils/interfaces';
 
 interface ObjectsProviderInterface {
@@ -17,7 +17,12 @@ interface ObjectsProviderInterface {
 }
 const ObjectsProviderInitial: ObjectsProviderInterface = {
   objects: [],
-  camera: new Camera([0, 0, 0]),
+  camera: new Camera(
+    [0, 0, 0],
+    [0, 0, 0],
+    { width: [0, 0], height: [0, 0] },
+    { width: [0, 0], height: [0, 0] }
+  ),
   setObjects: () => {},
   handleClear: () => {},
   handleRemoveSphere: () => {},
@@ -43,13 +48,20 @@ export function ObjectsProvider({ children }: Props) {
       center: [0, 0, 0],
       radius: 100,
       color: '#000',
-      intensityM: 36,
-      intensityP: 36,
+      intensityM: 9,
+      intensityP: 9,
       name: 'Sphere',
     }),
   ]);
 
-  const camera = new Camera(defaultVRP, defaultP);
+  const [camera] = useState<Camera>(
+    new Camera(
+      defaultVRP,
+      defaultP,
+      { width: [-200, 200], height: [-200, 200] },
+      { width: [0, 0], height: [0, 0] }
+    )
+  );
 
   const handleClear = () => {
     setObjects([]);
