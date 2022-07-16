@@ -7,6 +7,8 @@ export class Camera {
   public VRP: Coord;
   public P: Coord;
 
+  public perspective: boolean;
+
   private N: Coord = [0, 0, 0];
   private U: Coord = [0, 0, 0];
   private V: Coord = [0, 0, 0];
@@ -22,10 +24,12 @@ export class Camera {
     position: Coord,
     target: Coord,
     viewport: Port,
-    windowPort: Port
+    windowPort: Port,
+    perspective?: boolean
   ) {
     this.VRP = position;
     this.P = target ?? [0, 0, 0];
+    this.perspective = perspective ?? true;
 
     this.ViewPort = viewport;
 
@@ -57,6 +61,11 @@ export class Camera {
     this.ViewPort = viewPort ?? this.ViewPort;
 
     this.matrixView = this.getMatrixView();
+  }
+
+  public setTypePerspective(perspective: boolean) {
+    this.perspective = perspective;
+    this.getAllValues();
   }
 
   private getAllValues(): void {
@@ -119,13 +128,23 @@ export class Camera {
     const Dp = VRPVector.dist(PVector);
     const Zvp = -Dp;
 
-    const matrixP = [
-      [1, 0, 0, 0],
-      [0, 1, 0, 0],
-      [0, 0, Zvp / Dp, 0],
-      [0, 0, -1 / Dp, 0],
-    ];
-    return matrixP as Coord[];
+    if (this.perspective) {
+      const matrixP = [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, Zvp / Dp, 0],
+        [0, 0, -1 / Dp, 0],
+      ];
+      return matrixP as Coord[];
+    } else {
+      const matrixP = [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 1],
+      ];
+      return matrixP as Coord[];
+    }
   }
 
   getMatrixView() {
