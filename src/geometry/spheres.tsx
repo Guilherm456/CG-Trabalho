@@ -3,6 +3,7 @@ import p5Types from 'p5';
 import { translate, toDegrees, rotate, scale } from 'utils/calculate';
 
 import * as numJS from 'numjs';
+import { Camera } from 'components/Camera';
 
 interface SphereProps {
   center: Coord;
@@ -21,8 +22,10 @@ export default class Sphere {
 
   color: string;
 
-  vertice: Coord[][] = [[]];
-  faces: number[][][] = [];
+  vertice: Coord[][] = [];
+  facesPoints: number[][][] = [];
+  faces: Coord[][] = [];
+
   name: string;
 
   intensityM: number;
@@ -41,11 +44,15 @@ export default class Sphere {
     const intP = 180 / (props.intensityP + 1);
 
     this.vertice = numJS
-      .zeros(props.intensityM * props.intensityP * 3)
-      .reshape(props.intensityP, props.intensityM, 3)
-      .tolist() as [Coord[]];
+      .zeros([props.intensityP + 2, props.intensityM, 3])
+      .tolist();
+    const extremesPoint = this.getExtremePoints();
 
-    for (let i = 0; i < props.intensityP; i++) {
+    for (
+      let i = 0, index = this.intensityP;
+      i < this.intensityP;
+      i++, index--
+    ) {
       for (let t = 0; t < props.intensityM; t++) {
         const angleP = toDegrees((i + 1) * intP);
         const angleM = toDegrees((t + 1) * intM);
@@ -53,7 +60,7 @@ export default class Sphere {
         let x = props.radius * Math.sin(angleP) * Math.sin(angleM);
         let y = props.radius * Math.cos(angleP);
         let z = props.radius * Math.sin(angleP) * Math.cos(angleM);
-        this.vertice[i][t] = [
+        this.vertice[index][t] = [
           x + this.center[0],
           y + this.center[1],
           z + this.center[2],
@@ -61,7 +68,16 @@ export default class Sphere {
       }
     }
 
-    this.faces = this.defineFaces();
+    for (let t = 0; t < props.intensityM; t++) {
+      this.vertice[0][t] = extremesPoint[1] as Coord;
+      this.vertice[this.intensityP + 1][t] = extremesPoint[0] as Coord;
+    }
+
+    //Os pontos das faces não irão mudar de posição, então eles são definidos apenas uma vez
+    this.facesPoints = this.defineFacesPoints();
+
+    //As faces são definidas a cada alteração para que elas sejam desenhadas de forma correta e economizando cálculos
+    this.faces = this.defineFace() as Coord[][];
   }
 
   private generateID(length: number): string {
@@ -71,21 +87,50 @@ export default class Sphere {
       .replace('.', '');
   }
 
-  defineFaces() {
-    const faces: number[][][] = [[]];
-    for (let i = 0; i < this.vertice.length; i++) {
+  //Define os pontos que serão utilizados para desenhar as faces
+  defineFacesPoints() {
+    const faces: number[][][] = [];
+    for (let i = 0; i < this.vertice.length - 1; i++) {
       for (let j = 0; j < this.vertice[i].length; j++) {
-        faces.push([
-          [i, j],
-          [i + 1, j],
-          [i + 1, (j + 1) % this.intensityM],
-          [i, (j + 1) % this.intensityM],
+        if (i === 0 || i === this.vertice.length - 2) {
+          faces.push([
+            [i, j],
+            [i + 1, j],
+            [i + 1, (j + 1) % this.intensityM],
+          ]);
+        } else {
+          const face = [
+            [i, j],
+            [i + 1, j],
+            [i + 1, (j + 1) % this.intensityM],
+            [i, (j + 1) % this.intensityM],
+          ];
+          faces.push(face);
+        }
+      }
+    }
+
+    return faces;
+  }
+
+  //Define as faces
+  defineFace() {
+    const faces: number[][][] = [];
+    for (let lineFaces of this.facesPoints) {
+      const faceP = [];
+      for (let face of lineFaces) {
+        faceP.push([
+          this.vertice[face[0]][face[1]][0],
+          this.vertice[face[0]][face[1]][1],
+          this.vertice[face[0]][face[1]][2],
         ]);
       }
+      faces.push(faceP);
     }
     return faces;
   }
 
+  //Desenha a esfera (apenas as linhas)
   drawSphere(p5: p5Types) {
     p5.push();
 
@@ -128,55 +173,37 @@ export default class Sphere {
     p5.pop();
   }
 
-  drawFaces(p5: p5Types) {
+  normalizeFace(p5: p5Types, face: number[][]) {
+    const P1 = p5.createVector(...face[0]);
+    const P2 = p5.createVector(...face[1]);
+    const P3 = p5.createVector(...face[2]);
+
+    const V1 = P3.sub(P2).cross(P1.sub(P2)).normalize();
+    return V1;
+  }
+
+  //Desenha a esfera (apenas as faces)
+  drawFaces(p5: p5Types, camera: Camera) {
+    const Nvector = p5.createVector(...camera.N);
+
     p5.push();
     p5.stroke(this.color);
 
     for (let i = 0; i < this.faces.length; i++) {
+      //Vai normalizar a face
+      const faces = this.normalizeFace(p5, this.faces[i]);
+      const dot = Nvector.dot(faces);
+
+      //Caso a face esteja na frente da camera, ela será desenhada
+      if (dot < 0.0) continue;
+
       p5.beginShape();
       for (let j = 0; j < this.faces[i].length; j++) {
-        const actual = this.faces[i][j];
-        if (
-          actual[0] >= this.vertice.length ||
-          actual[1] >= this.vertice[0].length
-        )
-          continue;
-
-        p5.vertex(
-          this.vertice[actual[0]][actual[1]][0],
-          this.vertice[actual[0]][actual[1]][1],
-          this.vertice[actual[0]][actual[1]][2]
-        );
+        const face = this.faces[i][j];
+        p5.vertex(face[0], face[1], face[2]);
       }
       p5.endShape(p5.CLOSE);
     }
-
-    const extremesSphere = this.getExtremePoints();
-
-    for (let j = 0; j < 2; j++) {
-      const indexExtreme = j * (this.intensityP - 1);
-
-      p5.beginShape();
-      for (let i = 0; i < this.intensityM; i++) {
-        p5.vertex(
-          extremesSphere[j][0],
-          extremesSphere[j][1],
-          extremesSphere[j][2]
-        );
-        p5.vertex(
-          this.vertice[indexExtreme][i][0],
-          this.vertice[indexExtreme][i][1],
-          this.vertice[indexExtreme][i][2]
-        );
-        p5.vertex(
-          this.vertice[indexExtreme][(i + 1) % this.intensityM][0],
-          this.vertice[indexExtreme][(i + 1) % this.intensityM][1],
-          this.vertice[indexExtreme][(i + 1) % this.intensityM][2]
-        );
-      }
-      p5.endShape(p5.CLOSE);
-    }
-
     p5.pop();
   }
 

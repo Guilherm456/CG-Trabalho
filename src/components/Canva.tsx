@@ -33,7 +33,11 @@ export default function Canva() {
       width: [-(parent.clientWidth / 2), parent.clientWidth / 2],
       height: [-(parent.clientHeight / 2), parent.clientHeight / 2],
     };
-    camera.setWindowSize(newWidowPort);
+    const newViewPort: Port = {
+      width: [-(parent.clientWidth / 2 / 2), parent.clientWidth / 2 / 2],
+      height: [-(parent.clientHeight / 2 / 2), parent.clientHeight / 2 / 2],
+    };
+    camera.setWindowSize(newWidowPort, newViewPort);
 
     shaderInf = p5.createShader(VertShader, FragShader);
     p5.shader(shaderInf);
@@ -64,7 +68,7 @@ export default function Canva() {
 
     shaderInf.setUniform('vViewMatrix', camera.matrixView.flat());
 
-    objects.forEach((object) => object.drawFaces(p5));
+    objects.forEach((object) => object.drawFaces(p5, camera));
 
     p5.pop();
   };
