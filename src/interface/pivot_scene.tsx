@@ -3,7 +3,6 @@ import {
   DefaultButton,
   IconButton,
   Modal,
-  PivotItem,
   PrimaryButton,
   Slider,
   Stack,
@@ -13,6 +12,7 @@ import {
 import { ObjectsProviderContext } from 'components/Provider';
 import Sphere from 'geometry/spheres';
 import { useState } from 'react';
+import { HexToRGB } from 'utils/others';
 
 const gapStack = { childrenGap: 5 };
 
@@ -24,7 +24,7 @@ export const PivotScene = () => {
     const [radius, setRadius] = useState(100);
     const [intM, setIntM] = useState(9);
     const [intP, setIntP] = useState(9);
-    const [color, setColor] = useState('');
+    const [color, setColor] = useState('FFFFFF');
 
     const [name, setName] = useState('Esfera X');
 
@@ -38,7 +38,7 @@ export const PivotScene = () => {
       const newSphere = new Sphere({
         center: [sX, sY, sZ],
         radius: radius,
-        color: '#' + color,
+        color: HexToRGB(color),
         intensityM: intM,
         intensityP: intP,
         name: name,

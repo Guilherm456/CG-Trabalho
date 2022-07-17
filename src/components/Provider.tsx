@@ -47,7 +47,7 @@ export function ObjectsProvider({ children }: Props) {
     new Sphere({
       center: [0, 0, 0],
       radius: 100,
-      color: '#000',
+      color: [255, 255, 255],
       intensityM: 9,
       intensityP: 9,
       name: 'Sphere',

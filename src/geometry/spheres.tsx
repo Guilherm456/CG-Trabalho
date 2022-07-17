@@ -8,7 +8,7 @@ import { Camera } from 'components/Camera';
 interface SphereProps {
   center: Coord;
   radius: number;
-  color: string;
+  color: [number, number, number];
   intensityM: number;
   intensityP: number;
   name: string;
@@ -20,7 +20,7 @@ export default class Sphere {
   center: Coord;
   radius: number;
 
-  color: string;
+  color: [number, number, number];
 
   vertice: Coord[][] = [];
   facesPoints: number[][][] = [];
@@ -183,11 +183,11 @@ export default class Sphere {
   }
 
   //Desenha a esfera (apenas as faces)
-  drawFaces(p5: p5Types, camera: Camera) {
+  drawFaces(p5: p5Types, camera: Camera, shader: p5Types.Shader) {
     const Nvector = p5.createVector(...camera.N);
 
     p5.push();
-    p5.stroke(this.color);
+    shader.setUniform('uColor', this.color.flat());
 
     for (let i = 0; i < this.faces.length; i++) {
       //Vai normalizar a face

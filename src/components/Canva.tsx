@@ -60,15 +60,13 @@ export default function Canva() {
     }
 
     p5.push();
-    shaderInf.setUniform('uColor', [1, 0, 0]);
-
     shaderInf.setUniform('vSRCMatrix', camera.matrixSRUSRC.flat());
 
     shaderInf.setUniform('vProjectionMatrix', camera.matrixProjection.flat());
 
     shaderInf.setUniform('vViewMatrix', camera.matrixView.flat());
 
-    objects.forEach((object) => object.drawFaces(p5, camera));
+    objects.forEach((object) => object.drawFaces(p5, camera, shaderInf));
 
     p5.pop();
   };
