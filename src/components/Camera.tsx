@@ -29,7 +29,7 @@ export class Camera {
   ) {
     this.VRP = position;
     this.P = target ?? [0, 0, 0];
-    this.perspective = perspective ?? true;
+    this.perspective = perspective ?? false;
 
     this.ViewPort = viewport;
 
@@ -163,9 +163,9 @@ export class Camera {
       ],
       [
         0,
-        (vMin - vMax) / (yMax - yMin),
+        (vMax - vMin) / (yMax - yMin),
         0,
-        yMin * ((vMax - vMin) / (yMax - yMin)) + vMax,
+        -yMin * ((vMax - vMin) / (yMax - yMin)) + vMin,
       ],
       [0, 0, 1, 0],
       [0, 0, 0, 1],
