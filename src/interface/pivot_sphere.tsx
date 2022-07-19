@@ -41,6 +41,7 @@ export const PivotSphere = () => {
     }) as IDropdownOption[];
     temp.push({ key: 'clean', text: 'Limpar' });
     setOptionsSphere(temp);
+    if (selectedSphere !== '') setSelectedSphere('');
   }, [objects]);
 
   const optionsRotation = [
