@@ -14,6 +14,8 @@ enum Direction {
   BACK = 40,
   LEFT = 37,
   RIGHT = 39,
+  DOWN = 16,
+  UP = 17,
 }
 
 //Define a sensibilidade do movimento da câmera
@@ -40,7 +42,7 @@ export default function Canva() {
     p5.shader(shaderInf);
 
     // p5.debugMode();
-    p5.noStroke();
+    // p5.noStroke();
     // p5.noFill();
     // p5.camera();
     p5.frameRate(60);
@@ -49,7 +51,7 @@ export default function Canva() {
   const draw = (val: any) => {
     const p5 = val as p5Types;
 
-    // p5.orbitControl();
+    p5.orbitControl();
     p5.background(54);
 
     if (p5.keyIsPressed) {
@@ -60,6 +62,15 @@ export default function Canva() {
     if (light.rotate) {
       light.rotateLight();
     }
+    p5.push();
+    p5.translate(light.position[0], light.position[1], light.position[2]);
+    p5.stroke(
+      light.lightIntensity[0],
+      light.lightIntensity[1],
+      light.lightIntensity[2]
+    );
+    p5.sphere(10);
+    p5.pop();
 
     p5.push();
     shaderInf.setUniform('vSRCMatrix', camera.matrixSRUSRC.flat());
@@ -85,6 +96,12 @@ export default function Canva() {
 
     if (key === Direction.RIGHT)
       camera.updatePositionCamera(sensitivity, 'X', true);
+
+    if (key === Direction.UP)
+      camera.updatePositionCamera(sensitivity, 'Y', true);
+
+    if (key === Direction.DOWN)
+      camera.updatePositionCamera(-sensitivity, 'Y', true);
     return false;
   };
 
