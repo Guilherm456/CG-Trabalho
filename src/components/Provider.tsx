@@ -12,6 +12,7 @@ interface ObjectsProviderInterface {
   light: Light;
   /**Limpar a cena */
   handleClear: () => void;
+  handleClearObjects: () => void;
   /**Remove a esfera pelo ID
    * @param id ID da esfera
    */
@@ -29,6 +30,7 @@ const ObjectsProviderInitial: ObjectsProviderInterface = {
   setObjects: () => {},
   handleClear: () => {},
   handleRemoveSphere: () => {},
+  handleClearObjects: () => {},
 };
 const ObjectsP = createContext<ObjectsProviderInterface>(
   ObjectsProviderInitial
@@ -44,6 +46,10 @@ interface Props {
 
 const defaultVRP: Coord = [0, 0, -100];
 const defaultP: Coord = [0, 0, 0];
+
+const defaultAmbientIntensity: Coord = [255, 255, 255];
+const defaultLightIntensity: Coord = [255, 255, 255];
+const defaultPositionLight: Coord = [-100, 0, 0];
 
 export function ObjectsProvider({ children }: Props) {
   const [objects, setObjects] = useState<Sphere[]>([
@@ -69,12 +75,22 @@ export function ObjectsProvider({ children }: Props) {
     )
   );
   const [light] = useState<Light>(
-    new Light([-100, 0, 0], [255, 255, 255], [255, 255, 255])
+    new Light(
+      defaultPositionLight,
+      defaultAmbientIntensity,
+      defaultLightIntensity
+    )
   );
 
-  const handleClear = () => {
+  const handleClearObjects = () => {
     setObjects([]);
+  };
+  const handleClear = () => {
+    handleClearObjects();
     camera.updateVRP_P(defaultVRP, defaultP);
+    light.setIntensity(defaultAmbientIntensity, defaultLightIntensity);
+    light.setPosition(defaultPositionLight);
+    light.setRotate(false);
   };
 
   const handleRemoveSphere = (id: string) => {
@@ -86,6 +102,7 @@ export function ObjectsProvider({ children }: Props) {
     camera,
     light,
     handleClear,
+    handleClearObjects,
     handleRemoveSphere,
   };
   return <ObjectsP.Provider value={values}>{children}</ObjectsP.Provider>;

@@ -6,7 +6,7 @@ import { ModalContent } from './Modal_Sphere';
 const gapStack = { childrenGap: 5 };
 
 export const PivotScene = () => {
-  const { handleClear } = ObjectsProviderContext();
+  const { handleClear, handleClearObjects } = ObjectsProviderContext();
   const [modalOpen, setModalOpen] = useState(false);
 
   const handleOpen = () => setModalOpen(!modalOpen);
@@ -20,9 +20,14 @@ export const PivotScene = () => {
           iconProps={{ iconName: 'Add' }}
         />
         <DefaultButton
+          text='Deletar objetos'
+          onClick={handleClearObjects}
+          iconProps={{ iconName: 'Delete' }}
+        />
+        <DefaultButton
           text='Limpar cena'
           onClick={handleClear}
-          iconProps={{ iconName: 'Delete' }}
+          iconProps={{ iconName: 'ClearFormatting' }}
         />
       </Stack>
       {modalOpen ? (
