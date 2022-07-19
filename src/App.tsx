@@ -7,6 +7,7 @@ import { ObjectsProviderContext } from 'components/Provider';
 import { PivotSphere } from 'interface/pivot_sphere';
 import { PivotScene } from 'interface/pivot_scene';
 import { PivotCamera } from 'interface/pivot_camera';
+import { PivotLight } from 'interface/pivot_light';
 
 function App() {
   useEffect(() => {
@@ -29,6 +30,9 @@ function App() {
           </PivotItem>
           <PivotItem headerText='Câmera' style={p}>
             <PivotCamera />
+          </PivotItem>
+          <PivotItem headerText='Luz' style={p}>
+            <PivotLight />
           </PivotItem>
         </Pivot>
       </div>
