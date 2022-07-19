@@ -42,7 +42,7 @@ interface Props {
   children: React.ReactNode;
 }
 
-const defaultVRP: Coord = [0, 0, 50];
+const defaultVRP: Coord = [0, 0, -100];
 const defaultP: Coord = [0, 0, 0];
 
 export function ObjectsProvider({ children }: Props) {
@@ -53,7 +53,7 @@ export function ObjectsProvider({ children }: Props) {
       Ka: [0.1, 0.1, 0.1],
       Kd: [0.3, 0.3, 0.3],
       Ks: [0, 0, 0],
-
+      Ns: 1,
       intensityM: 9,
       intensityP: 9,
       name: 'Sphere',

@@ -16,6 +16,7 @@ interface SphereProps {
   Ka: Coord;
   Kd: Coord;
   Ks: Coord;
+  Ns: number;
 }
 
 export default class Sphere {
@@ -27,6 +28,7 @@ export default class Sphere {
   Ka: Coord;
   Kd: Coord;
   Ks: Coord;
+  n: number = 1;
 
   vertice: Coord[][] = [];
   facesPoints: number[][][] = [];
@@ -49,6 +51,7 @@ export default class Sphere {
     this.Ka = props.Ka;
     this.Kd = props.Kd;
     this.Ks = props.Ks;
+    this.n = props.Ns;
 
     const intM = 360 / props.intensityM;
     const intP = 180 / (props.intensityP + 1);
@@ -195,14 +198,14 @@ export default class Sphere {
       const dot = Nvector.dot(faces);
 
       //Caso a face esteja na frente da camera, ela será desenhada
-      if (dot < 0.0) continue;
+      if (dot < 0.0000001) continue;
 
       shader.setUniform('uKa', this.Ka);
       shader.setUniform('uKd', this.Kd);
       shader.setUniform('uKs', this.Ks);
       shader.setUniform('uLightPosition', light.position);
       shader.setUniform('uObserver', camera.VRP);
-      shader.setUniform('uN', 2);
+      shader.setUniform('uN', this.n);
       shader.setUniform('uIla', light.ambientLightIntensity);
       shader.setUniform('uIl', light.lightIntensity);
       shader.setUniform('uFaceNormal', [faces.x, faces.y, faces.z]);

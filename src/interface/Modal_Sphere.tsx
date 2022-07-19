@@ -32,6 +32,7 @@ export const ModalContent = (props: ModalSphere) => {
   const [Ka, setKa] = useState(arrayNumberToArrayString(sphere?.Ka));
   const [Kd, setKd] = useState(arrayNumberToArrayString(sphere?.Kd));
   const [Ks, setKs] = useState(arrayNumberToArrayString(sphere?.Ks));
+  const [Ns, setNs] = useState(sphere?.n.toString() ?? '1');
 
   const [name, setName] = useState(sphere?.name ?? 'Esfera X');
 
@@ -48,6 +49,7 @@ export const ModalContent = (props: ModalSphere) => {
       Ka: [parseFloat(Ka[0]), parseFloat(Ka[1]), parseFloat(Ka[2])],
       Kd: [parseFloat(Kd[0]), parseFloat(Kd[1]), parseFloat(Kd[2])],
       Ks: [parseFloat(Ks[0]), parseFloat(Ks[1]), parseFloat(Ks[2])],
+      Ns: Number(Ns),
       intensityM: intM,
       intensityP: intP,
       name: name,
@@ -145,6 +147,13 @@ export const ModalContent = (props: ModalSphere) => {
               max={1.0}
             />
           </Stack>
+          <TextField
+            label='N'
+            value={Ns}
+            onChange={(e) => setNs(e.currentTarget.value)}
+            type='number'
+            min={0.0}
+          />
 
           <TextField
             label='Nome da esfera'
