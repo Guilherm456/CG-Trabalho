@@ -3,12 +3,48 @@ export const FragShader = `
 precision mediump float;
 #endif
 
-uniform vec3 uColor;
+// uniform vec3 uColor;
 
+
+// void main()
+// {
+//   gl_FragColor = vec4(uColor, 1.0);
+// }
+uniform vec4 uFaceNormal;
+uniform vec4 uObserver;
+uniform vec4 uLightPosition;
+uniform vec4 uReferencePoint;
+
+// ratios
+uniform vec3 uKa;
+uniform vec3 uKd;
+uniform vec3 uKs;
+uniform float uN;
+uniform vec3 uIla;
+uniform vec3 uIl;
 
 void main()
 {
-  gl_FragColor = vec4(uColor, 1.0);
+  vec4 N = uFaceNormal;
+  vec4 L = uLightPosition - uReferencePoint;
+  
+  float Fatt = min(
+    1.0/distance(
+      vec3(uReferencePoint), vec3(uLightPosition)
+    ),
+    1.0
+  );
+  
+  float itR = 
+  (uKa[0] * uIla[0] + Fatt * uIl[0] * (uKd[0] * dot(vec3(N), vec3(L))))/255.0;
+  
+  float itG = 
+  (uKa[1] * uIla[1] + Fatt * uIl[1] * (uKd[1] * dot(vec3(N), vec3(L) )))/255.0;
+  
+  float itB = 
+  (uKa[2] * uIla[2] + Fatt * uIl[2] * (uKd[2] * dot(vec3(N), vec3(L) )))/255.0;
+  
+  gl_FragColor = vec4(itR, itG, itB, 1.0);
 }
 `;
 
@@ -39,11 +75,23 @@ mat4 transpose(mat4 m) {
               m[0][3], m[1][3], m[2][3], m[3][3]);
 }
 
-void main() {
+// void main() {
   
-  vec4 normalizedPosition = vec4(aPosition, 1.0);
+//   vec4 normalizedPosition = vec4(aPosition, 1.0);
 
-  gl_Position=  transpose(vSRCMatrix) * transpose(vProjectionMatrix) * transpose(vViewMatrix) * normalizedPosition;
-  gl_Position.xy /= gl_Position.w;
+//   mat4 concatenatedMatrix = transpose(vViewMatrix) * transpose(vProjectionMatrix) * transpose(vSRCMatrix);
+
+//   gl_Position=  normalizedPosition * concatenatedMatrix;
+
+//   gl_Position.xy /= gl_Position.w;
+// }
+void main(){
+mat4 customConcatenated = transpose(vViewMatrix) * transpose(vProjectionMatrix) * transpose(vSRCMatrix);
+
+  vec4 concatenatedPosition = customConcatenated * vec4(aPosition, 1.0);
+  concatenatedPosition.xy /= concatenatedPosition.w;
+
+  vec4 viewModelPosition = uModelViewMatrix * concatenatedPosition;
+  gl_Position = uProjectionMatrix * viewModelPosition;
 }
 `;

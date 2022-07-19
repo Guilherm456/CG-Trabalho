@@ -3,11 +3,13 @@ import { createContext, useContext, useState } from 'react';
 import { Camera } from './Camera';
 
 import { Coord } from 'utils/interfaces';
+import { Light } from './Light';
 
 interface ObjectsProviderInterface {
   objects: Sphere[];
   setObjects: React.Dispatch<React.SetStateAction<Sphere[]>>;
   camera: Camera;
+  light: Light;
   /**Limpar a cena */
   handleClear: () => void;
   /**Remove a esfera pelo ID
@@ -23,6 +25,7 @@ const ObjectsProviderInitial: ObjectsProviderInterface = {
     { width: [0, 0], height: [0, 0] },
     { width: [0, 0], height: [0, 0] }
   ),
+  light: new Light([0, 0, 0], [0, 0, 0], [0, 0, 0]),
   setObjects: () => {},
   handleClear: () => {},
   handleRemoveSphere: () => {},
@@ -47,7 +50,10 @@ export function ObjectsProvider({ children }: Props) {
     new Sphere({
       center: [0, 0, 0],
       radius: 100,
-      color: [255, 255, 255],
+      Ka: [0.1, 0.1, 0.1],
+      Kd: [0.3, 0.3, 0.3],
+      Ks: [0, 0, 0],
+
       intensityM: 9,
       intensityP: 9,
       name: 'Sphere',
@@ -62,6 +68,9 @@ export function ObjectsProvider({ children }: Props) {
       { width: [0, 0], height: [0, 0] }
     )
   );
+  const [light] = useState<Light>(
+    new Light([-100, 0, 0], [255, 255, 255], [255, 255, 255])
+  );
 
   const handleClear = () => {
     setObjects([]);
@@ -75,6 +84,7 @@ export function ObjectsProvider({ children }: Props) {
     objects,
     setObjects,
     camera,
+    light,
     handleClear,
     handleRemoveSphere,
   };

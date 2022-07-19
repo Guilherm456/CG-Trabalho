@@ -4,14 +4,18 @@ import { translate, toDegrees, rotate, scale } from 'utils/calculate';
 
 import * as numJS from 'numjs';
 import { Camera } from 'components/Camera';
+import { getNormal } from 'utils/others';
+import { Light } from 'components/Light';
 
 interface SphereProps {
   center: Coord;
   radius: number;
-  color: [number, number, number];
   intensityM: number;
   intensityP: number;
   name: string;
+  Ka: Coord;
+  Kd: Coord;
+  Ks: Coord;
 }
 
 export default class Sphere {
@@ -20,7 +24,9 @@ export default class Sphere {
   center: Coord;
   radius: number;
 
-  color: [number, number, number];
+  Ka: Coord;
+  Kd: Coord;
+  Ks: Coord;
 
   vertice: Coord[][] = [];
   facesPoints: number[][][] = [];
@@ -35,10 +41,14 @@ export default class Sphere {
     this.id = this.generateID(2);
     this.center = props.center;
     this.radius = props.radius;
-    this.color = props.color;
+
     this.intensityM = props.intensityM;
     this.intensityP = props.intensityP;
     this.name = props.name;
+
+    this.Ka = props.Ka;
+    this.Kd = props.Kd;
+    this.Ks = props.Ks;
 
     const intM = 360 / props.intensityM;
     const intP = 180 / (props.intensityP + 1);
@@ -173,29 +183,39 @@ export default class Sphere {
     p5.pop();
   }
 
-  normalizeFace(p5: p5Types, face: number[][]) {
-    const P1 = p5.createVector(...face[0]);
-    const P2 = p5.createVector(...face[1]);
-    const P3 = p5.createVector(...face[2]);
-
-    const V1 = P3.sub(P2).cross(P1.sub(P2)).normalize();
-    return V1;
-  }
-
   //Desenha a esfera (apenas as faces)
-  drawFaces(p5: p5Types, camera: Camera, shader: p5Types.Shader) {
+  drawFaces(p5: p5Types, camera: Camera, shader: p5Types.Shader, light: Light) {
     const Nvector = p5.createVector(...camera.N);
 
     p5.push();
-    shader.setUniform('uColor', this.color.flat());
 
     for (let i = 0; i < this.faces.length; i++) {
       //Vai normalizar a face
-      const faces = this.normalizeFace(p5, this.faces[i]);
+      const faces = getNormal(p5, this.faces[i]);
       const dot = Nvector.dot(faces);
 
       //Caso a face esteja na frente da camera, ela será desenhada
       if (dot < 0.0) continue;
+
+      shader.setUniform('uKa', this.Ka);
+      shader.setUniform('uKd', this.Kd);
+      shader.setUniform('uKs', this.Ks);
+      shader.setUniform('uLightPosition', light.position);
+      shader.setUniform('uObserver', camera.VRP);
+      shader.setUniform('uN', 2);
+      shader.setUniform('uIla', light.ambientLightIntensity);
+      shader.setUniform('uIl', light.lightIntensity);
+      shader.setUniform('uFaceNormal', [faces.x, faces.y, faces.z]);
+
+      // const color = light.getFaceColor(
+      //   this.faces[i],
+      //   camera.VRP,
+      //   this.Ka,
+      //   this.Kd,
+      //   this.Ks,
+      //   2,
+      //   p5
+      // );
 
       p5.beginShape();
       for (let j = 0; j < this.faces[i].length; j++) {

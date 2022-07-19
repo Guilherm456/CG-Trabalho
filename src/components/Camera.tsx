@@ -9,9 +9,9 @@ export class Camera {
 
   public perspective: boolean;
 
-  private N: Coord = [0, 0, 0];
-  private U: Coord = [0, 0, 0];
-  private V: Coord = [0, 0, 0];
+  public N: Coord = [0, 0, 0];
+  public U: Coord = [0, 0, 0];
+  public V: Coord = [0, 0, 0];
 
   public ViewPort: Port;
   public WindowPort: Port;

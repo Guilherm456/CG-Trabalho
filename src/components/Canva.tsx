@@ -4,7 +4,7 @@ import p5Types from 'p5';
 import { ObjectsProviderContext } from './Provider';
 
 import { VertShader, FragShader } from '../utils/shader';
-import { transpose } from 'utils/calculate';
+
 import { Port } from 'utils/interfaces';
 
 let shaderInf: p5Types.Shader;
@@ -20,7 +20,7 @@ enum Direction {
 const sensitivity = 1;
 
 export default function Canva() {
-  const { objects, camera } = ObjectsProviderContext();
+  const { objects, camera, light } = ObjectsProviderContext();
 
   const setup = (val: any, parentCanvas: Element) => {
     const p5 = val as p5Types;
@@ -29,21 +29,18 @@ export default function Canva() {
       parentCanvas
     );
 
-    const newWidowPort: Port = {
+    const newWindowSize: Port = {
       width: [-(parent.clientWidth / 2), parent.clientWidth / 2],
       height: [-(parent.clientHeight / 2), parent.clientHeight / 2],
     };
-    const newViewPort: Port = {
-      width: [-(parent.clientWidth / 2 / 2), parent.clientWidth / 2 / 2],
-      height: [-(parent.clientHeight / 2 / 2), parent.clientHeight / 2 / 2],
-    };
-    camera.setWindowSize(newWidowPort, newViewPort);
+
+    camera.setWindowSize(newWindowSize, newWindowSize);
 
     shaderInf = p5.createShader(VertShader, FragShader);
     p5.shader(shaderInf);
 
     // p5.debugMode();
-    // p5.noStroke();
+    p5.noStroke();
     // p5.noFill();
     // p5.camera();
     p5.frameRate(60);
@@ -59,6 +56,11 @@ export default function Canva() {
       cameraSystem(p5.keyCode);
     }
 
+    //Vai ficar rotacionando a "luz"
+    if (light.rotate) {
+      light.rotateLight();
+    }
+
     p5.push();
     shaderInf.setUniform('vSRCMatrix', camera.matrixSRUSRC.flat());
 
@@ -66,7 +68,7 @@ export default function Canva() {
 
     shaderInf.setUniform('vViewMatrix', camera.matrixView.flat());
 
-    objects.forEach((object) => object.drawFaces(p5, camera, shaderInf));
+    objects.forEach((object) => object.drawFaces(p5, camera, shaderInf, light));
 
     p5.pop();
   };
@@ -89,14 +91,13 @@ export default function Canva() {
   const windowResized = (val: any) => {
     const p5 = val as p5Types;
     const parent = document.getElementsByClassName('canvaArea')[0];
-    p5.resizeCanvas(parent.clientWidth, parent.clientHeight, false);
+    p5.resizeCanvas(parent.clientWidth, parent.clientHeight);
   };
 
   const mouse = (val: any) => {
-    const p5 = val as p5Types;
-    const diffenceX = p5.winMouseX - p5.pwinMouseX;
-    const diffenceY = p5.winMouseY - p5.pwinMouseY;
-
+    // const p5 = val as p5Types;
+    // const diffenceX = p5.winMouseX - p5.pwinMouseX;
+    // const diffenceY = p5.winMouseY - p5.pwinMouseY;
     // camera.updatePositionCamera(diffenceY, 'Y', false);
   };
 
@@ -110,12 +111,6 @@ export default function Canva() {
       console.log(camera.matrixSRUSRC);
       console.log('Projection');
       console.log(camera.matrixProjection);
-
-      console.log('Transposed');
-      console.log('SRU');
-      console.log(transpose(camera.matrixSRUSRC));
-      console.log('Projection');
-      console.log(transpose(camera.matrixProjection));
 
       console.log('Camera');
       console.log(`VRP: ${camera.VRP} | P : ${camera.P}`);
