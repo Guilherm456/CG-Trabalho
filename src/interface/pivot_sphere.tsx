@@ -9,8 +9,9 @@ import {
   Text,
   TextField,
 } from '@fluentui/react';
-import { ObjectsProviderContext, ObjectsProvider } from 'components/Provider';
+import { ObjectsProviderContext } from 'components/Provider';
 import { useState, useEffect } from 'react';
+import { ModalContent } from './Modal_Sphere';
 
 const gapStack = { childrenGap: 5 };
 
@@ -54,6 +55,9 @@ export const PivotSphere = () => {
   const [valueZ, setValueZ] = useState('1');
 
   const [angle, setAngle] = useState(0);
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const handleOpen = () => setModalOpen(!modalOpen);
 
   const handleChange = () => {
     if (option === '' || selectedSphere === '') return;
@@ -123,6 +127,7 @@ export const PivotSphere = () => {
           title='Editar esfera'
           iconProps={{ iconName: 'Edit' }}
           disabled={selectedSphere === ''}
+          onClick={handleOpen}
         />
       </Stack>
       {selectedSphere !== '' ? (
@@ -174,6 +179,13 @@ export const PivotSphere = () => {
           )}
           <DefaultButton text='Aplicar' onClick={handleChange} />
         </>
+      ) : null}
+      {modalOpen ? (
+        <ModalContent
+          handleOpen={handleOpen}
+          open={modalOpen}
+          sphere={selectedSphere}
+        />
       ) : null}
     </Stack>
   );

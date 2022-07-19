@@ -89,7 +89,7 @@ export function scale(
 }
 
 //Faz a multiplicação de matrizes
-function matrixMul(coord: Coord, matrixCalc: number[][]) {
+function matrixMul(coord: Coord, matrixCalc: number[][]): Coord | Coord[] {
   //Vai adicionar o "1" necessário para multiplicar a matriz pelo vetor
   coord.push(1);
   //Multiplica a matriz pelo vetor

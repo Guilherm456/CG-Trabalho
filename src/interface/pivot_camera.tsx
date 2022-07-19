@@ -76,7 +76,7 @@ export const PivotCamera = () => {
   };
 
   return (
-    <Stack>
+    <Stack tokens={{ childrenGap: 5 }}>
       <Text variant='xLarge'>Editar câmera</Text>
       <ChoiceGroup
         label='Selecione o tipo de visualização'
