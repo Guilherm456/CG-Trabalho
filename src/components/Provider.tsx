@@ -2,7 +2,7 @@ import Sphere from 'geometry/spheres';
 import { createContext, useContext, useState } from 'react';
 import { Camera } from './Camera';
 
-import { Coord } from 'utils/interfaces';
+import { vec3 } from 'utils/interfaces';
 import { Light } from './Light';
 
 interface ObjectsProviderInterface {
@@ -24,7 +24,9 @@ const ObjectsProviderInitial: ObjectsProviderInterface = {
     [0, 0, 0],
     [0, 0, 0],
     { width: [0, 0], height: [0, 0] },
-    { width: [0, 0], height: [0, 0] }
+    { width: [0, 0], height: [0, 0] },
+    10,
+    0.1
   ),
   light: new Light([0, 0, 0], [0, 0, 0], [0, 0, 0]),
   setObjects: () => {},
@@ -44,12 +46,15 @@ interface Props {
   children: React.ReactNode;
 }
 
-const defaultVRP: Coord = [0, 0, -100];
-const defaultP: Coord = [0, 0, 0];
+const defaultVRP: vec3 = [0, 0, 100];
+const defaultP: vec3 = [0, 0, 0];
+const defaultFar: number = 10000;
+const defaultNear: number = 20;
+const defaultLookUp: vec3 = [0, 1, 0];
 
-const defaultAmbientIntensity: Coord = [255, 255, 255];
-const defaultLightIntensity: Coord = [255, 255, 255];
-const defaultPositionLight: Coord = [-100, 0, 0];
+const defaultAmbientIntensity: vec3 = [255, 255, 255];
+const defaultLightIntensity: vec3 = [255, 255, 255];
+const defaultPositionLight: vec3 = [-100, 0, 0];
 
 export function ObjectsProvider({ children }: Props) {
   const [objects, setObjects] = useState<Sphere[]>([
@@ -59,7 +64,7 @@ export function ObjectsProvider({ children }: Props) {
       Ka: [0.1, 0.1, 0.1],
       Kd: [0.3, 0.3, 0.3],
       Ks: [0, 0, 0],
-      Ns: 1,
+      Ns: 80,
       intensityM: 9,
       intensityP: 9,
       name: 'Sphere',
@@ -71,7 +76,10 @@ export function ObjectsProvider({ children }: Props) {
       defaultVRP,
       defaultP,
       { width: [-200, 200], height: [-200, 200] },
-      { width: [0, 0], height: [0, 0] }
+      { width: [0, 0], height: [0, 0] },
+      defaultFar,
+      defaultNear,
+      defaultLookUp
     )
   );
   const [light] = useState<Light>(
@@ -88,6 +96,8 @@ export function ObjectsProvider({ children }: Props) {
   const handleClear = () => {
     handleClearObjects();
     camera.updateVRP_P(defaultVRP, defaultP);
+    camera.setviewUp(defaultLookUp);
+
     light.setIntensity(defaultAmbientIntensity, defaultLightIntensity);
     light.setPosition(defaultPositionLight);
     light.setRotate(false);

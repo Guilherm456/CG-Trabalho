@@ -3,48 +3,40 @@ export const FragShader = `
 precision mediump float;
 #endif
 
-// uniform vec3 uColor;
-
-
-// void main()
-// {
-//   gl_FragColor = vec4(uColor, 1.0);
-// }
 uniform vec4 uFaceNormal;
 uniform vec4 uObserver;
 uniform vec4 uLightPosition;
 uniform vec4 uReferencePoint;
 
-// ratios
 uniform vec3 uKa;
 uniform vec3 uKd;
 uniform vec3 uKs;
 uniform float uN;
+
 uniform vec3 uIla;
 uniform vec3 uIl;
 
+uniform bvec2 uLightType;
+
+varying vec3 normalInterpolation;
 void main()
 {
-  vec4 N = uFaceNormal;
-  vec4 L = uLightPosition - uReferencePoint;
   
-  float Fatt = min(
-    1.0/distance(
-      vec3(uReferencePoint), vec3(uLightPosition)
-    ),
-    1.0
-  );
-  
-  float itR = 
-  (uKa[0] * uIla[0] + Fatt * uIl[0] * (uKd[0] * dot(vec3(N), vec3(L))))/255.0;
-  
-  float itG = 
-  (uKa[1] * uIla[1] + Fatt * uIl[1] * (uKd[1] * dot(vec3(N), vec3(L) )))/255.0;
-  
-  float itB = 
-  (uKa[2] * uIla[2] + Fatt * uIl[2] * (uKd[2] * dot(vec3(N), vec3(L) )))/255.0;
-  
-  gl_FragColor = vec4(itR, itG, itB, 1.0);
+  // vec3 N = normalize(normalInterpolation);
+  vec3 N  = normalize(uFaceNormal.xyz);
+  vec3 L  = normalize(vec3(uLightPosition - uReferencePoint));
+  vec3 V  = vec3(uObserver - uReferencePoint);
+
+  vec3 R = normalize( reflect(-L, N) );
+  vec3 S = normalize(vec3(V));
+
+  float ndotl = max(dot(N, L), 0.0);
+  float rdots = max(dot(R, S), 0.0);
+
+  gl_FragColor = vec4((uKa * uIla + uIl * (uKd * ndotl + uKs * pow(rdots,uN)))/255.0,1.0);
+
+
+
 }
 `;
 
@@ -54,19 +46,15 @@ precision mediump float;
 #endif
 
 // Transformation matrices
-uniform mat4 vSRCMatrix;
-uniform mat4 vProjectionMatrix;
-uniform mat4 vViewMatrix;
-
 uniform mat4 uModelViewMatrix;
 uniform mat4 uProjectionMatrix;
 
-uniform mat4 uViewMatrix;
-
 attribute vec3 aPosition;
 
+varying vec3 normalInterpolation;
+
 // This is a varying variable, which in shader terms means that it will be passed from the vertex shader to the fragment shader
-varying vec2 vTexCoord;
+varying vec2 vTexvec3;
 
 mat4 transpose(mat4 m) {
   return mat4(m[0][0], m[1][0], m[2][0], m[3][0],
@@ -75,23 +63,15 @@ mat4 transpose(mat4 m) {
               m[0][3], m[1][3], m[2][3], m[3][3]);
 }
 
-// void main() {
-  
-//   vec4 normalizedPosition = vec4(aPosition, 1.0);
-
-//   mat4 concatenatedMatrix = transpose(vViewMatrix) * transpose(vProjectionMatrix) * transpose(vSRCMatrix);
-
-//   gl_Position=  normalizedPosition * concatenatedMatrix;
-
-//   gl_Position.xy /= gl_Position.w;
-// }
 void main(){
-mat4 customConcatenated = transpose(vViewMatrix) * transpose(vProjectionMatrix) * transpose(vSRCMatrix);
 
-  vec4 concatenatedPosition = customConcatenated * vec4(aPosition, 1.0);
-  concatenatedPosition.xy /= concatenatedPosition.w;
+  // vec4 concatenatedPosition = customConcatenated * vec4(aPosition, 1.0);
+  // // concatenatedPosition.xy /= concatenatedPosition.w;
 
-  vec4 viewModelPosition = uModelViewMatrix * concatenatedPosition;
+  // vec4 viewModelPosition = uModelViewMatrix * concatenatedPosition;
+  // gl_Position = uProjectionMatrix * viewModelPosition;
+  vec4 viewModelPosition = uModelViewMatrix * vec4(aPosition, 1.0);
+  normalInterpolation = viewModelPosition.xyz;
   gl_Position = uProjectionMatrix * viewModelPosition;
 }
 `;

@@ -1,6 +1,12 @@
-import { Coord } from 'utils/interfaces';
+import { vec3 } from 'utils/interfaces';
 import p5Types from 'p5';
-import { translate, toDegrees, rotate, scale } from 'utils/calculate';
+import {
+  translate,
+  toDegrees,
+  rotate,
+  scale,
+  matrixMul,
+} from 'utils/calculate';
 
 import * as numJS from 'numjs';
 import { Camera } from 'components/Camera';
@@ -8,31 +14,31 @@ import { getNormal } from 'utils/others';
 import { Light } from 'components/Light';
 
 interface SphereProps {
-  center: Coord;
+  center: vec3;
   radius: number;
   intensityM: number;
   intensityP: number;
   name: string;
-  Ka: Coord;
-  Kd: Coord;
-  Ks: Coord;
+  Ka: vec3;
+  Kd: vec3;
+  Ks: vec3;
   Ns: number;
 }
 
 export default class Sphere {
   readonly id: String;
 
-  center: Coord;
+  center: vec3;
   radius: number;
 
-  Ka: Coord;
-  Kd: Coord;
-  Ks: Coord;
-  n: number = 1;
+  Ka: vec3; //Fator de Reflexão Ambiente
+  Kd: vec3; //Fator de Reflexão Difusa
+  Ks: vec3; //Fator de Reflexão Especular
+  n: number = 1; //Shininess
 
-  vertice: Coord[][] = [];
+  vertice: vec3[][] = [];
   facesPoints: number[][][] = [];
-  faces: Coord[][] = [];
+  faces: vec3[][] = [];
 
   name: string;
 
@@ -82,15 +88,15 @@ export default class Sphere {
     }
 
     for (let t = 0; t < props.intensityM; t++) {
-      this.vertice[0][t] = extremesPoint[1] as Coord;
-      this.vertice[this.intensityP + 1][t] = extremesPoint[0] as Coord;
+      this.vertice[0][t] = extremesPoint[1] as vec3;
+      this.vertice[this.intensityP + 1][t] = extremesPoint[0] as vec3;
     }
 
     //Os pontos das faces não irão mudar de posição, então eles são definidos apenas uma vez
     this.facesPoints = this.defineFacesPoints();
 
     //As faces são definidas a cada alteração para que elas sejam desenhadas de forma correta e economizando cálculos
-    this.faces = this.defineFace() as Coord[][];
+    this.faces = this.defineFace() as vec3[][];
   }
 
   private generateID(length: number): string {
@@ -136,6 +142,7 @@ export default class Sphere {
           this.vertice[face[0]][face[1]][0],
           this.vertice[face[0]][face[1]][1],
           this.vertice[face[0]][face[1]][2],
+          1,
         ]);
       }
       faces.push(faceP);
@@ -191,6 +198,11 @@ export default class Sphere {
     const Nvector = p5.createVector(...camera.N);
 
     p5.push();
+    const distance = p5
+      .createVector(...camera.N)
+      .dot(p5.createVector(...camera.VRP).sub(p5.createVector(...this.center)));
+
+    if (distance < camera.near || distance > camera.far) return;
 
     for (let i = 0; i < this.faces.length; i++) {
       //Vai normalizar a face
@@ -198,33 +210,26 @@ export default class Sphere {
       const dot = Nvector.dot(faces);
 
       //Caso a face esteja na frente da camera, ela será desenhada
-      if (dot < 0.0000001) continue;
-
-      shader.setUniform('uKa', this.Ka);
-      shader.setUniform('uKd', this.Kd);
-      shader.setUniform('uKs', this.Ks);
-      shader.setUniform('uLightPosition', light.position);
-      shader.setUniform('uObserver', camera.VRP);
-      shader.setUniform('uN', this.n);
-      shader.setUniform('uIla', light.ambientLightIntensity);
-      shader.setUniform('uIl', light.lightIntensity);
-      shader.setUniform('uFaceNormal', [faces.x, faces.y, faces.z]);
-
-      // const color = light.getFaceColor(
-      //   this.faces[i],
-      //   camera.VRP,
-      //   this.Ka,
-      //   this.Kd,
-      //   this.Ks,
-      //   2,
-      //   p5
-      // );
+      if (dot < 0.00000001) continue;
 
       p5.beginShape();
       for (let j = 0; j < this.faces[i].length; j++) {
-        const face = this.faces[i][j];
+        const actualFace = this.faces[i][j];
+
+        const face = matrixMul(actualFace, camera.concatedMatrix) as vec3;
+        shader.setUniform('uKa', [...this.Ka]);
+        shader.setUniform('uKd', [...this.Kd]);
+        shader.setUniform('uKs', [...this.Ks]);
+        shader.setUniform('uLightPosition', [...light.position]);
+        shader.setUniform('uObserver', [...camera.VRP]);
+        shader.setUniform('uN', this.n);
+        shader.setUniform('uIla', [...light.ambientLightIntensity]);
+        shader.setUniform('uIl', [...light.lightIntensity]);
+        shader.setUniform('uFaceNormal', [...face]);
+
         p5.vertex(face[0], face[1], face[2]);
       }
+
       p5.endShape(p5.CLOSE);
     }
     p5.pop();
@@ -239,23 +244,26 @@ export default class Sphere {
   }
 
   translateSphere(tX: number, tY: number, tZ: number) {
-    this.center = translate(this.center, tX, tY, tZ) as Coord;
-    this.vertice = this.vertice.map((coord) =>
-      translate(coord, tX, tY, tZ)
-    ) as Coord[][];
+    this.center = translate(this.center, tX, tY, tZ) as vec3;
+    this.vertice = this.vertice.map((vec3) =>
+      translate(vec3, tX, tY, tZ)
+    ) as vec3[][];
+    this.faces = this.defineFace() as vec3[][];
   }
 
   rotateSphere(angle: number, option: 'X' | 'Y' | 'Z') {
-    this.center = rotate(this.center, angle, option) as Coord;
-    this.vertice = this.vertice.map((coord) =>
-      rotate(coord, angle, option)
-    ) as Coord[][];
+    this.center = rotate(this.center, angle, option) as vec3;
+    this.vertice = this.vertice.map((vec3) =>
+      rotate(vec3, angle, option)
+    ) as vec3[][];
+    this.faces = this.defineFace() as vec3[][];
   }
 
   scaleSphere(sX: number, sY: number, sZ: number) {
-    this.center = scale(this.center, sX, sY, sZ) as Coord;
-    this.vertice = this.vertice.map((coord) =>
-      scale(coord, sX, sY, sZ)
-    ) as Coord[][];
+    this.center = scale(this.center, sX, sY, sZ) as vec3;
+    this.vertice = this.vertice.map((vec3) =>
+      scale(vec3, sX, sY, sZ)
+    ) as vec3[][];
+    this.faces = this.defineFace() as vec3[][];
   }
 }
