@@ -60,10 +60,11 @@ export function rotate(
   //Verifica se é todas as posições ou apenas uma
   if (matrix.length === 3) {
     return matrixMul(matrix as Coord, rotO);
-  } else
+  } else {
     return matrix.map((coord) => {
       return matrixMul(coord as Coord, rotO);
     }) as Coord[];
+  }
 }
 
 export function scale(
@@ -82,24 +83,25 @@ export function scale(
   //Verifica se é todas as posições ou apenas uma
   if (matrix.length === 3) {
     return matrixMul(matrix as Coord, matrixCalc);
-  } else
+  } else {
     return matrix.map((coord) => {
       return matrixMul(coord as Coord, matrixCalc);
     }) as Coord[];
+  }
 }
 
 //Faz a multiplicação de matrizes
 function matrixMul(coord: Coord, matrixCalc: number[][]): Coord | Coord[] {
   //Vai adicionar o "1" necessário para multiplicar a matriz pelo vetor
-  coord.push(1);
+  if (coord.length === 3) coord.push(1);
   //Multiplica a matriz pelo vetor
-  return (
-    numjs
-      .dot(matrixCalc, numjs.array<any>(coord))
 
+  const result = numjs.dot(numjs.array(matrixCalc), numjs.array<any>(coord));
+  return (
+    result
       .tolist()
       //Corta o "1" que foi adicionado
-      .slice(0, 3)
+      .slice(0, 3) as Coord[] | Coord
   );
 }
 
