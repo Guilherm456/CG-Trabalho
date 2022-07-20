@@ -1,14 +1,14 @@
-import { Coord } from './interfaces';
+import { Coord, vec4 } from './interfaces';
 import * as numjs from 'numjs';
 
 type MatrixN = number[][];
 
 export function translate(
-  matrix: Coord[] | Coord,
+  matrix: Coord[] | Coord | vec4,
   dx: number,
   dy: number,
   dz: number
-) {
+): Coord[] | Coord | vec4 {
   const matrixCalc: MatrixN = [
     [1, 0, 0, dx],
     [0, 1, 0, dy],
@@ -17,8 +17,8 @@ export function translate(
   ];
 
   //Verifica se é todas as posições ou apenas uma
-  if (matrix.length === 3) {
-    return matrixMul(matrix as Coord, matrixCalc);
+  if (matrix[0].constructor !== Array) {
+    return matrixMul(matrix as Coord | vec4, matrixCalc);
   } else
     return matrix.map((coord) => {
       return matrixMul(coord as Coord, matrixCalc);
@@ -26,10 +26,10 @@ export function translate(
 }
 
 export function rotate(
-  matrix: Coord[] | Coord,
+  matrix: Coord[] | Coord | vec4,
   ang: number,
   option: 'X' | 'Y' | 'Z'
-) {
+): Coord[] | Coord | vec4 {
   let rotO: number[][];
   ang = toDegrees(ang);
   if (option === 'X') {
@@ -58,8 +58,8 @@ export function rotate(
   }
 
   //Verifica se é todas as posições ou apenas uma
-  if (matrix.length === 3) {
-    return matrixMul(matrix as Coord, rotO);
+  if (matrix[0].constructor !== Array) {
+    return matrixMul(matrix as Coord | vec4, rotO);
   } else {
     return matrix.map((coord) => {
       return matrixMul(coord as Coord, rotO);
@@ -68,11 +68,11 @@ export function rotate(
 }
 
 export function scale(
-  matrix: Coord[] | Coord,
+  matrix: Coord[] | Coord | vec4,
   sX: number,
   sY: number,
   sZ: number
-) {
+): Coord[] | Coord | vec4 {
   const matrixCalc = [
     [sX, 0, 0, 0],
     [0, sY, 0, 0],
@@ -81,8 +81,8 @@ export function scale(
   ];
 
   //Verifica se é todas as posições ou apenas uma
-  if (matrix.length === 3) {
-    return matrixMul(matrix as Coord, matrixCalc);
+  if (matrix[0].constructor !== Array) {
+    return matrixMul(matrix as Coord | vec4, matrixCalc);
   } else {
     return matrix.map((coord) => {
       return matrixMul(coord as Coord, matrixCalc);
@@ -91,18 +91,24 @@ export function scale(
 }
 
 //Faz a multiplicação de matrizes
-function matrixMul(coord: Coord, matrixCalc: number[][]): Coord | Coord[] {
+export function matrixMul(
+  coord: Coord | vec4,
+  matrixCalc: number[][]
+): Coord | Coord[] | vec4 {
   //Vai adicionar o "1" necessário para multiplicar a matriz pelo vetor
   if (coord.length === 3) coord.push(1);
+
   //Multiplica a matriz pelo vetor
 
   const result = numjs.dot(numjs.array(matrixCalc), numjs.array<any>(coord));
-  return (
-    result
-      .tolist()
-      //Corta o "1" que foi adicionado
-      .slice(0, 3) as Coord[] | Coord
-  );
+  if (coord.length > 3) return result.tolist() as Coord;
+  else
+    return (
+      result
+        .tolist()
+        //Corta o "1" que foi adicionado
+        .slice(0, 3) as Coord[] | Coord
+    );
 }
 
 export function transpose(matrix: Coord[]): Coord[] {
