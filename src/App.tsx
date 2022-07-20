@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { Pivot, PivotItem, initializeIcons } from '@fluentui/react';
 
 import Canva from './components/Canva';
-import { ObjectsProviderContext } from 'components/Provider';
 
 import { PivotSphere } from 'interface/pivot_sphere';
 import { PivotScene } from 'interface/pivot_scene';
@@ -14,7 +13,11 @@ function App() {
     initializeIcons();
   }, []);
 
-  const p: React.CSSProperties = { padding: 8 };
+  const p: React.CSSProperties = {
+    padding: 8,
+    maxHeight: '85vh',
+    overflowY: 'auto',
+  };
   return (
     <div style={{ display: 'flex', height: '95vh' }}>
       <div className='canvaArea' style={{ flexGrow: 1 }}>
