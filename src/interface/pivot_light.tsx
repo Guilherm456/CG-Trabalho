@@ -9,7 +9,7 @@ import {
 } from '@fluentui/react';
 import { ObjectsProviderContext } from 'components/Provider';
 import { useState } from 'react';
-import { Coord } from 'utils/interfaces';
+import { vec3 } from 'utils/interfaces';
 
 const gapStack = { childrenGap: 5 };
 
@@ -69,12 +69,12 @@ export const PivotLight = () => {
   const [direction, setDirection] = useState<'X' | 'Y' | 'Z'>(light.direction);
 
   const handleEditLight = () => {
-    const ambientI: Coord = [
+    const ambientI: vec3 = [
       parseFloat(ambientLightIntensity[0]),
       parseFloat(ambientLightIntensity[1]),
       parseFloat(ambientLightIntensity[2]),
     ];
-    const lightI: Coord = [
+    const lightI: vec3 = [
       parseFloat(intensityLight[0]),
       parseFloat(intensityLight[1]),
       parseFloat(intensityLight[2]),
@@ -83,7 +83,7 @@ export const PivotLight = () => {
 
     light.setRotate(rotate, Number(angle), direction);
 
-    const position: Coord = [Number(x), Number(y), Number(z)];
+    const position: vec3 = [Number(x), Number(y), Number(z)];
     light.setPosition(position);
   };
 

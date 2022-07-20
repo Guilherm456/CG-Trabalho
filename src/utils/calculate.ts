@@ -1,14 +1,14 @@
-import { Coord, vec4 } from './interfaces';
+import { vec3, vec4 } from './interfaces';
 import * as numjs from 'numjs';
 
 type MatrixN = number[][];
 
 export function translate(
-  matrix: Coord[] | Coord | vec4,
+  matrix: vec3[] | vec3 | vec4,
   dx: number,
   dy: number,
   dz: number
-): Coord[] | Coord | vec4 {
+): vec3[] | vec3 | vec4 {
   const matrixCalc: MatrixN = [
     [1, 0, 0, dx],
     [0, 1, 0, dy],
@@ -18,18 +18,18 @@ export function translate(
 
   //Verifica se é todas as posições ou apenas uma
   if (matrix[0].constructor !== Array) {
-    return matrixMul(matrix as Coord | vec4, matrixCalc);
+    return matrixMul(matrix as vec3 | vec4, matrixCalc);
   } else
-    return matrix.map((coord) => {
-      return matrixMul(coord as Coord, matrixCalc);
-    }) as Coord[];
+    return matrix.map((vec3) => {
+      return matrixMul(vec3 as vec3, matrixCalc);
+    }) as vec3[];
 }
 
 export function rotate(
-  matrix: Coord[] | Coord | vec4,
+  matrix: vec3[] | vec3 | vec4,
   ang: number,
   option: 'X' | 'Y' | 'Z'
-): Coord[] | Coord | vec4 {
+): vec3[] | vec3 | vec4 {
   let rotO: number[][];
   ang = toDegrees(ang);
   if (option === 'X') {
@@ -59,20 +59,20 @@ export function rotate(
 
   //Verifica se é todas as posições ou apenas uma
   if (matrix[0].constructor !== Array) {
-    return matrixMul(matrix as Coord | vec4, rotO);
+    return matrixMul(matrix as vec3 | vec4, rotO);
   } else {
-    return matrix.map((coord) => {
-      return matrixMul(coord as Coord, rotO);
-    }) as Coord[];
+    return matrix.map((vec3) => {
+      return matrixMul(vec3 as vec3, rotO);
+    }) as vec3[];
   }
 }
 
 export function scale(
-  matrix: Coord[] | Coord | vec4,
+  matrix: vec3[] | vec3 | vec4,
   sX: number,
   sY: number,
   sZ: number
-): Coord[] | Coord | vec4 {
+): vec3[] | vec3 | vec4 {
   const matrixCalc = [
     [sX, 0, 0, 0],
     [0, sY, 0, 0],
@@ -82,36 +82,36 @@ export function scale(
 
   //Verifica se é todas as posições ou apenas uma
   if (matrix[0].constructor !== Array) {
-    return matrixMul(matrix as Coord | vec4, matrixCalc);
+    return matrixMul(matrix as vec3 | vec4, matrixCalc);
   } else {
-    return matrix.map((coord) => {
-      return matrixMul(coord as Coord, matrixCalc);
-    }) as Coord[];
+    return matrix.map((vec3) => {
+      return matrixMul(vec3 as vec3, matrixCalc);
+    }) as vec3[];
   }
 }
 
 //Faz a multiplicação de matrizes
 export function matrixMul(
-  coord: Coord | vec4,
+  vec3: vec3 | vec4,
   matrixCalc: number[][]
-): Coord | Coord[] | vec4 {
+): vec3 | vec3[] | vec4 {
   //Vai adicionar o "1" necessário para multiplicar a matriz pelo vetor
-  if (coord.length === 3) coord.push(1);
+  if (vec3.length === 3) vec3.push(1);
 
   //Multiplica a matriz pelo vetor
 
-  const result = numjs.dot(numjs.array(matrixCalc), numjs.array<any>(coord));
-  if (coord.length > 3) return result.tolist() as Coord;
+  const result = numjs.dot(numjs.array(matrixCalc), numjs.array<any>(vec3));
+  if (vec3.length > 3) return result.tolist() as vec3;
   else
     return (
       result
         .tolist()
         //Corta o "1" que foi adicionado
-        .slice(0, 3) as Coord[] | Coord
+        .slice(0, 3) as vec3[] | vec3
     );
 }
 
-export function transpose(matrix: Coord[]): Coord[] {
+export function transpose(matrix: vec3[]): vec3[] {
   return numjs.array(matrix).transpose().tolist();
 }
 

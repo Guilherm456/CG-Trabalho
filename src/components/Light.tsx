@@ -1,29 +1,29 @@
-import { Coord, vec4 } from 'utils/interfaces';
+import { vec3, vec4 } from 'utils/interfaces';
 
 import { rotate } from 'utils/calculate';
 
 export class Light {
   public position: vec4;
-  public ambientLightIntensity: Coord;
-  public lightIntensity: Coord;
+  public ambientLightIntensity: vec3;
+  public lightIntensity: vec3;
 
   public rotate: boolean = false;
   public angle: number = 1;
   public direction: 'X' | 'Y' | 'Z' = 'Z';
 
-  constructor(position: Coord, Ila: Coord, Ia: Coord) {
+  constructor(position: vec3, Ila: vec3, Ia: vec3) {
     this.position = [...position, 1];
 
     this.ambientLightIntensity = Ila;
     this.lightIntensity = Ia;
   }
 
-  setIntensity(Ila?: Coord, Ia?: Coord) {
+  setIntensity(Ila?: vec3, Ia?: vec3) {
     this.ambientLightIntensity = Ila ?? this.ambientLightIntensity;
     this.lightIntensity = Ia ?? this.lightIntensity;
   }
 
-  setPosition(position: Coord) {
+  setPosition(position: vec3) {
     this.position = [...position, 1];
   }
 
@@ -38,8 +38,8 @@ export class Light {
   }
 
   // getFaceColor(
-  //   face: Coord[],
-  //   observer: Coord,
+  //   face: vec3[],
+  //   observer: vec3,
   //   Ka: number[],
   //   Kd: number[],
   //   Ks: number[],
@@ -82,7 +82,7 @@ export class Light {
   //   return [ItR, ItG, ItB];
   // }
 
-  // getCentroid(face: Coord[]) {
+  // getCentroid(face: vec3[]) {
   //   const x = [
   //     Math.min(...face.map(([x]) => x)),
   //     Math.max(...face.map(([x]) => x)),

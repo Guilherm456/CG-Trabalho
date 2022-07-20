@@ -1,22 +1,22 @@
-import { Coord, Port } from 'utils/interfaces';
+import { vec3, Port } from 'utils/interfaces';
 import * as numjs from 'numjs';
 
 import p5Types from 'p5';
 const p5 = p5Types.Vector;
 
 export class Camera {
-  public VRP: Coord;
-  public P: Coord;
+  public VRP: vec3;
+  public P: vec3;
 
   public perspective: boolean;
 
-  public N: Coord = [0, 0, 0];
-  public U: Coord = [0, 0, 0];
-  public V: Coord = [0, 0, 0];
+  public N: vec3 = [0, 0, 0];
+  public U: vec3 = [0, 0, 0];
+  public V: vec3 = [0, 0, 0];
 
-  public viewUp: Coord = [0, 1, 0];
+  public viewUp: vec3 = [0, 1, 0];
   public projectionPlanDistance: number = 1;
-  private projectionPlan: Coord = [0, 0, 0];
+  private projectionPlan: vec3 = [0, 0, 0];
 
   public ViewPort: Port;
   public WindowPort: Port;
@@ -33,13 +33,13 @@ export class Camera {
   public sensitivity: number = 1;
 
   constructor(
-    position: Coord,
-    target: Coord,
+    position: vec3,
+    target: vec3,
     viewport: Port,
     windowPort: Port,
     far: number,
     near: number,
-    lookAp?: Coord,
+    lookAp?: vec3,
     planCenterDistance?: number,
     perspective?: boolean
   ) {
@@ -76,7 +76,7 @@ export class Camera {
     this.getAllValues();
   }
 
-  public updateVRP_P(VRP: Coord, P: Coord) {
+  public updateVRP_P(VRP: vec3, P: vec3) {
     this.VRP = VRP;
     this.P = P;
 
@@ -100,7 +100,7 @@ export class Camera {
       zVRP + (zP - zVRP * projectionPlanDistance),
     ];
   }
-  public setviewUp(viewUp: Coord) {
+  public setviewUp(viewUp: vec3) {
     this.viewUp = viewUp;
     this.getAllValues();
   }
@@ -127,30 +127,30 @@ export class Camera {
     this.concatedMatrix = this.getConcatedMatrix();
   }
 
-  private getN(): Coord {
+  private getN(): vec3 {
     const { VRP, P } = this;
 
     const PVector = new p5(...P);
     const VRPVector = new p5(...VRP);
-    return VRPVector.sub(PVector).normalize().array() as Coord;
+    return VRPVector.sub(PVector).normalize().array() as vec3;
   }
 
-  private getV(): Coord {
+  private getV(): vec3 {
     const { N, viewUp } = this;
 
     const YVector = new p5(...viewUp);
     const NVector = new p5(...N);
 
     const scalar = YVector.dot(NVector);
-    return p5.sub(YVector, NVector.mult(scalar)).normalize().array() as Coord;
+    return p5.sub(YVector, NVector.mult(scalar)).normalize().array() as vec3;
   }
 
-  private getU(): Coord {
+  private getU(): vec3 {
     const { V, N } = this;
 
     const NVector = new p5(...N);
     const VVector = new p5(...V);
-    return VVector.cross(NVector).normalize().array() as Coord;
+    return VVector.cross(NVector).normalize().array() as vec3;
   }
 
   convertToSRC(): number[][] {
@@ -251,16 +251,16 @@ export class Camera {
   }
 
   updatePositionCamera(walked: number, axios: 'X' | 'Y' | 'Z', VRP: boolean) {
-    const coord = VRP ? this.VRP : this.P;
+    const vec3 = VRP ? this.VRP : this.P;
 
-    if (axios === 'X') coord[0] += walked;
+    if (axios === 'X') vec3[0] += walked;
 
-    if (axios === 'Y') coord[1] += walked;
+    if (axios === 'Y') vec3[1] += walked;
 
-    if (axios === 'Z') coord[2] += walked;
+    if (axios === 'Z') vec3[2] += walked;
 
-    if (VRP) this.VRP = coord;
-    else this.P = coord;
+    if (VRP) this.VRP = vec3;
+    else this.P = vec3;
 
     this.getAllValues();
   }
