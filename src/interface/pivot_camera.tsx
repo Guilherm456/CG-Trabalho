@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Stack,
   TextField,
@@ -8,10 +8,12 @@ import {
   VerticalDivider,
   ChoiceGroup,
   IChoiceGroupOption,
+  Slider,
 } from '@fluentui/react';
 import { ObjectsProviderContext } from 'components/Provider';
 
 import { Port } from 'utils/interfaces';
+import { arrayNumberToArrayString } from 'utils/others';
 
 const gapStack = { childrenGap: 5 };
 
@@ -33,6 +35,21 @@ export const PivotCamera = () => {
   ) => {
     setPerspective(option?.key as string);
     camera.setTypePerspective((option?.key as string) === 'p');
+  };
+
+  const [near, setNear] = useState(camera.near);
+  const [far, setFar] = useState(camera.far);
+
+  const handleChangeDistance = () => {
+    camera.setDistances(far, near);
+  };
+
+  const [distanceProjection, setDistanceProjection] = useState(
+    camera.projectionPlanDistance * 100
+  );
+
+  const handleChangeDistanceProjection = () => {
+    camera.setPlanDistance(distanceProjection);
   };
 
   const [xVRP, setXVRP] = useState(camera.VRP[0].toString());
@@ -75,14 +92,51 @@ export const PivotCamera = () => {
     camera.setWindowSize(windowPort, viewport);
   };
 
+  const [viewUp, setviewUp] = useState(arrayNumberToArrayString(camera.viewUp));
+  const handleChangeviewUp = () => {
+    camera.setviewUp([Number(viewUp[0]), Number(viewUp[1]), Number(viewUp[2])]);
+  };
+
+  const [sensitivity, setsensitivity] = useState(camera.sensitivity);
+  const handleChangesensitivity = () => {
+    camera.setSenitivity(sensitivity);
+  };
+
   return (
     <Stack tokens={{ childrenGap: 5 }}>
-      <Text variant='xLarge'>Editar câmera</Text>
+      <Slider
+        label='Distância máxima'
+        max={10000}
+        step={100}
+        value={far}
+        onChange={(e) => setFar(e)}
+        snapToStep
+      />
+      <Slider
+        label='Distância mínima'
+        max={camera.far}
+        value={near}
+        onChange={(e) => setNear(e)}
+      />
+      <DefaultButton text='Mudar distâncias' onClick={handleChangeDistance} />
+      <VerticalDivider />
       <ChoiceGroup
         label='Selecione o tipo de visualização'
         selectedKey={perspective}
         onChange={handleChangePerspectiveType}
         options={optionsCamera}
+      />
+      <VerticalDivider />
+      <Slider
+        label='Distância do centro do plano de projeção'
+        min={0}
+        max={100}
+        value={distanceProjection}
+        onChange={(v) => setDistanceProjection(v)}
+      />
+      <DefaultButton
+        text='Mudar distância'
+        onClick={handleChangeDistanceProjection}
       />
       <VerticalDivider />
       <Label>VRP</Label>
@@ -196,6 +250,41 @@ export const PivotCamera = () => {
       <DefaultButton
         text='Salvar WindowSize'
         onClick={handleChangeWindowSize}
+      />
+      <VerticalDivider />
+      <Text variant='mediumPlus'>View Up</Text>
+      <Stack horizontal tokens={gapStack}>
+        <TextField
+          label='X'
+          value={viewUp[0]}
+          onChange={(e, n) => setviewUp([n!, viewUp[1], viewUp[2]])}
+          type='number'
+        />
+        <TextField
+          label='Y'
+          value={viewUp[1]}
+          onChange={(e, n) => setviewUp([viewUp[0], n!, viewUp[2]])}
+          type='number'
+        />
+        <TextField
+          label='Z'
+          value={viewUp[2]}
+          onChange={(e, n) => setviewUp([viewUp[0], viewUp[1], n!])}
+          type='number'
+        />
+      </Stack>
+      <DefaultButton text='Salvar View Up' onClick={handleChangeviewUp} />
+      <VerticalDivider />
+      <Slider
+        label='Sensibilidade'
+        min={1}
+        max={100}
+        value={sensitivity}
+        onChange={(e) => setsensitivity(e)}
+      />
+      <DefaultButton
+        text='Mudar sensibilidade'
+        onClick={handleChangesensitivity}
       />
     </Stack>
   );
