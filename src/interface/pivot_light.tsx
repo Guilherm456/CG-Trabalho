@@ -18,8 +18,17 @@ const optionsDropdown = [
   { key: 'Y', text: 'Y' },
   { key: 'Z', text: 'Z' },
 ];
+
+const optionsDropdownType = [
+  { key: 'flat', text: 'Flat Shading' },
+  { key: 'phong', text: 'Phong Shading' },
+  { key: 'gouraud', text: 'Gouraud Shading' },
+];
 export const PivotLight = () => {
   const { light } = ObjectsProviderContext();
+
+  const [typeShading, setTypeShading] = useState('flat');
+
   const [intensityLight, setIntensityLight] = useState([
     light.lightIntensity[0].toString(),
     light.lightIntensity[1].toString(),
@@ -72,7 +81,7 @@ export const PivotLight = () => {
     ];
     light.setIntensity(ambientI, lightI);
 
-    light.setRotate(rotate, Number(angle));
+    light.setRotate(rotate, Number(angle), direction);
 
     const position: Coord = [Number(x), Number(y), Number(z)];
     light.setPosition(position);
@@ -80,6 +89,12 @@ export const PivotLight = () => {
 
   return (
     <Stack tokens={gapStack}>
+      <Dropdown
+        label='Tipo de sombreamento'
+        options={optionsDropdownType}
+        selectedKey={typeShading}
+        onChange={(e, o) => setTypeShading(o?.key as string)}
+      />
       <Text variant='xLarge'>Intensidade da iluminação</Text>
 
       <Stack horizontal tokens={gapStack}>
@@ -152,6 +167,7 @@ export const PivotLight = () => {
       />
       <Dropdown
         selectedKey={direction}
+        disabled={!rotate}
         onChange={(e, o) => setDirection(o?.key as 'X' | 'Y' | 'Z')}
         options={optionsDropdown}
       />

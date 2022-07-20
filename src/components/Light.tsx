@@ -1,9 +1,9 @@
-import { Coord } from 'utils/interfaces';
+import { Coord, vec4 } from 'utils/interfaces';
 
 import { rotate } from 'utils/calculate';
 
 export class Light {
-  public position: Coord;
+  public position: vec4;
   public ambientLightIntensity: Coord;
   public lightIntensity: Coord;
 
@@ -12,7 +12,7 @@ export class Light {
   public direction: 'X' | 'Y' | 'Z' = 'Z';
 
   constructor(position: Coord, Ila: Coord, Ia: Coord) {
-    this.position = position;
+    this.position = [...position, 1];
 
     this.ambientLightIntensity = Ila;
     this.lightIntensity = Ia;
@@ -24,7 +24,7 @@ export class Light {
   }
 
   setPosition(position: Coord) {
-    this.position = position;
+    this.position = [...position, 1];
   }
 
   setRotate(rotate: boolean, angle?: number, direction?: 'X' | 'Y' | 'Z') {
@@ -34,7 +34,7 @@ export class Light {
   }
 
   rotateLight() {
-    this.position = rotate(this.position, this.angle, this.direction) as Coord;
+    this.position = rotate(this.position, this.angle, this.direction) as vec4;
   }
 
   // getFaceColor(
