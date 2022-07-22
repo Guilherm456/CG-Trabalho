@@ -31,7 +31,10 @@ export function rotate(
   option: 'X' | 'Y' | 'Z'
 ): vec3[] | vec3 | vec4 {
   let rotO: number[][];
+  //Transforma o angulo
   ang = toDegrees(ang);
+
+  //Verifica a opção de rotação e cria a matriz de rotação correspondente
   if (option === 'X') {
     rotO = [
       [1, 0, 0, 0],
@@ -84,6 +87,7 @@ export function scale(
   if (matrix[0].constructor !== Array) {
     return matrixMul(matrix as vec3 | vec4, matrixCalc);
   } else {
+    //Caso seja uma matriz, multiplica cada posição
     return matrix.map((vec3) => {
       return matrixMul(vec3 as vec3, matrixCalc);
     }) as vec3[];
@@ -99,9 +103,10 @@ export function matrixMul(
   if (vec3.length === 3) vec3.push(1);
 
   //Multiplica a matriz pelo vetor
-
   const result = numjs.dot(numjs.array(matrixCalc), numjs.array<any>(vec3));
+
   if (vec3.length > 3) return result.tolist() as vec3;
+  //Se era um vetor, retira o "1"
   else
     return (
       result

@@ -95,8 +95,37 @@ export const PivotLight = () => {
         selectedKey={typeShading}
         onChange={(e, o) => setTypeShading(o?.key as string)}
       />
-      <Text variant='xLarge'>Intensidade da iluminação</Text>
 
+      <VerticalDivider />
+      <Text variant='xLarge'>Posição</Text>
+      <Stack horizontal tokens={gapStack}>
+        <TextField label='X' value={x} onChange={(e, v) => setX(v!)} />
+        <TextField label='Y' value={y} onChange={(e, v) => setY(v!)} />
+        <TextField label='Z' value={z} onChange={(e, v) => setZ(v!)} />
+      </Stack>
+      <VerticalDivider />
+
+      <Text variant='xLarge'>Rotação</Text>
+      <Checkbox
+        label='Rotacionar'
+        checked={rotate}
+        onChange={(e, c) => setRotate(c!)}
+      />
+
+      <TextField
+        label='Angulo da rotação'
+        disabled={!rotate}
+        value={angle}
+        onChange={(e, n) => setAngle(n!)}
+      />
+      <Dropdown
+        selectedKey={direction}
+        disabled={!rotate}
+        onChange={(e, o) => setDirection(o?.key as 'X' | 'Y' | 'Z')}
+        options={optionsDropdown}
+      />
+      <VerticalDivider />
+      <Text variant='xLarge'>Intensidade da iluminação</Text>
       <Stack horizontal tokens={gapStack}>
         <TextField
           label='R'
@@ -145,32 +174,7 @@ export const PivotLight = () => {
           max={255}
         />
       </Stack>
-      <Stack horizontal tokens={gapStack}>
-        <TextField label='X' value={x} onChange={(e, v) => setX(v!)} />
-        <TextField label='Y' value={y} onChange={(e, v) => setY(v!)} />
-        <TextField label='Z' value={z} onChange={(e, v) => setZ(v!)} />
-      </Stack>
-      <VerticalDivider />
 
-      <Text variant='xLarge'>Rotação</Text>
-      <Checkbox
-        label='Rotacionar'
-        checked={rotate}
-        onChange={(e, c) => setRotate(c!)}
-      />
-
-      <TextField
-        label='Angulo da rotação'
-        disabled={!rotate}
-        value={angle}
-        onChange={(e, n) => setAngle(n!)}
-      />
-      <Dropdown
-        selectedKey={direction}
-        disabled={!rotate}
-        onChange={(e, o) => setDirection(o?.key as 'X' | 'Y' | 'Z')}
-        options={optionsDropdown}
-      />
       <PrimaryButton onClick={handleEditLight}>Editar</PrimaryButton>
     </Stack>
   );

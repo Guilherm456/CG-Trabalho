@@ -5,7 +5,7 @@ import {
   Text,
   Slider,
   TextField,
-  DefaultButton,
+  PrimaryButton,
 } from '@fluentui/react';
 import { ObjectsProviderContext } from 'components/Provider';
 import Sphere from 'geometry/spheres';
@@ -84,63 +84,72 @@ export const ModalContent = (props: ModalSphere) => {
             value={radius}
             onChange={(e, v) => setRadius(e)}
           />
-          <Text variant='mediumPlus'>Ka</Text>
+          <Text variant='xLarge'>Ka</Text>
           <Stack horizontal tokens={gapStack}>
             <TextField
+              label='R'
               value={Ka[0]}
               onChange={(e) => setKa([e.currentTarget.value, Ka[1], Ka[2]])}
               min={0.0}
               max={1.0}
             />
             <TextField
+              label='G'
               value={Ka[1]}
               onChange={(e) => setKa([Ka[0], e.currentTarget.value, Ka[2]])}
               min={0.0}
               max={1.0}
             />
             <TextField
+              label='B'
               value={Ka[2]}
               onChange={(e) => setKa([Ka[0], Ka[1], e.currentTarget.value])}
               min={0.0}
               max={1.0}
             />
           </Stack>
-          <Text variant='mediumPlus'>Kd</Text>
+          <Text variant='xLarge'>Kd</Text>
           <Stack horizontal tokens={gapStack}>
             <TextField
+              label='R'
               value={Kd[0]}
               onChange={(e) => setKd([e.currentTarget.value, Kd[1], Kd[2]])}
               min={0.0}
               max={1.0}
             />
             <TextField
+              label='G'
               value={Kd[1]}
               onChange={(e) => setKd([Kd[0], e.currentTarget.value, Kd[2]])}
               min={0.0}
               max={1.0}
             />
             <TextField
+              label='B'
               value={Kd[2]}
               onChange={(e) => setKd([Kd[0], Kd[1], e.currentTarget.value])}
               min={0.0}
               max={1.0}
             />
           </Stack>
-          <Text variant='mediumPlus'>Ks</Text>
+          <Text variant='xLarge'>Ks</Text>
           <Stack horizontal tokens={gapStack}>
             <TextField
+              label='R'
               value={Ks[0]}
               onChange={(e) => setKs([e.currentTarget.value, Ks[1], Ks[2]])}
               min={0.0}
               max={1.0}
             />
             <TextField
+              label='G'
               value={Ks[1]}
               onChange={(e) => setKs([Ks[0], e.currentTarget.value, Ks[2]])}
               min={0.0}
               max={1.0}
             />
             <TextField
+              label='B'
               value={Ks[2]}
               onChange={(e) => setKs([Ks[0], Ks[1], e.currentTarget.value])}
               min={0.0}
@@ -196,7 +205,9 @@ export const ModalContent = (props: ModalSphere) => {
             />
           </Stack>
 
-          <DefaultButton onClick={onCreate}>Criar esfera</DefaultButton>
+          <PrimaryButton onClick={onCreate}>
+            {sphere !== undefined ? 'Editar' : 'Criar'} esfera
+          </PrimaryButton>
         </Stack>
       </div>
     </Modal>

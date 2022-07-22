@@ -46,31 +46,35 @@ interface Props {
   children: React.ReactNode;
 }
 
+//Valores iniciais da câmera
 const defaultVRP: vec3 = [0, 0, 100];
 const defaultP: vec3 = [0, 0, 0];
 const defaultFar: number = 10000;
 const defaultNear: number = 20;
 const defaultLookUp: vec3 = [0, 1, 0];
 
-const defaultAmbientIntensity: vec3 = [255, 255, 255];
-const defaultLightIntensity: vec3 = [255, 255, 255];
-const defaultPositionLight: vec3 = [-100, 0, 0];
+//Valores iniciais da luz
+const defaultAmbientIntensity: vec3 = [50, 50, 50];
+const defaultLightIntensity: vec3 = [120, 120, 120];
+const defaultPositionLight: vec3 = [300, 0, 0];
 
 export function ObjectsProvider({ children }: Props) {
+  //Inicia uma esfera
   const [objects, setObjects] = useState<Sphere[]>([
     new Sphere({
       center: [0, 0, 0],
       radius: 100,
-      Ka: [0.1, 0.1, 0.1],
-      Kd: [0.3, 0.3, 0.3],
-      Ks: [0, 0, 0],
-      Ns: 80,
+      Ka: [0, 0, 0.3],
+      Kd: [0, 0.3, 0],
+      Ks: [0.3, 0, 0],
+      Ns: 1,
       intensityM: 9,
       intensityP: 9,
-      name: 'Sphere',
+      name: 'Sphere1',
     }),
   ]);
 
+  //Inicia a câmera
   const [camera] = useState<Camera>(
     new Camera(
       defaultVRP,
@@ -82,6 +86,8 @@ export function ObjectsProvider({ children }: Props) {
       defaultLookUp
     )
   );
+
+  //Inicia a luz
   const [light] = useState<Light>(
     new Light(
       defaultPositionLight,
@@ -90,9 +96,12 @@ export function ObjectsProvider({ children }: Props) {
     )
   );
 
+  //Limpa os objetos
   const handleClearObjects = () => {
     setObjects([]);
   };
+
+  //Limpa a cena e reseta alguns valores
   const handleClear = () => {
     handleClearObjects();
     camera.updateVRP_P(defaultVRP, defaultP);
@@ -103,6 +112,7 @@ export function ObjectsProvider({ children }: Props) {
     light.setRotate(false);
   };
 
+  //Remove uma esfera pelo ID
   const handleRemoveSphere = (id: string) => {
     setObjects((prevState) => prevState.filter((object) => object.id !== id));
   };
