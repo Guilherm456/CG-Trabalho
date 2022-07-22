@@ -1,5 +1,4 @@
-import { useEffect } from 'react';
-import { Pivot, PivotItem, initializeIcons } from '@fluentui/react';
+import { Pivot, PivotItem } from '@fluentui/react';
 
 import Canva from './components/Canva';
 
@@ -9,10 +8,6 @@ import { PivotCamera } from 'interface/pivot_camera';
 import { PivotLight } from 'interface/pivot_light';
 
 function App() {
-  useEffect(() => {
-    initializeIcons();
-  }, []);
-
   const p: React.CSSProperties = {
     padding: 8,
     maxHeight: '85vh',

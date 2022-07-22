@@ -1,3 +1,4 @@
+import { initializeIcons } from '@fluentui/react';
 import { ObjectsProvider } from 'components/Provider';
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -7,6 +8,7 @@ import reportWebVitals from './reportWebVitals';
 // const root = ReactDOM.createRoot(
 //   document.getElementById('root') as HTMLElement
 // );
+initializeIcons();
 ReactDOM.render(
   <React.StrictMode>
     <ObjectsProvider>
