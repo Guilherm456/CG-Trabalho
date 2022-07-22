@@ -26,25 +26,39 @@ interface SphereProps {
 }
 
 export default class Sphere {
+  //ID do objeto
   readonly id: String;
 
+  //O centro da esfera
   center: vec3;
+
+  //Raio
   radius: number;
 
   Ka: vec3; //Fator de Reflexão Ambiente
   Kd: vec3; //Fator de Reflexão Difusa
   Ks: vec3; //Fator de Reflexão Especular
-  n: number = 1; //Shininess
+  n: number = 1; //Shininess ("brilho")
 
+  //Os vertices da esfera
   vertice: vec3[][] = [];
+
+  //Os pontos que serão utilizados para desenhar as faces (não muda, apenas se mudar o número de paralelos ou meridianos)
   facesPoints: number[][][] = [];
+
+  //Os valores das faces (para economizar cálculos a cada frame)
   faces: vec3[][] = [];
 
+  //Nome da esfera
   name: string;
 
+  //Número de meridianos
   intensityM: number;
+
+  //Número de paralelos
   intensityP: number;
 
+  //Instancia a esfera
   constructor(props: SphereProps) {
     this.id = this.generateID(2);
     this.center = props.center;
@@ -59,26 +73,37 @@ export default class Sphere {
     this.Ks = props.Ks;
     this.n = props.Ns;
 
+    //Verifica o "angulo" para cada paralelo e cada meridiano
     const intM = 360 / props.intensityM;
     const intP = 180 / (props.intensityP + 1);
 
+    //Cria os vértices zerados
     this.vertice = numJS
       .zeros([props.intensityP + 2, props.intensityM, 3])
       .tolist();
+
+    //Obtem os pontos extremos da esfera (alto e baixo)
     const extremesPoint = this.getExtremePoints();
 
+    //Cria os pontos de cada paralelo
     for (
       let i = 0, index = this.intensityP;
       i < this.intensityP;
       i++, index--
     ) {
+      //Para cada paralelo, cria os pontos de cada meridiano
       for (let t = 0; t < props.intensityM; t++) {
+        //Calcula o angulo do meridiano e paralelo atual
         const angleP = toDegrees((i + 1) * intP);
         const angleM = toDegrees((t + 1) * intM);
 
+        //Calcula o X,Y,Z do ponto atual
+        //Seria equivalente a fazer uma rotação de matriz
         let x = props.radius * Math.sin(angleP) * Math.sin(angleM);
         let y = props.radius * Math.cos(angleP);
         let z = props.radius * Math.sin(angleP) * Math.cos(angleM);
+
+        //Adiciona o ponto ao array de vértices (de forma contrária)
         this.vertice[index][t] = [
           x + this.center[0],
           y + this.center[1],
@@ -87,6 +112,7 @@ export default class Sphere {
       }
     }
 
+    //Adiciona os pontos extremos à esfera
     for (let t = 0; t < props.intensityM; t++) {
       this.vertice[0][t] = extremesPoint[1] as vec3;
       this.vertice[this.intensityP + 1][t] = extremesPoint[0] as vec3;
@@ -99,6 +125,7 @@ export default class Sphere {
     this.faces = this.defineFace() as vec3[][];
   }
 
+  //Gera um ID aleatório
   private generateID(length: number): string {
     return Math.ceil(Math.random() * Date.now())
       .toPrecision(length)
@@ -109,15 +136,26 @@ export default class Sphere {
   //Define os pontos que serão utilizados para desenhar as faces
   defineFacesPoints() {
     const faces: number[][][] = [];
+
+    //Para cada paralelo
     for (let i = 0; i < this.vertice.length - 1; i++) {
+      //Para cada meridiano
       for (let j = 0; j < this.vertice[i].length; j++) {
-        if (i === 0 || i === this.vertice.length - 2) {
+        //Se for os pontos extremos, será desenhado o triângulo da face
+        if (i === 0)
           faces.push([
             [i, j],
             [i + 1, j],
             [i + 1, (j + 1) % this.intensityM],
           ]);
-        } else {
+        else if (i === this.vertice.length - 2)
+          faces.push([
+            [i, j],
+            [i + 1, j],
+            [i, (j + 1) % this.intensityM],
+          ]);
+        //Se não for os pontos extremos, será desenhado o quadrado da face
+        else {
           const face = [
             [i, j],
             [i + 1, j],
@@ -129,6 +167,19 @@ export default class Sphere {
       }
     }
 
+    // for (let i = 0; i < 2; i++) {
+    //   const actualIndex = i * this.intensityP - 2;
+    //   const facesActual: number[][] = [];
+    //   for (let j = 0; j < this.intensityM; j++) {
+    //     faces.push([
+    //       [actualIndex, j],
+    //       [actualIndex + 1, j],
+    //       [actualIndex + 1, (j + 1) % this.intensityM],
+    //     ]);
+    //   }
+    //   if (actualIndex === 0) faces.unshift(facesActual);
+    //   else faces.push(facesActual);
+    // }
     return faces;
   }
 
@@ -138,6 +189,7 @@ export default class Sphere {
     for (let lineFaces of this.facesPoints) {
       const faceP = [];
       for (let face of lineFaces) {
+        //Pega os pontos da face nos vértices
         faceP.push([
           this.vertice[face[0]][face[1]][0],
           this.vertice[face[0]][face[1]][1],
@@ -153,11 +205,10 @@ export default class Sphere {
   //Desenha a esfera (apenas as linhas)
   drawSphere(p5: p5Types) {
     p5.push();
-
-    // p5.stroke(this.color);
-
+    p5.stroke(this.Ka[0], this.Ka[1], this.Ka[2]);
     const extremesSphere = this.getExtremePoints();
 
+    //Desenha as linhas extremas da esfera
     for (let i = 0; i < 2; i++) {
       const extreme =
         i === 0 ? this.vertice[0] : this.vertice[this.intensityP - 1];
@@ -204,30 +255,34 @@ export default class Sphere {
 
     if (distance < camera.near || distance > camera.far) return;
 
+    //Repassa os dados para o shader
+    shader.setUniform('uKa', [...this.Ka]);
+    shader.setUniform('uKd', [...this.Kd]);
+    shader.setUniform('uKs', [...this.Ks]);
+    shader.setUniform('uObserver', [...camera.VRP]);
+    shader.setUniform('uLightPosition', [...light.position]);
+    shader.setUniform('uN', this.n);
+    shader.setUniform('uIla', [...light.ambientLightIntensity]);
+    shader.setUniform('uIl', [...light.lightIntensity]);
     for (let i = 0; i < this.faces.length; i++) {
       //Vai normalizar a face
-      const faces = getNormal(p5, this.faces[i]);
-      const dot = Nvector.dot(faces);
+      const facesNormal = getNormal(p5, this.faces[i]);
+      const dot = Nvector.dot(facesNormal);
 
       //Caso a face esteja na frente da camera, ela será desenhada
       if (dot < 0.00000001) continue;
+
+      shader.setUniform('uReferencePoint', [...facesNormal.array()]);
+      shader.setUniform('uFaceNormal', [...facesNormal.array()]);
 
       p5.beginShape();
       for (let j = 0; j < this.faces[i].length; j++) {
         const actualFace = this.faces[i][j];
 
+        //Transforma os pontos da face para o sistema de coordenadas da camera
         const face = matrixMul(actualFace, camera.concatedMatrix) as vec3;
-        shader.setUniform('uKa', [...this.Ka]);
-        shader.setUniform('uKd', [...this.Kd]);
-        shader.setUniform('uKs', [...this.Ks]);
-        shader.setUniform('uLightPosition', [...light.position]);
-        shader.setUniform('uObserver', [...camera.VRP]);
-        shader.setUniform('uN', this.n);
-        shader.setUniform('uIla', [...light.ambientLightIntensity]);
-        shader.setUniform('uIl', [...light.lightIntensity]);
-        shader.setUniform('uFaceNormal', [...face]);
 
-        p5.vertex(face[0], face[1], face[2]);
+        p5.vertex(face[0], face[1], actualFace[2]);
       }
 
       p5.endShape(p5.CLOSE);
@@ -235,6 +290,7 @@ export default class Sphere {
     p5.pop();
   }
 
+  //Retorna os pontos extremos da esfera
   getExtremePoints() {
     const [x, y, z] = this.center;
     return [
@@ -243,27 +299,39 @@ export default class Sphere {
     ];
   }
 
+  //Translada a esfera
   translateSphere(tX: number, tY: number, tZ: number) {
+    //Move o centro
     this.center = translate(this.center, tX, tY, tZ) as vec3;
+    //Move os vértices
     this.vertice = this.vertice.map((vec3) =>
       translate(vec3, tX, tY, tZ)
     ) as vec3[][];
+    //Recalcula as faces
     this.faces = this.defineFace() as vec3[][];
   }
 
+  //Rotaciona a esfera
   rotateSphere(angle: number, option: 'X' | 'Y' | 'Z') {
+    //Rotaciona o centro
     this.center = rotate(this.center, angle, option) as vec3;
+    //Rotaciona os vértices
     this.vertice = this.vertice.map((vec3) =>
       rotate(vec3, angle, option)
     ) as vec3[][];
+    //Recalcula as faces
     this.faces = this.defineFace() as vec3[][];
   }
 
+  //Escala a esfera
   scaleSphere(sX: number, sY: number, sZ: number) {
+    //Escala o centro
     this.center = scale(this.center, sX, sY, sZ) as vec3;
+    //Escala os vértices
     this.vertice = this.vertice.map((vec3) =>
       scale(vec3, sX, sY, sZ)
     ) as vec3[][];
+    //Recalcula as faces
     this.faces = this.defineFace() as vec3[][];
   }
 }

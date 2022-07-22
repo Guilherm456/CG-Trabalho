@@ -19,24 +19,42 @@ uniform vec3 uIl;
 uniform bvec2 uLightType;
 
 varying vec3 normalInterpolation;
-void main()
-{
-  
-  // vec3 N = normalize(normalInterpolation);
-  vec3 N  = normalize(uFaceNormal.xyz);
+
+vec4 getFlatColor(vec3 face){
+  vec3 N  = normalize(face);
   vec3 L  = normalize(vec3(uLightPosition - uReferencePoint));
   vec3 V  = vec3(uObserver - uReferencePoint);
 
-  vec3 R = normalize( reflect(-L, N) );
-  vec3 S = normalize(vec3(V));
+  vec3 R = normalize(reflect(-L, N) );
+  vec3 S = normalize(V);
 
   float ndotl = max(dot(N, L), 0.0);
-  float rdots = max(dot(R, S), 0.0);
+  float rdots = max(dot(R, L), 0.0);
 
-  gl_FragColor = vec4((uKa * uIla + uIl * (uKd * ndotl + uKs * pow(rdots,uN)))/255.0,1.0);
+  vec4 light = vec4((uKa + (uKd * ndotl) + (uKs * rdots*uN))/255.0, 1.0);
+  return light;
+}
+vec4 getPhongColor(vec3 face){
+  vec3 N  = normalize(face);
+  vec3 s = normalize(vec3(uLightPosition - uReferencePoint));
+  vec3 v = normalize(vec3(-uReferencePoint));
+  vec3 r = reflect(-s, N);
 
+  float d = max(dot(s,N), 0.0);
 
-
+  vec3 ambient = uKa * uIla;
+  vec3 diffuse = uKd * d;
+  vec3 specular = vec3(0.0);
+  if(d>0.0){
+    specular = uKs * pow(max(dot(r,v), 0.0), uN);
+  }
+  
+  vec3 light = (uIl*(ambient + diffuse + specular)/255.0);
+  return vec4(light, 1.0);
+}
+void main(){
+  
+  gl_FragColor = getPhongColor (normalInterpolation); 
 }
 `;
 
@@ -53,25 +71,11 @@ attribute vec3 aPosition;
 
 varying vec3 normalInterpolation;
 
-// This is a varying variable, which in shader terms means that it will be passed from the vertex shader to the fragment shader
-varying vec2 vTexvec3;
-
-mat4 transpose(mat4 m) {
-  return mat4(m[0][0], m[1][0], m[2][0], m[3][0],
-              m[0][1], m[1][1], m[2][1], m[3][1],
-              m[0][2], m[1][2], m[2][2], m[3][2],
-              m[0][3], m[1][3], m[2][3], m[3][3]);
-}
-
 void main(){
-
-  // vec4 concatenatedPosition = customConcatenated * vec4(aPosition, 1.0);
-  // // concatenatedPosition.xy /= concatenatedPosition.w;
-
-  // vec4 viewModelPosition = uModelViewMatrix * concatenatedPosition;
-  // gl_Position = uProjectionMatrix * viewModelPosition;
   vec4 viewModelPosition = uModelViewMatrix * vec4(aPosition, 1.0);
   normalInterpolation = viewModelPosition.xyz;
+
+
   gl_Position = uProjectionMatrix * viewModelPosition;
 }
 `;
