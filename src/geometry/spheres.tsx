@@ -249,6 +249,7 @@ export default class Sphere {
     const Nvector = p5.createVector(...camera.N);
 
     p5.push();
+    //Verifica a distância do objeto com a câmera
     const distance = p5
       .createVector(...camera.N)
       .dot(p5.createVector(...camera.VRP).sub(p5.createVector(...this.center)));

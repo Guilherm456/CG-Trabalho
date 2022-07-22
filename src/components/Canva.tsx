@@ -43,6 +43,8 @@ export default function Canva() {
 
     p5.frameRate(60);
     // p5.noStroke();
+
+    camera.setP5(p5);
   };
 
   const draw = (val: any) => {
@@ -155,7 +157,7 @@ export default function Canva() {
       console.log(camera.matrixProjection);
 
       console.log('Camera');
-      console.log(`VRP: ${camera.VRP} | P : ${camera.P}`);
+      console.log(camera);
     }
   };
 
