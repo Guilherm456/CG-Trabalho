@@ -1,25 +1,24 @@
 import Sketch from 'react-p5';
 import p5Types from 'p5';
-
 import { ObjectsProviderContext } from './Provider';
 
 import { VertShader, FragShader } from '../utils/shader';
 
 import { Port } from 'utils/interfaces';
+import { matrixMul } from 'utils/calculate';
+import { clamp } from 'utils/others';
 
 let shaderInf: p5Types.Shader;
 
+//Teclas de controle
 enum Direction {
-  FRONT = 38,
-  BACK = 40,
-  LEFT = 37,
-  RIGHT = 39,
-  DOWN = 16,
-  UP = 17,
+  FRONT = 38, //Seta para cima
+  BACK = 40, //Seta para baixo
+  LEFT = 37, //Seta para esquerda
+  RIGHT = 39, //Seta para direita
+  DOWN = 16, //Shift
+  UP = 17, //Ctrl
 }
-
-//Define a sensibilidade do movimento da câmera
-const sensitivity = 1;
 
 export default function Canva() {
   const { objects, camera, light } = ObjectsProviderContext();
@@ -38,22 +37,20 @@ export default function Canva() {
 
     camera.setWindowSize(newWindowSize, newWindowSize);
 
+    //Define o shader
     shaderInf = p5.createShader(VertShader, FragShader);
     p5.shader(shaderInf);
 
-    // p5.debugMode();
-    // p5.noStroke();
-    // p5.noFill();
-    // p5.camera();
     p5.frameRate(60);
+    // p5.noStroke();
   };
 
   const draw = (val: any) => {
     const p5 = val as p5Types;
 
-    p5.orbitControl();
-    p5.background(54);
+    p5.background(0);
 
+    //Para "debugar"
     if (p5.keyIsPressed) {
       cameraSystem(p5.keyCode);
     }
@@ -62,8 +59,18 @@ export default function Canva() {
     if (light.rotate) {
       light.rotateLight();
     }
+
     p5.push();
-    p5.translate(light.position[0], light.position[1], light.position[2]);
+    objects.forEach((object) => object.drawFaces(p5, camera, shaderInf, light));
+    p5.pop();
+
+    p5.push();
+    const [xL, yL] = matrixMul(
+      light.position,
+      camera.concatedMatrix
+    ) as number[];
+
+    p5.translate(xL, yL, light.position[2]);
     p5.stroke(
       light.lightIntensity[0],
       light.lightIntensity[1],
@@ -72,36 +79,61 @@ export default function Canva() {
     p5.sphere(10);
     p5.pop();
 
+    drawGizmo(p5);
+  };
+
+  const drawGizmo = (val: any) => {
+    const p5 = val as p5Types;
     p5.push();
-    shaderInf.setUniform('vSRCMatrix', camera.matrixSRUSRC.flat());
+    const arrowSize = 100;
+    const pos = -p5.width / 5;
 
-    shaderInf.setUniform('vProjectionMatrix', camera.matrixProjection.flat());
+    p5.translate(pos, pos);
+    const x = clamp(
+      camera.VRP[0] - camera.projectionPlan[0],
+      -arrowSize,
+      arrowSize
+    );
+    const y = clamp(
+      camera.VRP[1] - camera.projectionPlan[1],
+      -arrowSize,
+      arrowSize
+    );
+    const z = clamp(
+      camera.VRP[2] - camera.projectionPlan[2],
+      -arrowSize,
+      arrowSize
+    );
 
-    shaderInf.setUniform('vViewMatrix', camera.matrixView.flat());
-
-    objects.forEach((object) => object.drawFaces(p5, camera, shaderInf, light));
+    p5.strokeWeight(2);
+    p5.stroke(255, 0, 0);
+    p5.line(0, 0, 0, x, 0, 0);
+    p5.stroke(0, 255, 0);
+    p5.line(0, 0, 0, 0, y, 0);
+    p5.stroke(0, 0, 255);
+    p5.line(0, 0, 0, 0, 0, z);
 
     p5.pop();
   };
 
   const cameraSystem = (key: number) => {
     if (key === Direction.FRONT)
-      camera.updatePositionCamera(-sensitivity, 'Z', true);
+      camera.updatePositionCamera(-camera.sensitivity, 'Z', true);
 
     if (key === Direction.BACK)
-      camera.updatePositionCamera(sensitivity, 'Z', true);
+      camera.updatePositionCamera(camera.sensitivity, 'Z', true);
 
     if (key === Direction.LEFT)
-      camera.updatePositionCamera(-sensitivity, 'X', true);
+      camera.updatePositionCamera(-camera.sensitivity, 'X', true);
 
     if (key === Direction.RIGHT)
-      camera.updatePositionCamera(sensitivity, 'X', true);
+      camera.updatePositionCamera(camera.sensitivity, 'X', true);
 
     if (key === Direction.UP)
-      camera.updatePositionCamera(sensitivity, 'Y', true);
+      camera.updatePositionCamera(camera.sensitivity, 'Y', true);
 
     if (key === Direction.DOWN)
-      camera.updatePositionCamera(-sensitivity, 'Y', true);
+      camera.updatePositionCamera(-camera.sensitivity, 'Y', true);
     return false;
   };
 
@@ -109,13 +141,6 @@ export default function Canva() {
     const p5 = val as p5Types;
     const parent = document.getElementsByClassName('canvaArea')[0];
     p5.resizeCanvas(parent.clientWidth, parent.clientHeight);
-  };
-
-  const mouse = (val: any) => {
-    // const p5 = val as p5Types;
-    // const diffenceX = p5.winMouseX - p5.pwinMouseX;
-    // const diffenceY = p5.winMouseY - p5.pwinMouseY;
-    // camera.updatePositionCamera(diffenceY, 'Y', false);
   };
 
   const debug = (val: any) => {
@@ -140,7 +165,6 @@ export default function Canva() {
       setup={setup}
       draw={draw}
       windowResized={windowResized}
-      mouseDragged={mouse}
       keyReleased={debug}
     />
   );
