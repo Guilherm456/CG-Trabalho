@@ -42,7 +42,7 @@ export default function Canva() {
     p5.shader(shaderInf);
 
     p5.frameRate(60);
-    // p5.noStroke();
+    p5.noStroke();
 
     camera.setP5(p5);
   };

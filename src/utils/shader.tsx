@@ -16,9 +16,10 @@ uniform float uN;
 uniform vec3 uIla;
 uniform vec3 uIl;
 
-uniform bvec2 uLightType;
+uniform int uLightType;
 
 varying vec3 normalInterpolation;
+varying vec3 vertPos;
 
 vec4 getFlatColor(vec3 face){
   vec3 N  = normalize(face);
@@ -28,33 +29,44 @@ vec4 getFlatColor(vec3 face){
   vec3 R = normalize(reflect(-L, N) );
   vec3 S = normalize(V);
 
-  float ndotl = max(dot(N, L), 0.0);
-  float rdots = max(dot(R, L), 0.0);
+  float ndotl = dot(N, L);
+  float rdots = 0.0;
+  if(ndotl >0.0)
+  {
+    rdots = max(dot(R, L), 0.0);
+  }
+  else ndotl = 0.0;
 
-  vec4 light = vec4((uKa + (uKd * ndotl) + (uKs * rdots*uN))/255.0, 1.0);
+  vec4 light = vec4((uKa * uIla + uIl * (uKd * ndotl + uKs * pow(rdots,uN)))/255.0, 1.0);
   return light;
 }
+
 vec4 getPhongColor(vec3 face){
   vec3 N  = normalize(face);
-  vec3 s = normalize(vec3(uLightPosition - uReferencePoint));
-  vec3 v = normalize(vec3(-uReferencePoint));
-  vec3 r = reflect(-s, N);
+  vec3 L  = normalize(uLightPosition.xyz - vertPos);
+  vec3 V  = -vertPos;
 
-  float d = max(dot(s,N), 0.0);
+  vec3 R = normalize(reflect(-L, N) );
+  vec3 S = normalize(V);
 
-  vec3 ambient = uKa * uIla;
-  vec3 diffuse = uKd * d;
-  vec3 specular = vec3(0.0);
-  if(d>0.0){
-    specular = uKs * pow(max(dot(r,v), 0.0), uN);
+  float ndotl = dot(N, L);
+  float rdots = 0.0;
+  if(ndotl >0.0)
+  {
+    rdots = max(dot(R, L), 0.0);
   }
-  
-  vec3 light = (uIl*(ambient + diffuse + specular)/255.0);
-  return vec4(light, 1.0);
+  else ndotl = 0.0;
+
+  vec4 light = vec4((uKa * uIla + uIl * (uKd * ndotl + uKs * pow(rdots,uN)))/255.0, 1.0);
+  return light;
 }
+
+
 void main(){
-  
-  gl_FragColor = getPhongColor (normalInterpolation); 
+  if(uLightType == 0)
+    gl_FragColor = getFlatColor(uFaceNormal.xyz);
+  else if(uLightType == 1)
+    gl_FragColor = getPhongColor (-normalInterpolation); 
 }
 `;
 
@@ -70,12 +82,12 @@ uniform mat4 uProjectionMatrix;
 attribute vec3 aPosition;
 
 varying vec3 normalInterpolation;
+varying vec3 vertPos;
 
 void main(){
   vec4 viewModelPosition = uModelViewMatrix * vec4(aPosition, 1.0);
   normalInterpolation = viewModelPosition.xyz;
-
-
+  vertPos = viewModelPosition.xyz/viewModelPosition.w;
   gl_Position = uProjectionMatrix * viewModelPosition;
 }
 `;

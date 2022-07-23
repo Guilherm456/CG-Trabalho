@@ -23,11 +23,3 @@ export function arrayNumberToArrayString(array?: number[]) {
 export function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));
 }
-
-// export function getCentroid(faces: number[][]) {
-//   const centroid = faces.reduce((acc, face) => {
-//     const [x, y, z] = face;
-//     return acc.add(p5.createVector(x, y, z));
-//   }, p5.createVector(0, 0, 0));
-//   return centroid.div(faces.length);
-// }

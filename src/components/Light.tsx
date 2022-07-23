@@ -13,11 +13,13 @@ export class Light {
   public lightIntensity: vec3;
 
   //Se deve rotacionar ou não
-  public rotate: boolean = false;
+  public rotate: boolean = true;
   //Angulo de rotação
   public angle: number = 1;
   //Direção
   public direction: 'X' | 'Y' | 'Z' = 'Y';
+
+  public lightType: 0 | 1 | 2 = 0;
 
   //Constrói os valores iniciais da luz
   constructor(position: vec3, Ila: vec3, Ia: vec3) {
@@ -36,6 +38,10 @@ export class Light {
   //Configura a posição da luz
   setPosition(position: vec3) {
     this.position = [...position, 1];
+  }
+
+  setType(type: 0 | 1 | 2) {
+    this.lightType = type;
   }
 
   //Configura se deve rotacionar ou seus valores

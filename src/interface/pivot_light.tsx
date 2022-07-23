@@ -1,5 +1,6 @@
 import {
   Checkbox,
+  DefaultButton,
   Dropdown,
   PrimaryButton,
   Stack,
@@ -20,14 +21,18 @@ const optionsDropdown = [
 ];
 
 const optionsDropdownType = [
-  { key: 'flat', text: 'Flat Shading' },
-  { key: 'phong', text: 'Phong Shading' },
-  { key: 'gouraud', text: 'Gouraud Shading' },
+  { key: 0, text: 'Flat Shading', value: 0 },
+  { key: 1, text: 'Phong Shading', value: 1 },
+  { key: 2, text: 'Gouraud Shading', value: 2, disabled: true },
 ];
 export const PivotLight = () => {
   const { light } = ObjectsProviderContext();
 
-  const [typeShading, setTypeShading] = useState('flat');
+  const [typeShading, setTypeShading] = useState(light.lightType);
+
+  const handleChangeTypeLight = () => {
+    light.setType(typeShading);
+  };
 
   const [intensityLight, setIntensityLight] = useState([
     light.lightIntensity[0].toString(),
@@ -93,7 +98,11 @@ export const PivotLight = () => {
         label='Tipo de sombreamento'
         options={optionsDropdownType}
         selectedKey={typeShading}
-        onChange={(e, o) => setTypeShading(o?.key as string)}
+        onChange={(e, o) => setTypeShading(o?.key as 0 | 1 | 2)}
+      />
+      <DefaultButton
+        text='Alterar tipo da luz'
+        onClick={handleChangeTypeLight}
       />
 
       <VerticalDivider />

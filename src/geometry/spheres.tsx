@@ -1,4 +1,4 @@
-import { vec3 } from 'utils/interfaces';
+import { vec3, vec4 } from 'utils/interfaces';
 import p5Types from 'p5';
 import {
   translate,
@@ -265,6 +265,7 @@ export default class Sphere {
     shader.setUniform('uN', this.n);
     shader.setUniform('uIla', [...light.ambientLightIntensity]);
     shader.setUniform('uIl', [...light.lightIntensity]);
+    shader.setUniform('uLightType', light.lightType);
     for (let i = 0; i < this.faces.length; i++) {
       //Vai normalizar a face
       const facesNormal = getNormal(p5, this.faces[i]);
@@ -275,13 +276,12 @@ export default class Sphere {
 
       shader.setUniform('uReferencePoint', [...facesNormal.array()]);
       shader.setUniform('uFaceNormal', [...facesNormal.array()]);
-
       p5.beginShape();
       for (let j = 0; j < this.faces[i].length; j++) {
         const actualFace = this.faces[i][j];
 
         //Transforma os pontos da face para o sistema de coordenadas da camera
-        const face = matrixMul(actualFace, camera.concatedMatrix) as vec3;
+        const face = matrixMul(actualFace, camera.concatedMatrix) as vec4;
 
         p5.vertex(face[0], face[1], actualFace[2]);
       }
