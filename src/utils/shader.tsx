@@ -28,7 +28,6 @@ vec4 getFlatColor(vec3 face){
   vec3 V  = vec3(uObserver - uReferencePoint);
 
   vec3 R = normalize(reflect(-L, N) );
-  vec3 S = normalize(V);
 
   float ndotl = dot(N, L);
   float rdots = 0.0;
@@ -48,7 +47,6 @@ vec4 getPhongColor(vec3 face){
   vec3 V  = vec3(uObserver) - vertPos;
 
   vec3 R = normalize(reflect(-L, N) );
-  vec3 S = normalize(V);
 
   float ndotl = dot(N, L);
   float rdots = 0.0;
@@ -108,7 +106,6 @@ vec4 getGouradColor(vec3 face){
   vec3 V  = vec3(uObserver) - vertPos;
 
   vec3 R = normalize(reflect(-L, N) );
-  vec3 S = normalize(V);
 
   float ndotl = dot(N, L);
   float rdots = 0.0;
