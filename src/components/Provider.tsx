@@ -67,7 +67,7 @@ export function ObjectsProvider({ children }: Props) {
       Ka: [0, 0, 0.3],
       Kd: [0, 0.3, 0],
       Ks: [0.3, 0, 0],
-      Ns: 128,
+      Ns: 16,
       intensityM: 9,
       intensityP: 9,
       name: 'Sphere1',

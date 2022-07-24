@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Stack,
   TextField,
-  DefaultButton,
   Text,
   Label,
   VerticalDivider,
   ChoiceGroup,
   IChoiceGroupOption,
   Slider,
+  PrimaryButton,
 } from '@fluentui/react';
 import { ObjectsProviderContext } from 'components/Provider';
 
@@ -118,7 +118,7 @@ export const PivotCamera = () => {
         value={near}
         onChange={(e) => setNear(e)}
       />
-      <DefaultButton text='Mudar distâncias' onClick={handleChangeDistance} />
+      <PrimaryButton text='Mudar distâncias' onClick={handleChangeDistance} />
       <VerticalDivider />
       <ChoiceGroup
         label='Selecione o tipo de visualização'
@@ -134,7 +134,7 @@ export const PivotCamera = () => {
         value={distanceProjection}
         onChange={(v) => setDistanceProjection(v)}
       />
-      <DefaultButton
+      <PrimaryButton
         text='Mudar distância'
         onClick={handleChangeDistanceProjection}
       />
@@ -160,9 +160,9 @@ export const PivotCamera = () => {
           onChange={(e, n) => setZVRP(n!)}
         />
       </Stack>
-      <DefaultButton
+      <PrimaryButton
         text='Alterar VRP'
-        onClick={() => camera.setVRP(Number(xVRP), Number(yVRP), Number(zVRP))}
+        onClick={() => camera.setVRP(Number(xVRP), -Number(yVRP), Number(zVRP))}
       />
       <Label>P</Label>
       <Stack horizontal tokens={gapStack}>
@@ -185,7 +185,7 @@ export const PivotCamera = () => {
           onChange={(e, n) => setZP(n!)}
         />
       </Stack>
-      <DefaultButton
+      <PrimaryButton
         text='Alterar P'
         onClick={() => camera.setP(Number(xP), Number(yP), Number(zP))}
       />
@@ -247,7 +247,7 @@ export const PivotCamera = () => {
           onChange={(e, n) => setVMax(n!)}
         />
       </Stack>
-      <DefaultButton
+      <PrimaryButton
         text='Salvar WindowSize'
         onClick={handleChangeWindowSize}
       />
@@ -273,7 +273,7 @@ export const PivotCamera = () => {
           type='number'
         />
       </Stack>
-      <DefaultButton text='Salvar View Up' onClick={handleChangeviewUp} />
+      <PrimaryButton text='Salvar View Up' onClick={handleChangeviewUp} />
       <VerticalDivider />
       <Slider
         label='Sensibilidade'
@@ -282,7 +282,7 @@ export const PivotCamera = () => {
         value={sensitivity}
         onChange={(e) => setsensitivity(e)}
       />
-      <DefaultButton
+      <PrimaryButton
         text='Mudar sensibilidade'
         onClick={handleChangesensitivity}
       />

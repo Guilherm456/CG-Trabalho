@@ -74,7 +74,7 @@ export const PivotSphere = () => {
         object.scaleSphere(Number(valueX), Number(valueY), Number(valueZ));
         break;
       case 'translate':
-        object.translateSphere(Number(valueX), Number(valueY), Number(valueZ));
+        object.translateSphere(Number(valueX), -Number(valueY), Number(valueZ));
 
         break;
     }

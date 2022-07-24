@@ -50,7 +50,7 @@ export class Camera {
   public far: number = 1000;
 
   //Distância minima da visualização
-  public near: number = 0.1;
+  public near: number = 10;
 
   //Sensibilidade de mexer a câmera
   public sensitivity: number = 1;

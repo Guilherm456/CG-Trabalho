@@ -1,8 +1,7 @@
 import {
   Checkbox,
-  DefaultButton,
-  Dropdown,
   PrimaryButton,
+  Dropdown,
   Stack,
   Text,
   TextField,
@@ -88,7 +87,7 @@ export const PivotLight = () => {
 
     light.setRotate(rotate, Number(angle), direction);
 
-    const position: vec3 = [Number(x), Number(y), Number(z)];
+    const position: vec3 = [Number(x), -Number(y), Number(z)];
     light.setPosition(position);
   };
 
@@ -100,7 +99,7 @@ export const PivotLight = () => {
         selectedKey={typeShading}
         onChange={(e, o) => setTypeShading(o?.key as 0 | 1 | 2)}
       />
-      <DefaultButton
+      <PrimaryButton
         text='Alterar tipo da luz'
         onClick={handleChangeTypeLight}
       />
