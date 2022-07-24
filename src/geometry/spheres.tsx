@@ -156,30 +156,20 @@ export default class Sphere {
           ]);
         //Se não for os pontos extremos, será desenhado o quadrado da face
         else {
-          const face = [
+          faces.push([
             [i, j],
             [i + 1, j],
             [i + 1, (j + 1) % this.intensityM],
+          ]);
+          faces.push([
+            [i, j],
+            [i + 1, (j + 1) % this.intensityM],
             [i, (j + 1) % this.intensityM],
-          ];
-          faces.push(face);
+          ]);
         }
       }
     }
 
-    // for (let i = 0; i < 2; i++) {
-    //   const actualIndex = i * this.intensityP - 2;
-    //   const facesActual: number[][] = [];
-    //   for (let j = 0; j < this.intensityM; j++) {
-    //     faces.push([
-    //       [actualIndex, j],
-    //       [actualIndex + 1, j],
-    //       [actualIndex + 1, (j + 1) % this.intensityM],
-    //     ]);
-    //   }
-    //   if (actualIndex === 0) faces.unshift(facesActual);
-    //   else faces.push(facesActual);
-    // }
     return faces;
   }
 
@@ -276,6 +266,7 @@ export default class Sphere {
 
       shader.setUniform('uReferencePoint', [...facesNormal.array()]);
       shader.setUniform('uFaceNormal', [...facesNormal.array()]);
+
       p5.beginShape();
       for (let j = 0; j < this.faces[i].length; j++) {
         const actualFace = this.faces[i][j];

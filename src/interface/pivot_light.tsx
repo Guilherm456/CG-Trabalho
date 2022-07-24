@@ -23,7 +23,7 @@ const optionsDropdown = [
 const optionsDropdownType = [
   { key: 0, text: 'Flat Shading', value: 0 },
   { key: 1, text: 'Phong Shading', value: 1 },
-  { key: 2, text: 'Gouraud Shading', value: 2, disabled: true },
+  { key: 2, text: 'Gouraud Shading', value: 2 },
 ];
 export const PivotLight = () => {
   const { light } = ObjectsProviderContext();
