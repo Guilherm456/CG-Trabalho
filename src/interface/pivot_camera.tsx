@@ -162,7 +162,7 @@ export const PivotCamera = () => {
       </Stack>
       <PrimaryButton
         text='Alterar VRP'
-        onClick={() => camera.setVRP(Number(xVRP), -Number(yVRP), Number(zVRP))}
+        onClick={() => camera.setVRP(Number(xVRP), Number(yVRP), Number(zVRP))}
       />
       <Label>P</Label>
       <Stack horizontal tokens={gapStack}>

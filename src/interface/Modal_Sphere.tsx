@@ -44,7 +44,7 @@ export const ModalContent = (props: ModalSphere) => {
     if (name === '') setName('Esfera X');
     const [sX, sY, sZ] = [parseFloat(x), parseFloat(y), parseFloat(z)];
     const newSphere = new Sphere({
-      center: [sX, -sY, sZ],
+      center: [sX, sY, sZ],
       radius: radius,
       Ka: [parseFloat(Ka[0]), parseFloat(Ka[1]), parseFloat(Ka[2])],
       Kd: [parseFloat(Kd[0]), parseFloat(Kd[1]), parseFloat(Kd[2])],

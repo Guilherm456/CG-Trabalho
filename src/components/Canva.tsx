@@ -97,7 +97,7 @@ export default function Canva() {
       arrowSize
     );
     const y = clamp(
-      camera.VRP[1] - camera.projectionPlan[1],
+      -(camera.VRP[1] - camera.projectionPlan[1]),
       -arrowSize,
       arrowSize
     );

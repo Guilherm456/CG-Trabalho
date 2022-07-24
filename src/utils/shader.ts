@@ -30,12 +30,11 @@ vec4 getFlatColor(vec3 face){
   vec3 R = normalize(reflect(-L, N) );
 
   float ndotl = dot(N, L);
-  float rdots = 0.0;
-  if(ndotl >0.0)
-  {
-    rdots = max(dot(R, L), 0.0);
+  float rdots = max(dot(R, L),0.0);
+  if(ndotl < 0.0){
+    ndotl = 0.0;
+    rdots = 0.0;
   }
-  else ndotl = 0.0;
 
   vec4 light = vec4((uKa * uIla + uIl * (uKd * ndotl + uKs * pow(rdots,uN)))/255.0, 1.0);
   return light;
@@ -49,12 +48,11 @@ vec4 getPhongColor(vec3 face){
   vec3 R = normalize(reflect(-L, N) );
 
   float ndotl = dot(N, L);
-  float rdots = 0.0;
-  if(ndotl >0.0)
-  {
-    rdots = max(dot(R, L), 0.0);
+  float rdots = max(dot(R, L),0.0);
+  if(ndotl < 0.0){
+    ndotl = 0.0;
+    rdots = 0.0;
   }
-  else ndotl = 0.0;
 
   vec4 light = vec4((uKa * uIla + uIl * (uKd * ndotl + uKs * pow(rdots,uN)))/255.0, 1.0);
   return light;
@@ -108,12 +106,11 @@ vec4 getGouradColor(vec3 face){
   vec3 R = normalize(reflect(-L, N) );
 
   float ndotl = dot(N, L);
-  float rdots = 0.0;
-  if(ndotl >0.0)
-  {
-    rdots = max(dot(R, L), 0.0);
+  float rdots = max(dot(R, L),0.0);
+  if(ndotl < 0.0){
+    ndotl = 0.0;
+    rdots = 0.0;
   }
-  else ndotl = 0.0;
 
   vec4 light = vec4((uKa * uIla + uIl * (uKd * ndotl + uKs * pow(rdots,uN)))/255.0, 1.0);
   return light;

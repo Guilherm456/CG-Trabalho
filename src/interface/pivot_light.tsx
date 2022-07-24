@@ -87,7 +87,7 @@ export const PivotLight = () => {
 
     light.setRotate(rotate, Number(angle), direction);
 
-    const position: vec3 = [Number(x), -Number(y), Number(z)];
+    const position: vec3 = [Number(x), Number(y), Number(z)];
     light.setPosition(position);
   };
 
