@@ -3,18 +3,18 @@ export const FragShader = `
 precision mediump float;
 #endif
 
-uniform vec4 uFaceNormal;
-uniform vec4 uObserver;
-uniform vec4 uLightPosition;
-uniform vec4 uReferencePoint;
+uniform vec4 FaceNormal;
+uniform vec4 ObserverPosition;
+uniform vec4 LightPosition;
+uniform vec4 ReferencePointPosition;
 
-uniform vec3 uKa;
-uniform vec3 uKd;
-uniform vec3 uKs;
+uniform vec3 Ka;
+uniform vec3 Kd;
+uniform vec3 Ks;
 uniform float uN;
 
-uniform vec3 uIla;
-uniform vec3 uIl;
+uniform vec3 Ila;
+uniform vec3 Il;
 
 uniform int uLightType;
 
@@ -24,8 +24,8 @@ varying vec4 color;
 
 vec4 getFlatColor(vec3 face){
   vec3 N  = normalize(face);
-  vec3 L  = normalize(vec3(uLightPosition - uReferencePoint));
-  vec3 V  = vec3(uObserver - uReferencePoint);
+  vec3 L  = normalize(vec3(LightPosition - ReferencePointPosition));
+  vec3 V  = vec3(ObserverPosition - ReferencePointPosition);
 
   vec3 R = normalize(reflect(-L, N) );
 
@@ -36,14 +36,14 @@ vec4 getFlatColor(vec3 face){
     rdots = 0.0;
   }
 
-  vec4 light = vec4((uKa * uIla + uIl * (uKd * ndotl + uKs * pow(rdots,uN)))/255.0, 1.0);
+  vec4 light = vec4((Ka * Ila + Il * (Kd * ndotl + Ks * pow(rdots,uN)))/255.0, 1.0);
   return light;
 }
 
 vec4 getPhongColor(vec3 face){
   vec3 N  = normalize(face);
-  vec3 L  = normalize(uLightPosition.xyz - vertPos);
-  vec3 V  = vec3(uObserver) - vertPos;
+  vec3 L  = normalize(LightPosition.xyz - vertPos);
+  vec3 V  = vec3(ObserverPosition) - vertPos;
 
   vec3 R = normalize(reflect(-L, N) );
 
@@ -54,14 +54,14 @@ vec4 getPhongColor(vec3 face){
     rdots = 0.0;
   }
 
-  vec4 light = vec4((uKa * uIla + uIl * (uKd * ndotl + uKs * pow(rdots,uN)))/255.0, 1.0);
+  vec4 light = vec4((Ka * Ila + Il * (Kd * ndotl + Ks * pow(rdots,uN)))/255.0, 1.0);
   return light;
 }
 
 
 void main(){
   if(uLightType == 0)
-    gl_FragColor = getFlatColor(uFaceNormal.xyz);
+    gl_FragColor = getFlatColor(FaceNormal.xyz);
   else if(uLightType == 1)
     gl_FragColor = getPhongColor (normalInterpolation); 
   else if(uLightType == 2)
@@ -85,23 +85,23 @@ varying vec3 normalInterpolation;
 varying vec3 vertPos;
 varying vec4 color;
 
-uniform vec4 uFaceNormal;
-uniform vec4 uObserver;
-uniform vec4 uLightPosition;
-uniform vec4 uReferencePoint;
+uniform vec4 FaceNormal;
+uniform vec4 ObserverPosition;
+uniform vec4 LightPosition;
+uniform vec4 ReferencePointPosition;
 
-uniform vec3 uKa;
-uniform vec3 uKd;
-uniform vec3 uKs;
+uniform vec3 Ka;
+uniform vec3 Kd;
+uniform vec3 Ks;
 uniform float uN;
 
-uniform vec3 uIla;
-uniform vec3 uIl;
+uniform vec3 Ila;
+uniform vec3 Il;
 
 vec4 getGouradColor(vec3 face){
   vec3 N  = normalize(face);
-  vec3 L  = normalize(uLightPosition.xyz - vertPos);
-  vec3 V  = vec3(uObserver) - vertPos;
+  vec3 L  = normalize(LightPosition.xyz - vertPos);
+  vec3 V  = vec3(ObserverPosition) - vertPos;
 
   vec3 R = normalize(reflect(-L, N) );
 
@@ -112,7 +112,7 @@ vec4 getGouradColor(vec3 face){
     rdots = 0.0;
   }
 
-  vec4 light = vec4((uKa * uIla + uIl * (uKd * ndotl + uKs * pow(rdots,uN)))/255.0, 1.0);
+  vec4 light = vec4((Ka * Ila + Il * (Kd * ndotl + Ks * pow(rdots,uN)))/255.0, 1.0);
   return light;
 }
 

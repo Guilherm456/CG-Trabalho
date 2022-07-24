@@ -247,14 +247,14 @@ export default class Sphere {
     if (distance < camera.near || distance > camera.far) return;
 
     //Repassa os dados para o shader
-    shader.setUniform('uKa', [...this.Ka]);
-    shader.setUniform('uKd', [...this.Kd]);
-    shader.setUniform('uKs', [...this.Ks]);
-    shader.setUniform('uObserver', [...camera.VRP]);
-    shader.setUniform('uLightPosition', [...light.position]);
+    shader.setUniform('Ka', [...this.Ka]);
+    shader.setUniform('Kd', [...this.Kd]);
+    shader.setUniform('Ks', [...this.Ks]);
+    shader.setUniform('ObserverPosition', [...camera.VRP]);
+    shader.setUniform('LightPosition', [...light.position]);
     shader.setUniform('uN', this.n);
-    shader.setUniform('uIla', [...light.ambientLightIntensity]);
-    shader.setUniform('uIl', [...light.lightIntensity]);
+    shader.setUniform('Ila', [...light.ambientLightIntensity]);
+    shader.setUniform('Il', [...light.lightIntensity]);
     shader.setUniform('uLightType', light.lightType);
     for (let i = 0; i < this.faces.length; i++) {
       //Vai normalizar a face
@@ -264,8 +264,8 @@ export default class Sphere {
       //Caso a face esteja na frente da camera, ela será desenhada
       if (dot < 0.00000001) continue;
 
-      shader.setUniform('uReferencePoint', [...facesNormal.array()]);
-      shader.setUniform('uFaceNormal', [...facesNormal.array()]);
+      shader.setUniform('ReferencePointPosition', [...facesNormal.array()]);
+      shader.setUniform('FaceNormal', [...facesNormal.array()]);
 
       p5.beginShape();
       for (let j = 0; j < this.faces[i].length; j++) {
