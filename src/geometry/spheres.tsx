@@ -305,24 +305,46 @@ export default class Sphere {
 
   //Rotaciona a esfera
   rotateSphere(angle: number, option: 'X' | 'Y' | 'Z') {
-    //Rotaciona o centro
-    this.center = rotate(this.center, angle, option) as vec3;
-    //Rotaciona os vértices
-    this.vertice = this.vertice.map((vec3) =>
-      rotate(vec3, angle, option)
+    const [x, y, z] = this.center;
+    //Translada o centro para o centro da esfera
+    let NCenter = translate(this.center, -x, -y, -z) as vec3;
+    //Translada os pontos para o centro da esfera
+    let NVertice = this.vertice.map((vec3) =>
+      translate(vec3, -x, -y, -z)
     ) as vec3[][];
+
+    //Rotaciona os pontos
+    NVertice = NVertice.map((vec3) => rotate(vec3, angle, option)) as vec3[][];
+    //Rotaciona o centro
+    NCenter = rotate(NCenter, angle, option) as vec3;
+
+    //Devolve ao centro da esfera
+    this.center = translate(NCenter, x, y, z) as vec3;
+    //Devolve os pontos da esfera
+    this.vertice = NVertice.map((vec3) => translate(vec3, x, y, z)) as vec3[][];
     //Recalcula as faces
     this.faces = this.defineFace() as vec3[][];
   }
 
   //Escala a esfera
   scaleSphere(sX: number, sY: number, sZ: number) {
-    //Escala o centro
-    this.center = scale(this.center, sX, sY, sZ) as vec3;
-    //Escala os vértices
-    this.vertice = this.vertice.map((vec3) =>
-      scale(vec3, sX, sY, sZ)
+    const [x, y, z] = this.center;
+
+    let Ncenter = translate(this.center, -x, -y, -z) as vec3;
+    let Nvertice = this.vertice.map((vec3) =>
+      translate(vec3, -x, -y, -z)
     ) as vec3[][];
+
+    //Escala o centro
+    Ncenter = scale(Ncenter, sX, sY, sZ) as vec3;
+    //Escala os vértices
+    Nvertice = Nvertice.map((vec3) => scale(vec3, sX, sY, sZ)) as vec3[][];
+
+    //Move o centro
+    this.center = translate(Ncenter, x, y, z) as vec3;
+    //Translada os vértices para o centro
+    this.vertice = Nvertice.map((vec3) => translate(vec3, x, y, z)) as vec3[][];
+
     //Recalcula as faces
     this.faces = this.defineFace() as vec3[][];
   }
