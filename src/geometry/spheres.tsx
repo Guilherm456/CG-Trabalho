@@ -277,7 +277,7 @@ export default class Sphere {
         //Transforma os pontos da face para o sistema de coordenadas da camera
         const face = matrixMul(actualFace, camera.concatedMatrix) as vec4;
 
-        p5.vertex(face[0], face[1], actualFace[2]);
+        p5.vertex(face[0], face[1], face[2]);
       }
 
       p5.endShape(p5.CLOSE);

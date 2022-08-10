@@ -71,7 +71,7 @@ export class Camera {
   ) {
     this.VRP = position;
     this.P = target ?? [0, 0, 0];
-    this.perspective = perspective ?? false;
+    this.perspective = perspective ?? true;
 
     this.viewUp = lookAp ?? this.viewUp;
 
