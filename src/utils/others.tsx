@@ -1,4 +1,5 @@
 import p5Types from 'p5';
+import { vec3 } from './interfaces';
 
 //Recebe uma face e retorna a sua normal
 export function getNormal(p5: p5Types, toNormal: number[][]) {
@@ -22,4 +23,24 @@ export function arrayNumberToArrayString(array?: number[]) {
 //Faz o "clamp" de um número (limita o valor entre um intervalo)
 export function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));
+}
+
+export function getCentroidFaces(face: number[][]): vec3 {
+  const x = [
+    Math.min(...face.map(([x]) => x)),
+    Math.max(...face.map(([x]) => x)),
+  ];
+  const y = [
+    Math.min(...face.map(([, y]) => y)),
+    Math.max(...face.map(([, y]) => y)),
+  ];
+  const z = [
+    Math.min(...face.map(([, , z]) => z)),
+    Math.max(...face.map(([, , z]) => z)),
+  ];
+
+  const xCenter = (x[0] + x[1]) / 2;
+  const yCenter = (y[0] + y[1]) / 2;
+  const zCenter = (z[0] + z[1]) / 2;
+  return [xCenter, yCenter, zCenter] as vec3;
 }

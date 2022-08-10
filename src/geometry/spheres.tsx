@@ -10,7 +10,7 @@ import {
 
 import * as numJS from 'numjs';
 import { Camera } from 'components/Camera';
-import { getNormal } from 'utils/others';
+import { getCentroidFaces, getNormal } from 'utils/others';
 import { Light } from 'components/Light';
 
 interface SphereProps {
@@ -264,7 +264,10 @@ export default class Sphere {
       //Caso a face esteja na frente da camera, ela será desenhada
       if (dot < 0.00000001) continue;
 
-      shader.setUniform('ReferencePointPosition', [...facesNormal.array()]);
+      shader.setUniform(
+        'ReferencePointPosition',
+        getCentroidFaces(this.faces[i])
+      );
       shader.setUniform('FaceNormal', [...facesNormal.array()]);
 
       p5.beginShape();
