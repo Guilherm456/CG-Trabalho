@@ -41,7 +41,7 @@ export default function Canva() {
     shaderInf = p5.createShader(VertShader, FragShader);
     p5.shader(shaderInf);
 
-    p5.frameRate(60);
+    p5.frameRate(30);
     p5.noStroke();
 
     camera.setP5(p5);

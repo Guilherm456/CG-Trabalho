@@ -25,7 +25,6 @@ varying vec4 color;
 vec4 getFlatColor(vec3 face){
   vec3 N  = normalize(face);
   vec3 L  = normalize(vec3(LightPosition - ReferencePointPosition));
-  vec3 V  = vec3(ObserverPosition - ReferencePointPosition);
 
   vec3 R = normalize(reflect(-L, N) );
 
@@ -36,7 +35,9 @@ vec4 getFlatColor(vec3 face){
     rdots = 0.0;
   }
 
-  vec4 light = vec4((Ka * Ila + Il * (Kd * ndotl + Ks * pow(rdots,uN)))/255.0, 1.0);
+  float rDots = pow(rdots, uN);
+
+  vec4 light = vec4((Ka * Ila + Il * (Kd * ndotl + Ks * rDots))/255.0, 1.0);
   return light;
 }
 
@@ -54,7 +55,9 @@ vec4 getPhongColor(vec3 face){
     rdots = 0.0;
   }
 
-  vec4 light = vec4((Ka * Ila + Il * (Kd * ndotl + Ks * pow(rdots,uN)))/255.0, 1.0);
+  float rDots = pow(rdots, uN);
+
+  vec4 light = vec4((Ka * Ila + Il * (Kd * ndotl + Ks * rDots))/255.0, 1.0);
   return light;
 }
 
@@ -112,7 +115,8 @@ vec4 getGouradColor(vec3 face){
     rdots = 0.0;
   }
 
-  vec4 light = vec4((Ka * Ila + Il * (Kd * ndotl + Ks * pow(rdots,uN)))/255.0, 1.0);
+  float rDots = pow(rdots, uN);
+  vec4 light = vec4((Ka * Ila + Il * (Kd * ndotl + Ks * rDots))/255.0, 1.0);
   return light;
 }
 

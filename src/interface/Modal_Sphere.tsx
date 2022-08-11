@@ -172,14 +172,14 @@ export const ModalContent = (props: ModalSphere) => {
 
           <Slider
             min={3}
-            max={50}
+            max={25}
             label='Intensidade de meridianos'
             value={intM}
             onChange={(e, v) => setIntM(e)}
           />
           <Slider
             min={3}
-            max={50}
+            max={25}
             label='Intensidade de paralelos'
             value={intP}
             onChange={(e, v) => setIntP(e)}
