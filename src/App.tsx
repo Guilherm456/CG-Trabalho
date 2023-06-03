@@ -1,11 +1,10 @@
 import { Pivot, PivotItem } from '@fluentui/react';
+import { CanvaOriginal } from './components/CanvaOri';
 
-import Canva from './components/Canva';
-
-import { PivotSphere } from 'interface/pivot_sphere';
-import { PivotScene } from 'interface/pivot_scene';
 import { PivotCamera } from 'interface/pivot_camera';
 import { PivotLight } from 'interface/pivot_light';
+import { PivotScene } from 'interface/pivot_scene';
+import { PivotSphere } from 'interface/pivot_sphere';
 
 function App() {
   const p: React.CSSProperties = {
@@ -15,8 +14,21 @@ function App() {
   };
   return (
     <div style={{ display: 'flex', height: '95vh' }}>
-      <div className='canvaArea' style={{ flexGrow: 1 }}>
+      {/* <Modal_Letter /> */}
+      <div
+        className='canvaArea'
+        style={{
+          display: 'grid',
+          gridTemplate: '1fr 1fr / 1fr 1fr',
+          width: '75%',
+        }}
+      >
+        <CanvaOriginal />
+        {/* <Canva />
         <Canva />
+
+        <Canva />
+        <Canva /> */}
       </div>
       <div style={{ width: '25vw', height: '100%', padding: 8 }}>
         <Pivot>
