@@ -1,13 +1,13 @@
-import Sphere from 'geometry/spheres';
 import { createContext, useContext, useState } from 'react';
 import { Camera } from './Camera';
 
 import { vec3 } from 'utils/interfaces';
+import { Letter } from './Letter';
 import { Light } from './Light';
 
 interface ObjectsProviderInterface {
-  objects: Sphere[];
-  setObjects: React.Dispatch<React.SetStateAction<Sphere[]>>;
+  objects: Letter[];
+  setObjects: React.Dispatch<React.SetStateAction<Letter[]>>;
   camera: Camera;
   light: Light;
   /**Limpar a cena */
@@ -60,18 +60,8 @@ const defaultPositionLight: vec3 = [300, 0, 0];
 
 export function ObjectsProvider({ children }: Props) {
   //Inicia uma esfera
-  const [objects, setObjects] = useState<Sphere[]>([
-    new Sphere({
-      center: [0, 0, 0],
-      radius: 100,
-      Ka: [0, 0, 0.3],
-      Kd: [0, 0.3, 0],
-      Ks: [0.3, 0, 0],
-      Ns: 16,
-      intensityM: 9,
-      intensityP: 9,
-      name: 'Sphere1',
-    }),
+  const [objects, setObjects] = useState<Letter[]>([
+    new Letter([0, 0, 0], 100, 'A'),
   ]);
 
   //Inicia a câmera

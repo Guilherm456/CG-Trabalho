@@ -1,11 +1,12 @@
-import Sketch from 'react-p5';
 import p5Types from 'p5';
+import Sketch from 'react-p5';
 import { ObjectsProviderContext } from './Provider';
 
-import { VertShader, FragShader } from '../utils/shader';
+import { FragShader, VertShader } from '../utils/shader';
 
-import { Port } from 'utils/interfaces';
+import { useMemo } from 'react';
 import { matrixMul } from 'utils/calculate';
+import { Port } from 'utils/interfaces';
 import { clamp } from 'utils/others';
 
 let shaderInf: p5Types.Shader;
@@ -63,7 +64,7 @@ export default function Canva() {
     }
 
     p5.push();
-    objects.forEach((object) => object.drawFaces(p5, camera, shaderInf, light));
+    objects.forEach((object) => object.draw(p5, camera));
     p5.pop();
 
     p5.push();
@@ -161,13 +162,17 @@ export default function Canva() {
     }
   };
 
-  return (
-    // @ts-ignore
-    <Sketch
-      setup={setup}
-      draw={draw}
-      windowResized={windowResized}
-      keyReleased={debug}
-    />
-  );
+  const memo = useMemo(() => {
+    return (
+      // @ts-ignore
+      <Sketch
+        setup={setup}
+        draw={draw}
+        windowResized={windowResized}
+        keyReleased={debug}
+      />
+    );
+  }, [objects, camera, light, draw, setup, windowResized, debug]);
+
+  return <>{memo}</>;
 }
