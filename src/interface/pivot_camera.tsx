@@ -1,16 +1,17 @@
-import React, { useState } from 'react';
 import {
-  Stack,
-  TextField,
-  Text,
-  Label,
-  VerticalDivider,
+  Checkbox,
   ChoiceGroup,
   IChoiceGroupOption,
-  Slider,
+  Label,
   PrimaryButton,
+  Slider,
+  Stack,
+  Text,
+  TextField,
+  VerticalDivider,
 } from '@fluentui/react';
-import { ObjectsProviderContext } from 'components/Provider';
+import { useObjects } from 'components/Provider';
+import React, { useCallback, useState } from 'react';
 
 import { Port } from 'utils/interfaces';
 import { arrayNumberToArrayString } from 'utils/others';
@@ -23,10 +24,12 @@ const optionsCamera = [
 ];
 
 export const PivotCamera = () => {
-  const { camera } = ObjectsProviderContext();
+  const { camera, handleEditCamera } = useObjects();
+
+  const cameraActual = camera[0];
 
   const [perspective, setPerspective] = useState(
-    camera.perspective ? 'p' : 'a'
+    cameraActual.perspective ? 'p' : 'a'
   );
 
   const handleChangePerspectiveType = (
@@ -34,43 +37,52 @@ export const PivotCamera = () => {
     option?: IChoiceGroupOption
   ) => {
     setPerspective(option?.key as string);
-    camera.setTypePerspective((option?.key as string) === 'p');
+    cameraActual.setTypePerspective((option?.key as string) === 'p');
+    handleEditCamera(cameraActual);
   };
 
-  const [near, setNear] = useState(camera.near);
-  const [far, setFar] = useState(camera.far);
+  const [near, setNear] = useState(cameraActual.near);
+  const [far, setFar] = useState(cameraActual.far);
 
-  const handleChangeDistance = () => {
-    camera.setDistances(far, near);
-  };
+  const handleChangeDistance = useCallback(() => {
+    cameraActual.setDistances(far, near);
+    handleEditCamera(cameraActual);
+  }, [cameraActual, far, near, camera]);
 
   const [distanceProjection, setDistanceProjection] = useState(
-    camera.projectionPlanDistance * 100
+    cameraActual.projectionPlanDistance * 100
   );
 
-  const handleChangeDistanceProjection = () => {
-    camera.setPlanDistance(distanceProjection);
-  };
+  const handleChangeDistanceProjection = useCallback(() => {
+    cameraActual.setPlanDistance(distanceProjection);
+    handleEditCamera(cameraActual);
+  }, [cameraActual, distanceProjection, camera]);
 
-  const [xVRP, setXVRP] = useState(camera.VRP[0].toString());
-  const [yVRP, setYVRP] = useState(camera.VRP[1].toString());
-  const [zVRP, setZVRP] = useState(camera.VRP[2].toString());
+  const [xVRP, setXVRP] = useState(cameraActual.VRP[0].toString());
+  const [yVRP, setYVRP] = useState(cameraActual.VRP[1].toString());
+  const [zVRP, setZVRP] = useState(cameraActual.VRP[2].toString());
 
-  const [xP, setXP] = useState(camera.P[0].toString());
-  const [yP, setYP] = useState(camera.P[1].toString());
-  const [zP, setZP] = useState(camera.P[2].toString());
+  const [xP, setXP] = useState(cameraActual.P[0].toString());
+  const [yP, setYP] = useState(cameraActual.P[1].toString());
+  const [zP, setZP] = useState(cameraActual.P[2].toString());
 
-  const [xMin, setXMin] = useState(camera.WindowPort.width[0].toString());
-  const [yMin, setYMin] = useState(camera.WindowPort.height[0].toString());
-  const [xMax, setXMax] = useState(camera.WindowPort.width[1].toString());
-  const [yMax, setYMax] = useState(camera.WindowPort.height[1].toString());
+  const [xMin, setXMin] = useState(cameraActual.WindowPort.width[0].toString());
+  const [yMin, setYMin] = useState(
+    cameraActual.WindowPort.height[0].toString()
+  );
+  const [xMax, setXMax] = useState(cameraActual.WindowPort.width[1].toString());
+  const [yMax, setYMax] = useState(
+    cameraActual.WindowPort.height[1].toString()
+  );
 
-  const [uMin, setUMin] = useState(camera.ViewPort.width[0].toString());
-  const [vMin, setVMin] = useState(camera.ViewPort.height[0].toString());
-  const [uMax, setUMax] = useState(camera.ViewPort.width[1].toString());
-  const [vMax, setVMax] = useState(camera.ViewPort.height[1].toString());
+  const [uMin, setUMin] = useState(cameraActual.ViewPort.width[0].toString());
+  const [vMin, setVMin] = useState(cameraActual.ViewPort.height[0].toString());
+  const [uMax, setUMax] = useState(cameraActual.ViewPort.width[1].toString());
+  const [vMax, setVMax] = useState(cameraActual.ViewPort.height[1].toString());
 
-  const handleChangeWindowSize = () => {
+  const [ocultFaces, setOcultFaces] = useState(cameraActual.ocultFaces);
+
+  const handleChangeWindowSize = useCallback(() => {
     const [uMinV, uMaxV, vMinV, vMaxV, xMinV, xMaxV, yMinV, yMaxV] = [
       Number(uMin),
       Number(uMax),
@@ -89,18 +101,28 @@ export const PivotCamera = () => {
       width: [xMinV, xMaxV],
       height: [yMinV, yMaxV],
     };
-    camera.setWindowSize(windowPort, viewport);
-  };
+    cameraActual.setWindowSize(windowPort, viewport);
+    handleEditCamera(cameraActual);
+  }, [camera, cameraActual]);
 
-  const [viewUp, setviewUp] = useState(arrayNumberToArrayString(camera.viewUp));
-  const handleChangeviewUp = () => {
-    camera.setviewUp([Number(viewUp[0]), Number(viewUp[1]), Number(viewUp[2])]);
-  };
+  const [viewUp, setviewUp] = useState(
+    arrayNumberToArrayString(cameraActual.viewUp)
+  );
 
-  const [sensitivity, setsensitivity] = useState(camera.sensitivity);
-  const handleChangesensitivity = () => {
-    camera.setSenitivity(sensitivity);
-  };
+  const handleChangeviewUp = useCallback(() => {
+    cameraActual.setviewUp([
+      Number(viewUp[0]),
+      Number(viewUp[1]),
+      Number(viewUp[2]),
+    ]);
+    handleEditCamera(cameraActual);
+  }, [camera, cameraActual]);
+
+  const [sensitivity, setsensitivity] = useState(cameraActual.sensitivity);
+  const handleChangesensitivity = useCallback(() => {
+    cameraActual.setSenitivity(sensitivity);
+    handleEditCamera(cameraActual);
+  }, [camera, cameraActual]);
 
   return (
     <Stack tokens={{ childrenGap: 5 }}>
@@ -114,7 +136,7 @@ export const PivotCamera = () => {
       />
       <Slider
         label='Distância mínima'
-        max={camera.far}
+        max={cameraActual.far}
         value={near}
         onChange={(e) => setNear(e)}
       />
@@ -137,6 +159,15 @@ export const PivotCamera = () => {
       <PrimaryButton
         text='Mudar distância'
         onClick={handleChangeDistanceProjection}
+      />
+      <Checkbox
+        label='Ocultar faces'
+        checked={ocultFaces}
+        onChange={(_, value) => {
+          cameraActual.setOcultFaces(value!);
+          setOcultFaces(value!);
+          handleEditCamera(cameraActual);
+        }}
       />
       <VerticalDivider />
       <Label>VRP</Label>
@@ -162,7 +193,10 @@ export const PivotCamera = () => {
       </Stack>
       <PrimaryButton
         text='Alterar VRP'
-        onClick={() => camera.setVRP(Number(xVRP), Number(yVRP), Number(zVRP))}
+        onClick={() => {
+          cameraActual.setVRP(Number(xVRP), Number(yVRP), Number(zVRP));
+          handleEditCamera(cameraActual);
+        }}
       />
       <Label>P</Label>
       <Stack horizontal tokens={gapStack}>
@@ -187,7 +221,10 @@ export const PivotCamera = () => {
       </Stack>
       <PrimaryButton
         text='Alterar P'
-        onClick={() => camera.setP(Number(xP), Number(yP), Number(zP))}
+        onClick={() => {
+          cameraActual.setP(Number(xP), Number(yP), Number(zP));
+          handleEditCamera(cameraActual);
+        }}
       />
       <VerticalDivider />
       <Text variant='mediumPlus'>WindowSize</Text>

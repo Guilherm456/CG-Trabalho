@@ -28,8 +28,8 @@ export const PivotSphere = () => {
   const [option, setOption] = useState('rotate');
 
   const [optionsSphere, setOptionsSphere] = useState<IDropdownOption[]>([]);
-  const [selectedLetter, setSelectedLetter] = useState('');
-  //Define as letras selecionáveis
+  const [selectedSphere, setSelectedSphere] = useState('');
+  //Define as esferas selecionáveis
   useEffect(() => {
     if (objects.length === 0) return;
     const temp = objects.map((obj) => {
@@ -38,10 +38,9 @@ export const PivotSphere = () => {
         text: obj.typeLetter,
       };
     }) as IDropdownOption[];
-    temp.push({ key: 'all', text: 'Todas as letras' });
     temp.push({ key: 'clean', text: 'Limpar' });
     setOptionsSphere(temp);
-    if (selectedLetter !== '') setSelectedLetter('');
+    if (selectedSphere !== '') setSelectedSphere('');
   }, [objects]);
 
   const optionsRotation = [
@@ -61,9 +60,9 @@ export const PivotSphere = () => {
   const handleOpen = () => setModalOpen(!modalOpen);
 
   const handleChange = () => {
-    if (option === '' || selectedLetter === '') return;
+    if (option === '' || selectedSphere === '') return;
     //Vai selecionar o objeto que está sendo manipulado
-    const object = objects.find((obj) => obj.id === selectedLetter);
+    const object = objects.find((obj) => obj.id === selectedSphere);
     if (!object) return;
 
     switch (option) {
@@ -86,7 +85,7 @@ export const PivotSphere = () => {
     setValueZ('1');
     setOptionRotation('X');
     setOption('rotate');
-    setSelectedLetter('');
+    setSelectedSphere('');
   };
 
   const handleChageDropdown = (
@@ -94,44 +93,44 @@ export const PivotSphere = () => {
     option?: any
   ) => {
     if (!option) return;
-    if (option!.key === 'clean') setSelectedLetter('');
-    else setSelectedLetter(option!.key as string);
+    if (option!.key === 'clean') setSelectedSphere('');
+    else setSelectedSphere(option!.key as string);
   };
 
   const handleRemoveSphereOption = () => {
-    if (selectedLetter === '') return;
-    handleRemoveSphere(selectedLetter);
-    setSelectedLetter('');
+    if (selectedSphere === '') return;
+    handleRemoveSphere(selectedSphere);
+    setSelectedSphere('');
   };
 
   return (
     <Stack tokens={gapStack}>
-      <Text variant='xLarge'>Editar letra</Text>
+      <Text variant='xLarge'>Editar esfera</Text>
       <Stack horizontal verticalAlign='end'>
         <Dropdown
-          label='Selecione uma letra'
+          label='Selecione uma esfera'
           options={optionsSphere}
-          selectedKey={selectedLetter}
+          selectedKey={selectedSphere}
           //Função que define o valor selecionado
           onChange={handleChageDropdown}
           disabled={objects.length === 0}
         />
         <IconButton
           split
-          title='Deletar letra'
+          title='Deletar esfera'
           iconProps={{ iconName: 'Delete' }}
-          disabled={selectedLetter === ''}
+          disabled={selectedSphere === ''}
           onClick={handleRemoveSphereOption}
         />
         <IconButton
           split
-          title='Editar letra'
+          title='Editar esfera'
           iconProps={{ iconName: 'Edit' }}
-          disabled={selectedLetter === ''}
+          disabled={selectedSphere === ''}
           onClick={handleOpen}
         />
       </Stack>
-      {selectedLetter !== '' ? (
+      {selectedSphere !== '' ? (
         <>
           <ChoiceGroup
             label='Selecione a opção desejada'
@@ -185,7 +184,7 @@ export const PivotSphere = () => {
         <ModalContent
           handleOpen={handleOpen}
           open={modalOpen}
-          sphere={selectedLetter}
+          sphere={selectedSphere}
         />
       ) : null} */}
     </Stack>

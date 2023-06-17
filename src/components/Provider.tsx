@@ -8,7 +8,7 @@ import { Light } from './Light';
 interface ObjectsProviderInterface {
   objects: Letter[];
   setObjects: React.Dispatch<React.SetStateAction<Letter[]>>;
-  camera: Camera;
+  camera: Camera[];
   light: Light;
   /**Limpar a cena */
   handleClear: () => void;
@@ -17,28 +17,14 @@ interface ObjectsProviderInterface {
    * @param id ID da esfera
    */
   handleRemoveSphere: (id: string) => void;
+
+  handleEditCamera: (camera: Camera) => void;
 }
-const ObjectsProviderInitial: ObjectsProviderInterface = {
-  objects: [],
-  camera: new Camera(
-    [0, 0, 0],
-    [0, 0, 0],
-    { width: [0, 0], height: [0, 0] },
-    { width: [0, 0], height: [0, 0] },
-    10,
-    0.1
-  ),
-  light: new Light([0, 0, 0], [0, 0, 0], [0, 0, 0]),
-  setObjects: () => {},
-  handleClear: () => {},
-  handleRemoveSphere: () => {},
-  handleClearObjects: () => {},
-};
 const ObjectsP = createContext<ObjectsProviderInterface>(
-  ObjectsProviderInitial
+  {} as ObjectsProviderInterface
 );
 
-export function ObjectsProviderContext() {
+export function useObjects() {
   return useContext(ObjectsP);
 }
 
@@ -65,17 +51,60 @@ export function ObjectsProvider({ children }: Props) {
   ]);
 
   //Inicia a câmera
-  const [camera] = useState<Camera>(
+  const [camera, setCamera] = useState([
     new Camera(
+      'Frontal',
       defaultVRP,
       defaultP,
       { width: [-200, 200], height: [-200, 200] },
       { width: [0, 0], height: [0, 0] },
       defaultFar,
       defaultNear,
-      defaultLookUp
-    )
-  );
+      defaultLookUp,
+      false
+    ),
+    new Camera(
+      'Lateral',
+      [100, 0, 0],
+      defaultP,
+      { width: [-200, 200], height: [-200, 200] },
+      { width: [0, 0], height: [0, 0] },
+      defaultFar,
+      defaultNear,
+      defaultLookUp,
+      false
+    ),
+    new Camera(
+      'Topo',
+      [0, 100, 0],
+      defaultP,
+      { width: [-200, 200], height: [-200, 200] },
+      { width: [0, 0], height: [0, 0] },
+      defaultFar,
+      defaultNear,
+      defaultLookUp,
+      false
+    ),
+    new Camera(
+      'Perspectiva',
+      defaultVRP,
+      defaultP,
+      { width: [-200, 200], height: [-200, 200] },
+      { width: [0, 0], height: [0, 0] },
+      defaultFar,
+      defaultNear,
+      defaultLookUp,
+      true
+    ),
+  ]);
+
+  const handleEditCamera = (camera: Camera) => {
+    setCamera((prevState) => {
+      const index = prevState.findIndex((c) => c.name === camera.name);
+      prevState[index] = camera;
+      return [...prevState];
+    });
+  };
 
   //Inicia a luz
   const [light] = useState<Light>(
@@ -94,8 +123,11 @@ export function ObjectsProvider({ children }: Props) {
   //Limpa a cena e reseta alguns valores
   const handleClear = () => {
     handleClearObjects();
-    camera.updateVRP_P(defaultVRP, defaultP);
-    camera.setviewUp(defaultLookUp);
+
+    camera.forEach((camera) => {
+      camera.updateVRP_P(defaultVRP, defaultP);
+      camera.setviewUp(defaultLookUp);
+    });
 
     light.setIntensity(defaultAmbientIntensity, defaultLightIntensity);
     light.setPosition(defaultPositionLight);
@@ -114,6 +146,7 @@ export function ObjectsProvider({ children }: Props) {
     handleClear,
     handleClearObjects,
     handleRemoveSphere,
+    handleEditCamera,
   };
   return <ObjectsP.Provider value={values}>{children}</ObjectsP.Provider>;
 }

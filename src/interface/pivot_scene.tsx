@@ -6,16 +6,34 @@ import {
   TextField,
   VerticalDivider,
 } from '@fluentui/react';
-import { ObjectsProviderContext } from 'components/Provider';
+import { Letter } from 'components/Letter';
+import { useObjects } from 'components/Provider';
 import { useState } from 'react';
 
 const gapStack = { childrenGap: 5 };
 
 export const PivotScene = () => {
-  const { handleClear, handleClearObjects, objects } = ObjectsProviderContext();
-  const [modalOpen, setModalOpen] = useState(false);
+  const { handleClear, handleClearObjects, objects, setObjects } = useObjects();
 
-  const handleOpen = () => {};
+  const [text, setText] = useState<string>('');
+
+  const createText = () => {
+    if (text === '') return;
+    const letters: Letter[] = [];
+
+    const char = text.toUpperCase().split('');
+    const length = char.length;
+
+    //Para cada letra, vai criar uma nova Letter, porém o centro da letra vai se dar pela posição da letra
+    //Onde a letra do meio da frase vai ter o centro em 0,0,0. As posteriores vao aumentar o x em 300, e as anteriores diminuir o x em 300 cada
+    char.forEach((letter, index) => {
+      const distanceFromCenter = index - (length - 1) / 2;
+      const x = distanceFromCenter * 6; // Aumenta o espaçamento em 300 unidades a cada letra
+
+      letters.push(new Letter([x, 0, 0], 100, letter as any));
+    });
+    setObjects(letters);
+  };
 
   const downloadScene = () => {
     const scene = JSON.stringify(objects);
@@ -28,14 +46,6 @@ export const PivotScene = () => {
     element.click();
   };
 
-  const createText = () => {
-    const text = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
-
-    for (let i = 0; i < text.length; i++) {
-      const char = text[i];
-      // font[char]
-    }
-  };
   return (
     <Stack
       tokens={gapStack}
@@ -48,10 +58,14 @@ export const PivotScene = () => {
           childrenGap: 5,
         }}
       >
-        <TextField label='Texto a ser renderizado' />
+        <TextField
+          value={text}
+          onChange={(_, v) => setText(v || '')}
+          label='Texto a ser renderizado'
+        />
         <PrimaryButton
           text='Criar texto'
-          onClick={handleOpen}
+          onClick={createText}
           iconProps={{ iconName: 'Add' }}
         />
       </Stack>
@@ -86,7 +100,7 @@ export const PivotScene = () => {
         />
         <DefaultButton
           text='Carregar cena'
-          onClick={handleOpen}
+          onClick={createText}
           iconProps={{ iconName: 'OpenFile' }}
         >
           <input type='file' style={{ display: 'none' }} />

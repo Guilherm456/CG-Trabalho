@@ -13,7 +13,7 @@ export class Light {
   public lightIntensity: vec3;
 
   //Se deve rotacionar ou não
-  public rotate: boolean = true;
+  public rotate: boolean = false;
   //Angulo de rotação
   public angle: number = 1;
   //Direção

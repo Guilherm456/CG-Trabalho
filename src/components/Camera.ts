@@ -1,5 +1,5 @@
-import { vec3, Port } from 'utils/interfaces';
 import * as numjs from 'numjs';
+import { Port, vec3 } from 'utils/interfaces';
 
 import p5Types from 'p5';
 const p5 = p5Types.Vector;
@@ -11,6 +11,8 @@ export class Camera {
   public VRP: vec3;
   //Para onde está "olhando"
   public P: vec3;
+
+  public name: string = 'Camera';
 
   //Se é perspectiva ou não
   public perspective: boolean;
@@ -55,10 +57,14 @@ export class Camera {
   //Sensibilidade de mexer a câmera
   public sensitivity: number = 1;
 
+  //Se está ocultando as faces
+  public ocultFaces: boolean = true;
+
   private p5!: p5Types;
 
   //Constrói os valores iniciais da câmera
   constructor(
+    name: string,
     position: vec3,
     target: vec3,
     viewport: Port,
@@ -66,8 +72,8 @@ export class Camera {
     far: number,
     near: number,
     lookAp?: vec3,
-    planCenterDistance?: number,
-    perspective?: boolean
+    perspective?: boolean,
+    planCenterDistance?: number
   ) {
     this.VRP = position;
     this.P = target ?? [0, 0, 0];
@@ -80,12 +86,18 @@ export class Camera {
 
     this.WindowPort = windowPort;
 
+    this.name = name;
+
     if (!this.p5) return;
     this.matrixView = this.getMatrixView();
     this.getAllValues();
 
     this.far = far;
     this.near = near;
+  }
+
+  public setOcultFaces(ocultFaces: boolean) {
+    this.ocultFaces = ocultFaces;
   }
 
   public setP5(p5: p5Types) {
@@ -300,6 +312,7 @@ export class Camera {
     ];
     return matrix;
   }
+
 
   //Calcula a matriz concatenada
   public getConcatedMatrix(): number[][] {
