@@ -6,13 +6,13 @@ import {
   TextField,
   VerticalDivider,
 } from '@fluentui/react';
-import { ObjectsProviderContext } from 'components/Provider';
+import { useObjects } from 'components/Provider';
 import { useState } from 'react';
 
 const gapStack = { childrenGap: 5 };
 
 export const PivotScene = () => {
-  const { handleClear, handleClearObjects, objects } = ObjectsProviderContext();
+  const { handleClear, handleClearObjects, objects } = useObjects();
   const [modalOpen, setModalOpen] = useState(false);
 
   const handleOpen = () => {};

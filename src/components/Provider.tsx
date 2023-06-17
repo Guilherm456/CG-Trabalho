@@ -38,7 +38,7 @@ const ObjectsP = createContext<ObjectsProviderInterface>(
   ObjectsProviderInitial
 );
 
-export function ObjectsProviderContext() {
+export function useObjects() {
   return useContext(ObjectsP);
 }
 

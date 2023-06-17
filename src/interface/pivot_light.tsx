@@ -1,13 +1,13 @@
 import {
   Checkbox,
-  PrimaryButton,
   Dropdown,
+  PrimaryButton,
   Stack,
   Text,
   TextField,
   VerticalDivider,
 } from '@fluentui/react';
-import { ObjectsProviderContext } from 'components/Provider';
+import { useObjects } from 'components/Provider';
 import { useState } from 'react';
 import { vec3 } from 'utils/interfaces';
 
@@ -25,7 +25,7 @@ const optionsDropdownType = [
   { key: 2, text: 'Gouraud Shading', value: 2 },
 ];
 export const PivotLight = () => {
-  const { light } = ObjectsProviderContext();
+  const { light } = useObjects();
 
   const [typeShading, setTypeShading] = useState(light.lightType);
 

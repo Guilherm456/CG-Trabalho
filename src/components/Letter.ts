@@ -53,11 +53,21 @@ export class Letter {
 
   private size: number = 100;
 
+  readonly id: string;
+
+  readonly typeLetter: TypeLetter = 'A';
+
   constructor(center: vec3, ZDepth: number, typeLetter: TypeLetter) {
     this.center = center;
     this.ZDepth = ZDepth;
 
     this.edges = Letters[typeLetter] as any;
+    this.typeLetter = typeLetter;
+
+    this.id = Math.ceil(Math.random() * Date.now())
+      .toPrecision(3)
+      .toString()
+      .replace('.', '');
     this.findFaces();
   }
 

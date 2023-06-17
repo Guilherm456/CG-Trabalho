@@ -1,6 +1,6 @@
 import p5Types from 'p5';
 import Sketch from 'react-p5';
-import { ObjectsProviderContext } from './Provider';
+import { useObjects } from './Provider';
 
 import { FragShader, VertShader } from '../utils/shader';
 
@@ -22,7 +22,7 @@ enum Direction {
 }
 
 export default function Canva() {
-  const { objects, camera, light } = ObjectsProviderContext();
+  const { objects, camera, light } = useObjects();
 
   const setup = (val: any, parentCanvas: Element) => {
     const p5 = val as p5Types;

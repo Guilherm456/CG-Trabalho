@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
 import {
-  Stack,
-  TextField,
-  Text,
-  Label,
-  VerticalDivider,
   ChoiceGroup,
   IChoiceGroupOption,
-  Slider,
+  Label,
   PrimaryButton,
+  Slider,
+  Stack,
+  Text,
+  TextField,
+  VerticalDivider,
 } from '@fluentui/react';
-import { ObjectsProviderContext } from 'components/Provider';
+import { useObjects } from 'components/Provider';
+import React, { useState } from 'react';
 
 import { Port } from 'utils/interfaces';
 import { arrayNumberToArrayString } from 'utils/others';
@@ -23,7 +23,7 @@ const optionsCamera = [
 ];
 
 export const PivotCamera = () => {
-  const { camera } = ObjectsProviderContext();
+  const { camera } = useObjects();
 
   const [perspective, setPerspective] = useState(
     camera.perspective ? 'p' : 'a'
