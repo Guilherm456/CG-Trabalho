@@ -1,5 +1,5 @@
-import { vec3, Port } from 'utils/interfaces';
 import * as numjs from 'numjs';
+import { Port, vec3 } from 'utils/interfaces';
 
 import p5Types from 'p5';
 const p5 = p5Types.Vector;
@@ -55,8 +55,6 @@ export class Camera {
   //Sensibilidade de mexer a câmera
   public sensitivity: number = 1;
 
-  private p5!: p5Types;
-
   //Constrói os valores iniciais da câmera
   constructor(
     position: vec3,
@@ -80,16 +78,10 @@ export class Camera {
 
     this.WindowPort = windowPort;
 
-    if (!this.p5) return;
     this.matrixView = this.getMatrixView();
-    this.getAllValues();
 
     this.far = far;
     this.near = near;
-  }
-
-  public setP5(p5: p5Types) {
-    this.p5 = p5;
     this.getAllValues();
   }
 
@@ -153,7 +145,6 @@ export class Camera {
     this.ViewPort = viewPort ?? this.ViewPort;
 
     this.matrixView = this.getMatrixView();
-    if (!this.p5) return;
     this.concatedMatrix = this.getConcatedMatrix();
   }
 
@@ -178,8 +169,8 @@ export class Camera {
   private getN(): vec3 {
     const { VRP, P } = this;
 
-    const PVector = this.p5.createVector(...P);
-    const VRPVector = this.p5.createVector(...VRP);
+    const PVector = new p5(...P);
+    const VRPVector = new p5(...VRP);
     //VRP - P = N (normal)
     return VRPVector.sub(PVector).normalize().array() as vec3;
   }
@@ -188,8 +179,8 @@ export class Camera {
   private getV(): vec3 {
     const { N, viewUp } = this;
 
-    const YVector = this.p5.createVector(...viewUp);
-    const NVector = this.p5.createVector(...N);
+    const YVector = new p5(...viewUp);
+    const NVector = new p5(...N);
 
     const scalar = YVector.dot(NVector);
     //Y - (Y . N) * N = V (normal)
@@ -200,8 +191,8 @@ export class Camera {
   private getU(): vec3 {
     const { V, N } = this;
 
-    const NVector = this.p5.createVector(...N);
-    const VVector = this.p5.createVector(...V);
+    const NVector = new p5(...N);
+    const VVector = new p5(...V);
     //(V X N) = U (normal)
     return VVector.cross(NVector).normalize().array() as vec3;
   }
@@ -210,11 +201,11 @@ export class Camera {
   convertToSRC(): number[][] {
     const { VRP, N, U, V } = this;
     //VRP negativo
-    const negativeVRP = this.p5.createVector(...VRP).mult(-1);
+    const negativeVRP = new p5(...VRP).mult(-1);
 
-    const UVector = this.p5.createVector(...U);
-    const VVector = this.p5.createVector(...V);
-    const NVector = this.p5.createVector(...N);
+    const UVector = new p5(...U);
+    const VVector = new p5(...V);
+    const NVector = new p5(...N);
 
     const MatrixSRU_SRC = [
       [...U, negativeVRP.dot(UVector)],
@@ -231,8 +222,8 @@ export class Camera {
     if (this.perspective) {
       const { VRP, projectionPlan } = this;
 
-      const VRPVector = this.p5.createVector(...VRP);
-      const ProjectionVector = this.p5.createVector(...projectionPlan);
+      const VRPVector = new p5(...VRP);
+      const ProjectionVector = new p5(...projectionPlan);
 
       //Calcula a distância entre o VRP e o plano de projeção
       const Dp = VRPVector.dist(ProjectionVector);
@@ -298,6 +289,7 @@ export class Camera {
       [0, 0, 1, 0],
       [0, 0, 0, 1],
     ];
+
     return matrix;
   }
 

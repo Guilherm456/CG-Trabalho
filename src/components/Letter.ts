@@ -45,7 +45,7 @@ type TypeLetter =
 export class Letter {
   private faces: number[][] = [];
 
-  private edges: [[vec3]] = [[[-1, -1, -1]]];
+  edges: [[vec3]] = [[[-1, -1, -1]]];
 
   private center: vec3 = [0, 0, 0];
 
@@ -149,7 +149,6 @@ export class Letter {
           ],
           camera.concatedMatrix
         ) as any;
-        // const [x, y, z] = vertex;
         p5.vertex(x, y, z);
       }
       p5.endShape(p5.CLOSE);
