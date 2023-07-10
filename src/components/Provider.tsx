@@ -60,9 +60,7 @@ const defaultPositionLight: vec3 = [300, 0, 0];
 
 export function ObjectsProvider({ children }: Props) {
   //Inicia uma esfera
-  const [objects, setObjects] = useState<Letter[]>([
-    new Letter([0, 0, 0], 100, 'A'),
-  ]);
+  const [objects, setObjects] = useState<Letter[]>([]);
 
   //Inicia a câmera
   const [camera] = useState<Camera>(
