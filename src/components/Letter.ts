@@ -1,47 +1,10 @@
 import p5Types from 'p5';
-import { matrixMul } from 'utils/calculate';
+import { matrixMul, rotate, scale, translate } from 'utils/calculate';
 import Letters from 'utils/font';
-import { vec3 } from 'utils/interfaces';
+import { TypeLetter, vec3 } from 'utils/interfaces';
 import { amplifierEdges, getCentroidFaces, getNormal } from 'utils/others';
 import { Camera } from './Camera';
 import { Light } from './Light';
-type TypeLetter =
-  | 'A'
-  | 'B'
-  | 'C'
-  | 'D'
-  | 'E'
-  | 'F'
-  | 'G'
-  | 'H'
-  | 'I'
-  | 'J'
-  | 'K'
-  | 'L'
-  | 'M'
-  | 'N'
-  | 'O'
-  | 'P'
-  | 'Q'
-  | 'R'
-  | 'S'
-  | 'T'
-  | 'U'
-  | 'V'
-  | 'X'
-  | 'W'
-  | 'Y'
-  | 'Z'
-  | '0'
-  | '1'
-  | '2'
-  | '3'
-  | '4'
-  | '5'
-  | '6'
-  | '7'
-  | '8'
-  | '9';
 
 export class Letter {
   private faces: vec3[][] = [];
@@ -159,8 +122,8 @@ export class Letter {
 
       const dot = OVector.dot(faceNormal);
 
-      // //Caso a face esteja na frente da camera, ela será desenhada
-      // if (dot < 0.00000000001) continue;
+      //Caso a face esteja na frente da camera, ela será desenhada
+      if (dot < 0.00000000001) continue;
 
       // shader?.setUniform('ReferencePointPosition', getCentroidFaces(face));
       // shader?.setUniform('FaceNormal', [...faceNormal.array()]);
@@ -223,5 +186,63 @@ export class Letter {
         ) as vec3;
       }
     }
+  }
+
+  //Translada a esfera
+  translateSphere(tX: number, tY: number, tZ: number) {
+    //Move o centro
+    this.center = translate(this.center, tX, tY, tZ) as vec3;
+    //Move os vértices
+    this.faces = this.faces.map((vec3) =>
+      translate(vec3, tX, tY, tZ)
+    ) as vec3[][];
+
+    this.findFacesCentroid();
+  }
+
+  //Rotaciona a esfera
+  rotateSphere(angle: number, option: 'X' | 'Y' | 'Z') {
+    const [x, y, z] = this.center;
+    //Translada o centro para o centro da esfera
+    let NCenter = translate(this.center, -x, -y, -z) as vec3;
+    //Translada os pontos para o centro da esfera
+    let NFaces = this.faces.map((vec3) =>
+      translate(vec3, -x, -y, -z)
+    ) as vec3[][];
+
+    //Rotaciona os pontos
+    NFaces = NFaces.map((vec3) => rotate(vec3, angle, option)) as vec3[][];
+    //Rotaciona o centro
+    NCenter = rotate(NCenter, angle, option) as vec3;
+
+    //Devolve ao centro da esfera
+    this.center = translate(NCenter, x, y, z) as vec3;
+    //Devolve os pontos da esfera
+    this.faces = NFaces.map((vec3) => translate(vec3, x, y, z)) as vec3[][];
+
+    this.calculateFacesNormal();
+    this.findFacesCentroid();
+  }
+
+  //Escala a esfera
+  scaleSphere(sX: number, sY: number, sZ: number) {
+    const [x, y, z] = this.center;
+
+    let Ncenter = translate(this.center, -x, -y, -z) as vec3;
+    let NFaces = this.faces.map((vec3) =>
+      translate(vec3, -x, -y, -z)
+    ) as vec3[][];
+
+    //Escala o centro
+    Ncenter = scale(Ncenter, sX, sY, sZ) as vec3;
+    //Escala os vértices
+    NFaces = NFaces.map((vec3) => scale(vec3, sX, sY, sZ)) as vec3[][];
+
+    //Move o centro
+    this.center = translate(Ncenter, x, y, z) as vec3;
+    //Translada os vértices para o centro
+    this.faces = NFaces.map((vec3) => translate(vec3, x, y, z)) as vec3[][];
+
+    this.findFacesCentroid();
   }
 }
