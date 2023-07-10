@@ -6,14 +6,15 @@ import {
   TextField,
   VerticalDivider,
 } from '@fluentui/react';
+import { Letter } from 'components/Letter';
 import { useObjects } from 'components/Provider';
 import { useState } from 'react';
 
 const gapStack = { childrenGap: 5 };
 
 export const PivotScene = () => {
-  const { handleClear, handleClearObjects, objects } = useObjects();
-  const [modalOpen, setModalOpen] = useState(false);
+  const { handleClear, handleClearObjects, setObjects, objects } = useObjects();
+  const [text, setText] = useState('');
 
   const handleOpen = () => {};
 
@@ -29,13 +30,20 @@ export const PivotScene = () => {
   };
 
   const createText = () => {
-    const text = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
+    const letters = text.toUpperCase().split('');
 
-    for (let i = 0; i < text.length; i++) {
-      const char = text[i];
-      // font[char]
-    }
+    setObjects(
+      letters.map(
+        (letter, index) =>
+          new Letter([index * 300, 0, 0], 200, letter as any, [
+            index * 600,
+            0,
+            0,
+          ])
+      )
+    );
   };
+
   return (
     <Stack
       tokens={gapStack}
@@ -48,27 +56,30 @@ export const PivotScene = () => {
           childrenGap: 5,
         }}
       >
-        <TextField label='Texto a ser renderizado' />
+        <TextField
+          label="Texto a ser renderizado"
+          onChange={(_, value) => setText(value || '')}
+        />
         <PrimaryButton
-          text='Criar texto'
-          onClick={handleOpen}
+          text="Criar texto"
+          onClick={createText}
           iconProps={{ iconName: 'Add' }}
         />
       </Stack>
       <VerticalDivider />
       <DefaultButton
-        text='Deletar objetos'
+        text="Deletar objetos"
         onClick={handleClearObjects}
         iconProps={{ iconName: 'Delete' }}
       />
       <DefaultButton
-        text='Limpar cena'
+        text="Limpar cena"
         onClick={handleClear}
         iconProps={{ iconName: 'ClearFormatting' }}
       />
 
       <VerticalDivider />
-      <Text variant='xLarge'>Arquivos</Text>
+      <Text variant="xLarge">Arquivos</Text>
       <Stack
         style={{
           height: '100%',
@@ -80,16 +91,16 @@ export const PivotScene = () => {
         horizontal
       >
         <DefaultButton
-          text='Salvar cena'
+          text="Salvar cena"
           onClick={downloadScene}
           iconProps={{ iconName: 'Save' }}
         />
         <DefaultButton
-          text='Carregar cena'
+          text="Carregar cena"
           onClick={handleOpen}
           iconProps={{ iconName: 'OpenFile' }}
         >
-          <input type='file' style={{ display: 'none' }} />
+          <input type="file" style={{ display: 'none' }} />
         </DefaultButton>
       </Stack>
     </Stack>
