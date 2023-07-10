@@ -42,10 +42,9 @@ export default function Canva() {
     shaderInf = p5.createShader(VertShader, FragShader);
     p5.shader(shaderInf);
 
-    p5.frameRate(30);
+    p5.frameRate(24);
     p5.noStroke();
-
-    camera.setP5(p5);
+    p5.noFill();
   };
 
   const draw = (val: any) => {
@@ -59,12 +58,12 @@ export default function Canva() {
     }
 
     //Vai ficar rotacionando a "luz"
-    if (light.rotate) {
-      light.rotateLight();
-    }
+    // if (light.rotate) {
+    //   light.rotateLight();
+    // }
 
     p5.push();
-    objects.forEach((object) => object.draw(p5, camera));
+    objects.forEach((object) => object.draw(p5, camera, shaderInf, light));
     p5.pop();
 
     p5.push();
@@ -174,5 +173,14 @@ export default function Canva() {
     );
   }, [objects, camera, light, draw, setup, windowResized, debug]);
 
-  return <>{memo}</>;
+  return (
+    <>
+      <Sketch
+        setup={setup}
+        draw={draw}
+        windowResized={windowResized}
+        keyReleased={debug}
+      />
+    </>
+  );
 }
