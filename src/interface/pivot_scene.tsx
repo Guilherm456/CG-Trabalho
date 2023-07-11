@@ -10,6 +10,7 @@ import {
 import { Letter } from 'components/Letter';
 import { useObjects } from 'components/Provider';
 import { useState } from 'react';
+import { LetterType } from 'utils/interfaces';
 
 const gapStack = { childrenGap: 5 };
 
@@ -18,9 +19,20 @@ export const PivotScene = () => {
   const [text, setText] = useState('');
   const [ZDepth, setZDepth] = useState(100);
 
-  const handleOpen = () => {};
+  const handleOpen = async (e: { target: { files: Blob[] } }) => {
+    var reader = new FileReader();
+    reader.onload = () =>
+      setObjects(
+        JSON.parse(reader.result as string).map(
+          ({ center, ZDepth, typeLetter, Ka, Kd, Ks, n, faces }: LetterType) =>
+            new Letter(center, ZDepth, typeLetter, Ka, Kd, Ks, n, faces)
+        )
+      );
+    reader.readAsText(e.target.files[0]);
+  };
 
   const downloadScene = () => {
+    console.log(objects);
     const scene = JSON.stringify(objects);
 
     const element = document.createElement('a');
@@ -118,10 +130,9 @@ export const PivotScene = () => {
         />
         <DefaultButton
           text="Carregar cena"
-          onClick={handleOpen}
           iconProps={{ iconName: 'OpenFile' }}
         >
-          <input type="file" style={{ display: 'none' }} />
+          <input type="file" onChange={handleOpen}/>
         </DefaultButton>
       </Stack>
     </Stack>
