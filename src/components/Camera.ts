@@ -52,6 +52,8 @@ export class Camera {
   //Distância minima da visualização
   public near: number = 10;
 
+  public ocultFaces: boolean = true;
+
   //Sensibilidade de mexer a câmera
   public sensitivity: number = 1;
 
@@ -64,21 +66,24 @@ export class Camera {
     far: number,
     near: number,
     lookAp?: vec3,
-    planCenterDistance?: number,
-    perspective?: boolean
+    planCenterDistance: number = 100,
+    perspective: boolean = true,
+    ocultFaces: boolean = true
   ) {
     this.VRP = position;
     this.P = target ?? [0, 0, 0];
-    this.perspective = perspective ?? true;
+    this.perspective = perspective;
 
     this.viewUp = lookAp ?? this.viewUp;
 
-    this.setPlanDistance(planCenterDistance ?? 100);
+    this.setPlanDistance(planCenterDistance);
     this.ViewPort = viewport;
 
     this.WindowPort = windowPort;
 
     this.matrixView = this.getMatrixView();
+
+    this.ocultFaces = ocultFaces ?? true;
 
     this.far = far;
     this.near = near;
@@ -114,6 +119,11 @@ export class Camera {
   //Configura a sensibilidade da câmera
   public setSenitivity(sensitivity: number) {
     this.sensitivity = sensitivity;
+  }
+
+  //Configura se oculta faces ou não
+  public setOcultFaces(ocultFaces: boolean) {
+    this.ocultFaces = ocultFaces;
   }
 
   //Configura o plano de projeção

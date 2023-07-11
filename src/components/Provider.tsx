@@ -9,6 +9,7 @@ interface ObjectsProviderInterface {
   objects: Letter[];
   setObjects: React.Dispatch<React.SetStateAction<Letter[]>>;
   camera: Camera;
+  setCamera: React.Dispatch<React.SetStateAction<Camera>>;
   light: Light;
   /**Limpar a cena */
   handleClear: () => void;
@@ -18,22 +19,7 @@ interface ObjectsProviderInterface {
    */
   handleRemoveSphere: (id: string) => void;
 }
-const ObjectsProviderInitial: ObjectsProviderInterface = {
-  objects: [],
-  camera: new Camera(
-    [0, 0, 0],
-    [0, 0, 0],
-    { width: [0, 0], height: [0, 0] },
-    { width: [0, 0], height: [0, 0] },
-    10,
-    0.1
-  ),
-  light: new Light([0, 0, 0], [0, 0, 0], [0, 0, 0]),
-  setObjects: () => {},
-  handleClear: () => {},
-  handleRemoveSphere: () => {},
-  handleClearObjects: () => {},
-};
+const ObjectsProviderInitial = {} as ObjectsProviderInterface;
 const ObjectsP = createContext<ObjectsProviderInterface>(
   ObjectsProviderInitial
 );
@@ -63,7 +49,7 @@ export function ObjectsProvider({ children }: Props) {
   const [objects, setObjects] = useState<Letter[]>([]);
 
   //Inicia a câmera
-  const [camera] = useState<Camera>(
+  const [camera, setCamera] = useState<Camera>(
     new Camera(
       defaultVRP,
       defaultP,
@@ -103,9 +89,10 @@ export function ObjectsProvider({ children }: Props) {
   };
 
   //Remove uma esfera pelo ID
-  const handleRemoveSphere = (id: string) => {
+  const handleRemoveLetter = (id: string) => {
     setObjects((prevState) => prevState.filter((object) => object.id !== id));
   };
+
   const values = {
     objects,
     setObjects,
@@ -113,7 +100,8 @@ export function ObjectsProvider({ children }: Props) {
     light,
     handleClear,
     handleClearObjects,
-    handleRemoveSphere,
+    setCamera,
+    handleRemoveSphere: handleRemoveLetter,
   };
   return <ObjectsP.Provider value={values}>{children}</ObjectsP.Provider>;
 }
