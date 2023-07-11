@@ -23,7 +23,12 @@ export class Letter {
 
   readonly typeLetter: TypeLetter = 'A';
 
-  constructor(center: vec3, ZDepth: number, typeLetter: TypeLetter) {
+  constructor(
+    center: vec3,
+    ZDepth: number,
+    typeLetter: TypeLetter,
+    displacement: vec3 = [0, 0, 0]
+  ) {
     this.center = center;
     this.ZDepth = ZDepth;
 
@@ -33,10 +38,10 @@ export class Letter {
       .toPrecision(3)
       .toString()
       .replace('.', '');
-    this.findFaces();
+    this.findFaces(displacement);
   }
 
-  private findFaces() {
+  private findFaces(displacement: vec3) {
     const Z = this.ZDepth / 2;
 
     const edges = Letters[this.typeLetter] as vec3[][];
@@ -45,13 +50,30 @@ export class Letter {
     const facesConnections: vec3[][] = [];
     const facesZDepth: vec3[] = [];
     for (let i = 0; i < edges.length; i++) {
+      // Apply displacement when calculating face points
       const firstPoint = amplifierEdges(edges[i][0]);
-      facesZ.push([firstPoint[0], firstPoint[1], Z]);
-      facesZDepth.push([firstPoint[0], firstPoint[1], -Z]);
+      facesZ.push([
+        firstPoint[0] + displacement[0],
+        firstPoint[1] + displacement[1],
+        Z + displacement[2],
+      ]);
+      facesZDepth.push([
+        firstPoint[0] + displacement[0],
+        firstPoint[1] + displacement[1],
+        -Z + displacement[2],
+      ]);
       for (let j = edges[i].length - 1; j >= 0; j--) {
         const [x, y] = amplifierEdges(edges[i][j]);
-        facesZ.push([x, y, Z]);
-        facesZDepth.push([x, y, -Z]);
+        facesZ.push([
+          x + displacement[0],
+          y + displacement[1],
+          Z + displacement[2],
+        ]);
+        facesZDepth.push([
+          x + displacement[0],
+          y + displacement[1],
+          -Z + displacement[2],
+        ]);
       }
     }
 
@@ -61,11 +83,19 @@ export class Letter {
         const [xNextFace, yNextFace] = amplifierEdges(hole[j + 1]);
 
         facesConnections.push([
-          [x, y, Z],
-          [xNextFace, yNextFace, Z],
-          [xNextFace, yNextFace, -Z],
-          [x, y, -Z],
-          [x, y, Z],
+          [x + displacement[0], y + displacement[1], Z + displacement[2]],
+          [
+            xNextFace + displacement[0],
+            yNextFace + displacement[1],
+            Z + displacement[2],
+          ],
+          [
+            xNextFace + displacement[0],
+            yNextFace + displacement[1],
+            -Z + displacement[2],
+          ],
+          [x + displacement[0], y + displacement[1], -Z + displacement[2]],
+          [x + displacement[0], y + displacement[1], Z + displacement[2]],
         ]);
       }
     }
@@ -123,7 +153,7 @@ export class Letter {
       const dot = OVector.dot(faceNormal);
 
       //Caso a face esteja na frente da camera, ela será desenhada
-      if (dot < 0.00000000001) continue;
+      // if (dot < 0.00000000001) continue;
 
       // shader?.setUniform('ReferencePointPosition', getCentroidFaces(face));
       // shader?.setUniform('FaceNormal', [...faceNormal.array()]);
