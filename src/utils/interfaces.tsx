@@ -6,6 +6,17 @@ export type vec3 = [number, number, number];
 
 export type vec4 = [number, number, number, number];
 
+export type LetterType = {
+  center: vec3;
+  ZDepth: number;
+  typeLetter: TypeLetter;
+  Ka: vec3;
+  Kd: vec3;
+  Ks: vec3;
+  n: number;
+  faces: vec3[][];
+};
+
 export type TypeLetter =
   | 'A'
   | 'B'
