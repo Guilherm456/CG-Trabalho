@@ -48,5 +48,5 @@ export function getCentroidFaces(face: number[][]): vec3 {
 }
 
 export const amplifierEdges = (edge: vec3): vec3 => {
-  return [edge[0] * 100, edge[1] * 100, edge[2]];
+  return [edge[0] * 10, edge[1] * 10, edge[2]];
 };

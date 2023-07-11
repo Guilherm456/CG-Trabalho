@@ -1,6 +1,7 @@
 import {
   DefaultButton,
   PrimaryButton,
+  Slider,
   Stack,
   Text,
   TextField,
@@ -15,6 +16,7 @@ const gapStack = { childrenGap: 5 };
 export const PivotScene = () => {
   const { handleClear, handleClearObjects, setObjects, objects } = useObjects();
   const [text, setText] = useState('');
+  const [ZDepth, setZDepth] = useState(100);
 
   const handleOpen = () => {};
 
@@ -30,18 +32,27 @@ export const PivotScene = () => {
   };
 
   const createText = () => {
-    const letters = text.toUpperCase().split('');
+    if (text === '') return;
+    const letters: Letter[] = [];
 
-    setObjects(
-      letters.map(
-        (letter, index) =>
-          new Letter([index * 300, 0, 0], 200, letter as any, [
-            index * 600,
-            0,
-            0,
-          ])
-      )
-    );
+    //Remove caracteres especiais e transforma em maiúsculo
+    const char = text
+      .replaceAll(/[^a-zA-Z0-9 ]/g, '')
+      .toUpperCase()
+      .split('');
+    const length = char.length;
+
+    //Para cada letra, vai criar uma nova Letter, porém o centro da letra vai se dar pela posição da letra
+    //Onde a letra do meio da frase vai ter o centro em 0,0,0. As posteriores vao aumentar o x em 300, e as anteriores diminuir o x em 300 cada
+    char.forEach((letter, index) => {
+      if (letter === ' ') return;
+      const distanceFromCenter = index - (length - 1) / 2;
+      const x = distanceFromCenter * 6; // Aumenta o espaçamento a cada letra
+      console.debug(x, distanceFromCenter, letter);
+
+      letters.push(new Letter([x, 0, 0], ZDepth, letter as any));
+    });
+    setObjects(letters);
   };
 
   return (
@@ -60,6 +71,16 @@ export const PivotScene = () => {
           label="Texto a ser renderizado"
           onChange={(_, value) => setText(value || '')}
         />
+        <Slider
+          label="Profundidade do texto"
+          min={50}
+          max={1000}
+          step={50}
+          defaultValue={ZDepth}
+          showValue
+          onChange={(value) => setZDepth(value || 100)}
+        />
+
         <PrimaryButton
           text="Criar texto"
           onClick={createText}

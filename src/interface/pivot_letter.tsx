@@ -7,7 +7,6 @@ import {
   Slider,
   Stack,
   Text,
-  TextField,
 } from '@fluentui/react';
 import { Letter } from 'components/Letter';
 import { useObjects } from 'components/Provider';
@@ -15,7 +14,7 @@ import { useEffect, useState } from 'react';
 
 const gapStack = { childrenGap: 5 };
 
-export const PivotSphere = () => {
+export const PivotLetter = () => {
   const { objects, handleRemoveSphere } = useObjects();
 
   const options = [
@@ -52,9 +51,9 @@ export const PivotSphere = () => {
   ];
   const [optionRotation, setOptionRotation] = useState('X');
 
-  const [valueX, setValueX] = useState('1');
-  const [valueY, setValueY] = useState('1');
-  const [valueZ, setValueZ] = useState('1');
+  const [valueX, setValueX] = useState(1);
+  const [valueY, setValueY] = useState(1);
+  const [valueZ, setValueZ] = useState(1);
 
   const [angle, setAngle] = useState(0);
 
@@ -64,27 +63,36 @@ export const PivotSphere = () => {
   const handleChange = () => {
     if (option === '' || selectedLetter === '') return;
     //Vai selecionar o objeto que está sendo manipulado
-    const object = objects.find((obj: Letter) => obj.id === selectedLetter);
-    if (!object) return;
+    const selectedObjects =
+      selectedLetter === 'all'
+        ? objects
+        : [objects.find((obj: Letter) => obj.id === selectedLetter)];
+    if (!selectedObjects.length) return;
 
     switch (option) {
       case 'rotate':
-        // object.rotateLetter(angle, optionRotation as 'X' | 'Y' | 'Z');
+        selectedObjects.forEach((object) =>
+          object?.rotate(angle, optionRotation as 'X' | 'Y' | 'Z')
+        );
         break;
       case 'scale':
-        // object.scaleLetter(Number(valueX), Number(valueY), Number(valueZ));
+        selectedObjects.forEach((object) =>
+          object?.scale(Number(valueX), Number(valueY), Number(valueZ))
+        );
         break;
       case 'translate':
-        // object.translateLetter(Number(valueX), -Number(valueY), Number(valueZ));
+        selectedObjects.forEach((object) =>
+          object?.translate(Number(valueX), -Number(valueY), Number(valueZ))
+        );
 
         break;
     }
 
     //Redifine todas opções
     setAngle(0);
-    setValueX('1');
-    setValueY('1');
-    setValueZ('1');
+    setValueX(1);
+    setValueY(1);
+    setValueZ(1);
     setOptionRotation('X');
     setOption('rotate');
     setSelectedLetter('');
@@ -107,10 +115,10 @@ export const PivotSphere = () => {
 
   return (
     <Stack tokens={gapStack}>
-      <Text variant='xLarge'>Editar letra</Text>
-      <Stack horizontal verticalAlign='end'>
+      <Text variant="xLarge">Editar letra</Text>
+      <Stack horizontal verticalAlign="end">
         <Dropdown
-          label='Selecione uma letra'
+          label="Selecione uma letra"
           options={optionsSphere}
           selectedKey={selectedLetter}
           //Função que define o valor selecionado
@@ -119,14 +127,14 @@ export const PivotSphere = () => {
         />
         <IconButton
           split
-          title='Deletar letra'
+          title="Deletar letra"
           iconProps={{ iconName: 'Delete' }}
           disabled={selectedLetter === ''}
           onClick={handleRemoveSphereOption}
         />
         <IconButton
           split
-          title='Editar letra'
+          title="Editar letra"
           iconProps={{ iconName: 'Edit' }}
           disabled={selectedLetter === ''}
           onClick={handleOpen}
@@ -135,7 +143,7 @@ export const PivotSphere = () => {
       {selectedLetter !== '' ? (
         <>
           <ChoiceGroup
-            label='Selecione a opção desejada'
+            label="Selecione a opção desejada"
             options={options}
             selectedKey={option}
             onChange={(e, v) => setOption(v!.key)}
@@ -144,42 +152,52 @@ export const PivotSphere = () => {
           {option === 'rotate' ? (
             <Stack>
               <Slider
-                label='Angulo'
+                label="Angulo"
                 min={0}
                 max={360}
                 value={angle}
                 onChange={(v) => setAngle(v)}
               />
               <ChoiceGroup
-                label='Selecione o eixo da rotação'
+                label="Selecione o eixo da rotação"
                 options={optionsRotation}
                 selectedKey={optionRotation}
                 onChange={(e, v) => setOptionRotation(v!.key)}
               />
             </Stack>
           ) : (
-            <Stack horizontal tokens={gapStack}>
-              <TextField
-                label='Valor X'
-                type='number'
+            <Stack tokens={gapStack}>
+              <Slider
+                label="Valor X"
+                min={0}
+                step={option === 'scale' ? 0.1 : 1}
+                max={option === 'scale' ? 10 : 1000}
                 value={valueX}
-                onChange={(e, n) => setValueX(n!)}
+                onChange={(v) => setValueX(v)}
+                showValue
               />
-              <TextField
-                label='Valor Y'
-                type='number'
+              <Slider
+                label="Valor Y"
+                min={0}
+                step={option === 'scale' ? 0.1 : 1}
+                // max={10}
+                max={option === 'scale' ? 10 : 1000}
                 value={valueY}
-                onChange={(e, n) => setValueY(n!)}
+                onChange={(v) => setValueY(v)}
+                showValue
               />
-              <TextField
-                label='Valor Z'
-                type='number'
+              <Slider
+                label="Valor Z"
+                min={0}
+                max={option === 'scale' ? 10 : 1000}
+                step={option === 'scale' ? 0.1 : 1}
                 value={valueZ}
-                onChange={(e, n) => setValueZ(n!)}
+                onChange={(v) => setValueZ(v)}
+                showValue
               />
             </Stack>
           )}
-          <DefaultButton text='Aplicar' onClick={handleChange} />
+          <DefaultButton text="Aplicar" onClick={handleChange} />
         </>
       ) : null}
       {/* {modalOpen ? (

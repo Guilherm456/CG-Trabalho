@@ -7,7 +7,7 @@ import { Camera } from './Camera';
 import { Light } from './Light';
 
 export class Letter {
-  private faces: vec3[][] = [];
+  public faces: vec3[][] = [];
 
   private facesNormal: vec3[] = [];
 
@@ -23,11 +23,20 @@ export class Letter {
 
   readonly typeLetter: TypeLetter = 'A';
 
+  Ka: vec3; //Fator de Reflexão Ambiente
+  Kd: vec3; //Fator de Reflexão Difusa
+  Ks: vec3; //Fator de Reflexão Especular
+  n: number; //Shininess ("brilho")
+
   constructor(
     center: vec3,
     ZDepth: number,
     typeLetter: TypeLetter,
-    displacement: vec3 = [0, 0, 0]
+    Ka: vec3 = [0.1, 0.5, 0.1],
+    Kd: vec3 = [0.1, 0.5, 0.1],
+    Ks: vec3 = [0.1, 0.1, 0.1],
+    n: number = 1,
+    faces?: vec3[][]
   ) {
     this.center = center;
     this.ZDepth = ZDepth;
@@ -38,11 +47,23 @@ export class Letter {
       .toPrecision(3)
       .toString()
       .replace('.', '');
-    this.findFaces(displacement);
+
+    if (faces) {
+      this.faces = faces;
+      this.calculateFacesNormal();
+      this.findFacesCentroid();
+    } else this.findFaces();
+
+    this.Ka = Ka;
+    this.Kd = Kd;
+    this.Ks = Ks;
+
+    this.n = n;
   }
 
-  private findFaces(displacement: vec3) {
+  private findFaces() {
     const Z = this.ZDepth / 2;
+    const displacement = this.center;
 
     const edges = Letters[this.typeLetter] as vec3[][];
 
@@ -51,51 +72,43 @@ export class Letter {
     const facesZDepth: vec3[] = [];
     for (let i = 0; i < edges.length; i++) {
       // Apply displacement when calculating face points
-      const firstPoint = amplifierEdges(edges[i][0]);
-      facesZ.push([
-        firstPoint[0] + displacement[0],
-        firstPoint[1] + displacement[1],
-        Z + displacement[2],
+      const firstPoint = amplifierEdges([
+        edges[i][0][0] + displacement[0],
+        edges[i][0][1] + displacement[1],
+        Z,
       ]);
-      facesZDepth.push([
-        firstPoint[0] + displacement[0],
-        firstPoint[1] + displacement[1],
-        -Z + displacement[2],
-      ]);
+      facesZ.push([firstPoint[0], firstPoint[1], Z + displacement[2]]);
+      facesZDepth.push([firstPoint[0], firstPoint[1], -Z + displacement[2]]);
       for (let j = edges[i].length - 1; j >= 0; j--) {
-        const [x, y] = amplifierEdges(edges[i][j]);
-        facesZ.push([
-          x + displacement[0],
-          y + displacement[1],
-          Z + displacement[2],
+        const [x, y] = amplifierEdges([
+          edges[i][j][0] + displacement[0],
+          edges[i][j][1] + displacement[1],
+          Z,
         ]);
-        facesZDepth.push([
-          x + displacement[0],
-          y + displacement[1],
-          -Z + displacement[2],
-        ]);
+        facesZ.push([x, y, Z + displacement[2]]);
+        facesZDepth.push([x, y, -Z + displacement[2]]);
       }
     }
 
     for (let hole of edges) {
       for (let j = 0; j < hole.length - 1; j++) {
-        const [x, y] = amplifierEdges(hole[j]);
-        const [xNextFace, yNextFace] = amplifierEdges(hole[j + 1]);
+        const [x, y] = amplifierEdges([
+          hole[j][0] + displacement[0],
+          hole[j][1] + displacement[1],
+          Z,
+        ]);
+        const [xNextFace, yNextFace] = amplifierEdges([
+          hole[j + 1][0] + displacement[0],
+          hole[j + 1][1] + displacement[1],
+          Z,
+        ]);
 
         facesConnections.push([
-          [x + displacement[0], y + displacement[1], Z + displacement[2]],
-          [
-            xNextFace + displacement[0],
-            yNextFace + displacement[1],
-            Z + displacement[2],
-          ],
-          [
-            xNextFace + displacement[0],
-            yNextFace + displacement[1],
-            -Z + displacement[2],
-          ],
-          [x + displacement[0], y + displacement[1], -Z + displacement[2]],
-          [x + displacement[0], y + displacement[1], Z + displacement[2]],
+          [x, y, Z + displacement[2]],
+          [xNextFace, yNextFace, Z + displacement[2]],
+          [xNextFace, yNextFace, -Z + displacement[2]],
+          [x, y, -Z + displacement[2]],
+          [x, y, Z + displacement[2]],
         ]);
       }
     }
@@ -147,13 +160,15 @@ export class Letter {
     for (let i = 0; i < this.faces.length; i++) {
       const face = this.faces[i];
 
-      const OVector = VRP.sub(...this.facesCentroid[i]).normalize();
-      const faceNormal = p5.createVector(...this.facesNormal[i]);
+      if (camera.ocultFaces) {
+        const OVector = VRP.sub(...this.facesCentroid[i]).normalize();
+        const faceNormal = p5.createVector(...this.facesNormal[i]);
 
-      const dot = OVector.dot(faceNormal);
+        const dot = OVector.dot(faceNormal);
 
-      //Caso a face esteja na frente da camera, ela será desenhada
-      // if (dot < 0.00000000001) continue;
+        //Caso a face esteja na frente da camera, ela será desenhada
+        if (dot < 0.00000000001) continue;
+      }
 
       // shader?.setUniform('ReferencePointPosition', getCentroidFaces(face));
       // shader?.setUniform('FaceNormal', [...faceNormal.array()]);
@@ -218,8 +233,8 @@ export class Letter {
     }
   }
 
-  //Translada a esfera
-  translateSphere(tX: number, tY: number, tZ: number) {
+  //Translada a letra
+  translate(tX: number, tY: number, tZ: number) {
     //Move o centro
     this.center = translate(this.center, tX, tY, tZ) as vec3;
     //Move os vértices
@@ -230,12 +245,12 @@ export class Letter {
     this.findFacesCentroid();
   }
 
-  //Rotaciona a esfera
-  rotateSphere(angle: number, option: 'X' | 'Y' | 'Z') {
+  //Rotaciona a letra
+  rotate(angle: number, option: 'X' | 'Y' | 'Z') {
     const [x, y, z] = this.center;
-    //Translada o centro para o centro da esfera
+    //Translada o centro para o centro da letra
     let NCenter = translate(this.center, -x, -y, -z) as vec3;
-    //Translada os pontos para o centro da esfera
+    //Translada os pontos para o centro da letra
     let NFaces = this.faces.map((vec3) =>
       translate(vec3, -x, -y, -z)
     ) as vec3[][];
@@ -245,17 +260,17 @@ export class Letter {
     //Rotaciona o centro
     NCenter = rotate(NCenter, angle, option) as vec3;
 
-    //Devolve ao centro da esfera
+    //Devolve ao centro da letra
     this.center = translate(NCenter, x, y, z) as vec3;
-    //Devolve os pontos da esfera
+    //Devolve os pontos da letra
     this.faces = NFaces.map((vec3) => translate(vec3, x, y, z)) as vec3[][];
 
     this.calculateFacesNormal();
     this.findFacesCentroid();
   }
 
-  //Escala a esfera
-  scaleSphere(sX: number, sY: number, sZ: number) {
+  //Escala a letra
+  scale(sX: number, sY: number, sZ: number) {
     const [x, y, z] = this.center;
 
     let Ncenter = translate(this.center, -x, -y, -z) as vec3;

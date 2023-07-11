@@ -3,9 +3,9 @@ import Canva from 'components/Canva';
 import ZBuffer from 'components/zBuffer';
 
 import { PivotCamera } from 'interface/pivot_camera';
+import { PivotLetter } from 'interface/pivot_letter';
 import { PivotLight } from 'interface/pivot_light';
 import { PivotScene } from 'interface/pivot_scene';
-import { PivotSphere } from 'interface/pivot_sphere';
 
 function App() {
   const p: React.CSSProperties = {
@@ -40,7 +40,7 @@ function App() {
             <PivotScene />
           </PivotItem>
           <PivotItem headerText='Letras' style={p}>
-            <PivotSphere />
+            <PivotLetter />
           </PivotItem>
           <PivotItem headerText='Câmera' style={p}>
             <PivotCamera />
