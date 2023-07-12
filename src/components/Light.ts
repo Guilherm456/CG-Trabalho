@@ -22,11 +22,14 @@ export class Light {
   public lightType: 0 | 1 | 2 = 0;
 
   //Constrói os valores iniciais da luz
-  constructor(position: vec3, Ila: vec3, Ia: vec3) {
+  constructor(position: vec3, Ila: vec3, Ia: vec3, rotate: boolean = true, angle: number = 1, direction: 'X' | 'Y' | 'Z' = 'Y', lightType: 0 | 1 | 2 = 0) {
     this.position = [...position, 1];
-
     this.ambientLightIntensity = Ila;
     this.lightIntensity = Ia;
+    this.rotate = rotate;
+    this.angle = angle;
+    this.direction = direction;
+    this.lightType = lightType;
   }
 
   //Configura os de itensidade da luz (Ila = Ambiente, Ia = Luz)
