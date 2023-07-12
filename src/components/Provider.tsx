@@ -11,6 +11,7 @@ interface ObjectsProviderInterface {
   camera: Camera;
   setCamera: React.Dispatch<React.SetStateAction<Camera>>;
   light: Light;
+  setLight: React.Dispatch<React.SetStateAction<Light>>;
   /**Limpar a cena */
   handleClear: () => void;
   handleClearObjects: () => void;
@@ -64,7 +65,7 @@ export function ObjectsProvider({ children }: Props) {
   );
 
   //Inicia a luz
-  const [light] = useState<Light>(
+  const [light, setLight] = useState<Light>(
     new Light(
       defaultPositionLight,
       defaultAmbientIntensity,
@@ -98,6 +99,7 @@ export function ObjectsProvider({ children }: Props) {
     setObjects,
     camera,
     light,
+    setLight,
     handleClear,
     handleClearObjects,
     setCamera,
