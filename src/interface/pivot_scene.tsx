@@ -7,21 +7,70 @@ import {
   TextField,
   VerticalDivider,
 } from '@fluentui/react';
+import { Camera } from 'components/Camera';
 import { Letter } from 'components/Letter';
+import { Light } from 'components/Light';
 import { useObjects } from 'components/Provider';
 import { useState } from 'react';
+import { LetterType } from 'utils/interfaces';
 
 const gapStack = { childrenGap: 5 };
 
 export const PivotScene = () => {
-  const { handleClear, handleClearObjects, setObjects, objects } = useObjects();
+  const {
+    handleClear,
+    handleClearObjects,
+    setObjects,
+    objects,
+    camera,
+    light,
+    setLight,
+    setCamera,
+  } = useObjects();
   const [text, setText] = useState('');
   const [ZDepth, setZDepth] = useState(100);
 
-  const handleOpen = () => {};
+  const handleOpenScene = (e: { target: { files: Blob[] } }) => {
+    var reader = new FileReader();
+    reader.onload = () => {
+      const { objects, light, camera } = JSON.parse(reader.result as string);
+      setObjects(
+        objects.map(
+          ({ center, ZDepth, typeLetter, Ka, Kd, Ks, n, faces }: LetterType) =>
+            new Letter(center, ZDepth, typeLetter, Ka, Kd, Ks, n, faces)
+        )
+      );
+      setLight(
+        new Light(
+          light.position.slice(0, 3),
+          light.ambientLightIntensity,
+          light.lightIntensity,
+          light.rotate,
+          light.angle,
+          light.direction,
+          light.lightType
+        )
+      );
+      setCamera(
+        new Camera(
+          camera.VRP,
+          camera.P,
+          camera.ViewPort,
+          camera.WindowPort,
+          camera.far,
+          camera.near,
+          camera.viewUp,
+          camera.projectionPlanDistance,
+          camera.perspective,
+          camera.ocultFaces
+        )
+      );
+    };
+    reader.readAsText(e.target.files[0]);
+  };
 
   const downloadScene = () => {
-    const scene = JSON.stringify(objects);
+    const scene = JSON.stringify({ objects, light, camera });
 
     const element = document.createElement('a');
     const file = new Blob([scene], { type: 'text/plain' });
@@ -118,10 +167,9 @@ export const PivotScene = () => {
         />
         <DefaultButton
           text="Carregar cena"
-          onClick={handleOpen}
           iconProps={{ iconName: 'OpenFile' }}
         >
-          <input type="file" style={{ display: 'none' }} />
+          <input type="file" onChange={handleOpenScene} />
         </DefaultButton>
       </Stack>
     </Stack>
