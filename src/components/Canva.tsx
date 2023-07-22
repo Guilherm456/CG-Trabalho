@@ -4,9 +4,9 @@ import { useObjects } from './Provider';
 
 import { FragShader, VertShader } from '../utils/shader';
 
-import { useMemo } from 'react';
+import { Dispatch, FC, SetStateAction, useMemo } from 'react';
 import { matrixMul } from 'utils/calculate';
-import { Port } from 'utils/interfaces';
+import { Port, vec3 } from 'utils/interfaces';
 import { clamp } from 'utils/others';
 
 let shaderInf: p5Types.Shader;
@@ -21,7 +21,16 @@ enum Direction {
   UP = 17, //Ctrl
 }
 
-export default function Canva() {
+type Props = {
+  selectedLetter: string;
+  setSelectedLetter: Dispatch<SetStateAction<string>>;
+  setStep: Dispatch<SetStateAction<string>>;
+};
+export const Canva: FC<Props> = ({
+  selectedLetter,
+  setSelectedLetter,
+  setStep,
+}) => {
   const { objects, camera, light } = useObjects();
 
   const setup = (val: any, parentCanvas: Element) => {
@@ -42,7 +51,7 @@ export default function Canva() {
     shaderInf = p5.createShader(VertShader, FragShader);
     p5.shader(shaderInf);
 
-    p5.frameRate(24);
+    p5.frameRate(20);
     p5.noStroke();
     p5.noFill();
   };
@@ -57,13 +66,10 @@ export default function Canva() {
       cameraSystem(p5.keyCode);
     }
 
-    //Vai ficar rotacionando a "luz"
-    // if (light.rotate) {
-    //   light.rotateLight();
-    // }
-
     p5.push();
-    objects.forEach((object) => object.draw(p5, camera, shaderInf, light));
+    objects.forEach((object) =>
+      object.draw(p5, camera, shaderInf, light, selectedLetter === object.id)
+    );
     p5.pop();
 
     p5.push();
@@ -161,6 +167,97 @@ export default function Canva() {
     }
   };
 
+  const click = (val: any) => {
+    const p5 = val as p5Types;
+    const mouseX = p5.mouseX;
+    const mouseY = p5.mouseY;
+
+    const transformedMouse = matrixMul(
+      [
+        mouseX + camera.ViewPort.width[0],
+        mouseY + camera.ViewPort.height[0],
+        0,
+      ], // Assume-se que o mouse está na posição Z = 0 na cena
+      camera.concatedMatrix
+    ) as vec3;
+
+    for (let object of objects) {
+      for (let face of object.faces) {
+        if (isPointInsidePolygon(transformedMouse, face)) {
+          setSelectedLetter(object.id);
+          setStep('1');
+        }
+      }
+    }
+  };
+
+  function isPointInsidePolygon(point: vec3, vertices: vec3[]): boolean {
+    let isInside = false;
+
+    const facesSRT = vertices.map((vertex) => {
+      const vertexSRT = matrixMul(vertex, camera.concatedMatrix) as vec3;
+      return vertexSRT;
+    });
+
+    const maxY = Math.max(...facesSRT.map((vertex) => vertex[1]));
+    const minY = Math.min(...facesSRT.map((vertex) => vertex[1]));
+    const maxX = Math.max(...facesSRT.map((vertex) => vertex[0]));
+    const minX = Math.min(...facesSRT.map((vertex) => vertex[0]));
+
+    if (
+      minY <= point[1] &&
+      point[1] <= maxY &&
+      minX <= point[0] &&
+      point[0] <= maxX
+    ) {
+      const indexHoles = vertices.findIndex(
+        ([x, y, z], index) =>
+          z === vertices[0][2] &&
+          x === vertices[0][0] &&
+          y === vertices[0][1] &&
+          index !== 0
+      );
+
+      if (indexHoles && indexHoles + 1 < vertices.length) {
+        let index = indexHoles + 1;
+        while (true) {
+          const [xI, yI, zI] = vertices[index];
+          let minX = Infinity;
+          let maxX = -Infinity;
+          let minY = Infinity;
+          let maxY = -Infinity;
+          for (let i = index; i < vertices.length; i++) {
+            const [x, y, z] = vertices[i];
+
+            if (x === xI && y === yI && z === zI && i !== indexHoles) {
+              index = i + 1;
+              break;
+            }
+
+            if (x < minX) minX = x;
+            else if (x > maxX) maxX = x;
+            if (y < minY) minY = y;
+            else if (y > maxY) maxY = y;
+          }
+
+          if (
+            minY <= point[1] &&
+            point[1] <= maxY &&
+            minX <= point[0] &&
+            point[0] <= maxX
+          ) {
+            isInside = !isInside;
+            break;
+          }
+
+          if (index === vertices.length) break;
+        }
+      } else isInside = !isInside;
+    }
+
+    return isInside;
+  }
+
   const memo = useMemo(() => {
     return (
       // @ts-ignore
@@ -168,19 +265,11 @@ export default function Canva() {
         setup={setup}
         draw={draw}
         windowResized={windowResized}
+        mouseClicked={click}
         keyReleased={debug}
       />
     );
-  }, [objects, camera, light, draw, setup, windowResized, debug]);
+  }, [objects, camera, light, draw, setup, windowResized, debug, click]);
 
-  return (
-    <>
-      <Sketch
-        setup={setup}
-        draw={draw}
-        windowResized={windowResized}
-        keyReleased={debug}
-      />
-    </>
-  );
-}
+  return <>{memo}</>;
+};

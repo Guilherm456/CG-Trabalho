@@ -11,8 +11,7 @@ import { Camera } from 'components/Camera';
 import { Letter } from 'components/Letter';
 import { Light } from 'components/Light';
 import { useObjects } from 'components/Provider';
-import { useState } from 'react';
-import { LetterType } from 'utils/interfaces';
+import { useRef, useState } from 'react';
 
 const gapStack = { childrenGap: 5 };
 
@@ -27,46 +26,77 @@ export const PivotScene = () => {
     setLight,
     setCamera,
   } = useObjects();
-  const [text, setText] = useState('');
-  const [ZDepth, setZDepth] = useState(100);
+  const [text, setText] = useState(
+    objects.map((letter) => letter.typeLetter).join('')
+  );
+  const ref = useRef<HTMLInputElement>(null);
 
-  const handleOpenScene = (e: { target: { files: Blob[] } }) => {
-    var reader = new FileReader();
-    reader.onload = () => {
-      const { objects, light, camera } = JSON.parse(reader.result as string);
-      setObjects(
-        objects.map(
-          ({ center, ZDepth, typeLetter, Ka, Kd, Ks, n, faces }: LetterType) =>
-            new Letter(center, ZDepth, typeLetter, Ka, Kd, Ks, n, faces)
-        )
+  const [ZDepth, setZDepth] = useState(100);
+  const handleOpenScene = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+
+    if (!file) {
+      return;
+    } else if (file.type !== 'application/json') {
+      alert('O arquivo deve ser do tipo JSON.');
+      return;
+    }
+
+    try {
+      const fileContent = await file.text();
+      const parsedScene = JSON.parse(fileContent);
+
+      // Verifique se o arquivo JSON possui a estrutura correta
+      if (
+        !parsedScene ||
+        !Array.isArray(parsedScene.objects) ||
+        !parsedScene.camera ||
+        !parsedScene.light
+      ) {
+        alert('Arquivo JSON inválido. Verifique a estrutura do arquivo.');
+        return;
+      }
+
+      const cameraLocal = new Camera(
+        parsedScene.camera.VRP,
+        parsedScene.camera.target,
+        parsedScene.camera.ViewPort,
+        parsedScene.camera.WindowPort,
+        parsedScene.camera.far,
+        parsedScene.camera.near
       );
-      setLight(
-        new Light(
-          light.position.slice(0, 3),
-          light.ambientLightIntensity,
-          light.lightIntensity,
-          light.rotate,
-          light.angle,
-          light.direction,
-          light.lightType
-        )
+      setCamera(cameraLocal);
+
+      const lightLocal = new Light(
+        parsedScene.light.position.slice(0, 3),
+        parsedScene.light.ambientLightIntensity,
+        parsedScene.light.lightIntensity
       );
-      setCamera(
-        new Camera(
-          camera.VRP,
-          camera.P,
-          camera.ViewPort,
-          camera.WindowPort,
-          camera.far,
-          camera.near,
-          camera.viewUp,
-          camera.projectionPlanDistance,
-          camera.perspective,
-          camera.ocultFaces
-        )
+      setLight(lightLocal);
+
+      // Atualize o estado com os objetos, câmera e iluminação lidos do arquivo JSON
+      const objectsLocal: Letter[] = [];
+      for (let object of parsedScene.objects) {
+        const newObject = new Letter(
+          object.center,
+          object.zDepth,
+          object.typeLetter,
+          object.Ka,
+          object.Kd,
+          object.Ks,
+          object.n,
+          object.faces
+        );
+        objectsLocal.push(newObject);
+      }
+
+      setObjects(objectsLocal);
+    } catch (error) {
+      console.error('Erro ao ler o arquivo JSON:', error);
+      alert(
+        'Ocorreu um erro ao ler o arquivo JSON. Verifique o console para mais detalhes.'
       );
-    };
-    reader.readAsText(e.target.files[0]);
+    }
   };
 
   const downloadScene = () => {
@@ -85,10 +115,12 @@ export const PivotScene = () => {
     const letters: Letter[] = [];
 
     //Remove caracteres especiais e transforma em maiúsculo
-    const char = text
+    const textWithoutSpecialCharacters = text
       .replaceAll(/[^a-zA-Z0-9 ]/g, '')
-      .toUpperCase()
-      .split('');
+      .toUpperCase();
+
+    setText(textWithoutSpecialCharacters);
+    const char = textWithoutSpecialCharacters.split('');
     const length = char.length;
 
     //Para cada letra, vai criar uma nova Letter, porém o centro da letra vai se dar pela posição da letra
@@ -97,7 +129,6 @@ export const PivotScene = () => {
       if (letter === ' ') return;
       const distanceFromCenter = index - (length - 1) / 2;
       const x = distanceFromCenter * 6; // Aumenta o espaçamento a cada letra
-      console.debug(x, distanceFromCenter, letter);
 
       letters.push(new Letter([x, 0, 0], ZDepth, letter as any));
     });
@@ -118,6 +149,7 @@ export const PivotScene = () => {
       >
         <TextField
           label="Texto a ser renderizado"
+          value={text}
           onChange={(_, value) => setText(value || '')}
         />
         <Slider
@@ -168,8 +200,20 @@ export const PivotScene = () => {
         <DefaultButton
           text="Carregar cena"
           iconProps={{ iconName: 'OpenFile' }}
+          onClick={() => {
+            ref.current?.click();
+          }}
         >
-          <input type="file" onChange={handleOpenScene} />
+          <input
+            type="file"
+            accept="application/json"
+            onChange={handleOpenScene}
+            id="file"
+            ref={ref}
+            style={{
+              display: 'none',
+            }}
+          />
         </DefaultButton>
       </Stack>
     </Stack>

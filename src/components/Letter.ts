@@ -70,55 +70,82 @@ export class Letter {
     const facesZ: vec3[] = [];
     const facesConnections: vec3[][] = [];
     const facesZDepth: vec3[] = [];
-    for (let i = 0; i < edges.length; i++) {
+    for (let edge of edges) {
+      const length = edge.length;
       // Apply displacement when calculating face points
       const firstPoint = amplifierEdges([
-        edges[i][0][0] + displacement[0],
-        edges[i][0][1] + displacement[1],
+        edge[0][0] + displacement[0],
+        edge[0][1] + displacement[1],
         Z,
       ]);
+
       facesZ.push([firstPoint[0], firstPoint[1], Z + displacement[2]]);
-      facesZDepth.push([firstPoint[0], firstPoint[1], -Z + displacement[2]]);
-      for (let j = edges[i].length - 1; j >= 0; j--) {
+
+      for (let j = length - 1; j >= 0; j--) {
         const [x, y] = amplifierEdges([
-          edges[i][j][0] + displacement[0],
-          edges[i][j][1] + displacement[1],
+          edge[j][0] + displacement[0],
+          edge[j][1] + displacement[1],
           Z,
         ]);
+
         facesZ.push([x, y, Z + displacement[2]]);
+      }
+
+      for (let j = 0; j < length; j++) {
+        const [x, y] = amplifierEdges([
+          edge[j][0] + displacement[0],
+          edge[j][1] + displacement[1],
+          -Z,
+        ]);
+
         facesZDepth.push([x, y, -Z + displacement[2]]);
       }
+      facesZDepth.push([firstPoint[0], firstPoint[1], -Z + displacement[2]]);
     }
 
     for (let hole of edges) {
-      for (let j = 0; j < hole.length - 1; j++) {
+      for (let j = 0; j < hole.length; j++) {
         const [x, y] = amplifierEdges([
           hole[j][0] + displacement[0],
           hole[j][1] + displacement[1],
           Z,
         ]);
+        const index = (j + 1) % hole.length;
         const [xNextFace, yNextFace] = amplifierEdges([
-          hole[j + 1][0] + displacement[0],
-          hole[j + 1][1] + displacement[1],
+          hole[index][0] + displacement[0],
+          hole[index][1] + displacement[1],
           Z,
         ]);
 
-        facesConnections.push([
-          [x, y, Z + displacement[2]],
-          [xNextFace, yNextFace, Z + displacement[2]],
-          [xNextFace, yNextFace, -Z + displacement[2]],
-          [x, y, -Z + displacement[2]],
-          [x, y, Z + displacement[2]],
-        ]);
+        if (x <= xNextFace) {
+          facesConnections.push([
+            [x, y, -Z + displacement[2]],
+            [x, y, Z + displacement[2]],
+            [xNextFace, yNextFace, Z + displacement[2]],
+            [xNextFace, yNextFace, -Z + displacement[2]],
+            [x, y, -Z + displacement[2]],
+          ]);
+        } else {
+          facesConnections.push([
+            [xNextFace, yNextFace, Z + displacement[2]],
+            [xNextFace, yNextFace, -Z + displacement[2]],
+            [x, y, -Z + displacement[2]],
+            [x, y, Z + displacement[2]],
+            [xNextFace, yNextFace, Z + displacement[2]],
+          ]);
+        }
       }
     }
-
     this.faces = [facesZ, facesZDepth, ...facesConnections];
-
-    console.debug(this.faces);
 
     this.calculateFacesNormal();
     this.findFacesCentroid();
+  }
+
+  isCounterClockwise(a: vec3, b: vec3, c: vec3): boolean {
+    const area =
+      0.5 * ((b[0] - a[0]) * (c[1] - a[1]) - (c[0] - a[0]) * (b[1] - a[1]));
+    return area > 0;
   }
 
   calculateFacesNormal() {
@@ -136,7 +163,13 @@ export class Letter {
     this.facesCentroid = this.faces.map((face) => getCentroidFaces(face));
   }
 
-  draw(p5: p5Types, camera: Camera, shader: p5Types.Shader, light: Light) {
+  draw(
+    p5: p5Types,
+    camera: Camera,
+    shader: p5Types.Shader,
+    light: Light,
+    isSelect?: boolean
+  ) {
     // const Nvector = p5.createVector(...camera.N);
     const VRP = p5.createVector(...camera.VRP);
 
@@ -161,7 +194,7 @@ export class Letter {
       const face = this.faces[i];
 
       if (camera.ocultFaces) {
-        const OVector = VRP.sub(...this.facesCentroid[i]).normalize();
+        const OVector = VRP.sub(...camera.P).normalize();
         const faceNormal = p5.createVector(...this.facesNormal[i]);
 
         const dot = OVector.dot(faceNormal);
@@ -173,7 +206,7 @@ export class Letter {
       // shader?.setUniform('ReferencePointPosition', getCentroidFaces(face));
       // shader?.setUniform('FaceNormal', [...faceNormal.array()]);
 
-      p5.stroke(255);
+      p5.stroke(isSelect ? 'red' : 'white');
       p5.beginShape();
 
       let firstPoint = face[0];

@@ -10,11 +10,18 @@ import {
 } from '@fluentui/react';
 import { Letter } from 'components/Letter';
 import { useObjects } from 'components/Provider';
-import { useEffect, useState } from 'react';
+import { Dispatch, FC, SetStateAction, useEffect, useState } from 'react';
 
 const gapStack = { childrenGap: 5 };
 
-export const PivotLetter = () => {
+type Props = {
+  selectedLetter: string;
+  setSelectedLetter: Dispatch<SetStateAction<string>>;
+};
+export const PivotLetter: FC<Props> = ({
+  selectedLetter,
+  setSelectedLetter,
+}) => {
   const { objects, handleRemoveSphere } = useObjects();
 
   const options = [
@@ -28,7 +35,6 @@ export const PivotLetter = () => {
   const [option, setOption] = useState('rotate');
 
   const [optionsSphere, setOptionsSphere] = useState<IDropdownOption[]>([]);
-  const [selectedLetter, setSelectedLetter] = useState('');
   //Define as letras selecionáveis
   useEffect(() => {
     if (objects.length === 0) return;
@@ -41,7 +47,6 @@ export const PivotLetter = () => {
     temp.push({ key: 'all', text: 'Todas as letras' });
     temp.push({ key: 'clean', text: 'Limpar' });
     setOptionsSphere(temp);
-    if (selectedLetter !== '') setSelectedLetter('');
   }, [objects]);
 
   const optionsRotation = [
@@ -51,9 +56,9 @@ export const PivotLetter = () => {
   ];
   const [optionRotation, setOptionRotation] = useState('X');
 
-  const [valueX, setValueX] = useState(1);
-  const [valueY, setValueY] = useState(1);
-  const [valueZ, setValueZ] = useState(1);
+  const [valueX, setValueX] = useState(0);
+  const [valueY, setValueY] = useState(0);
+  const [valueZ, setValueZ] = useState(0);
 
   const [angle, setAngle] = useState(0);
 
@@ -90,12 +95,12 @@ export const PivotLetter = () => {
 
     //Redifine todas opções
     setAngle(0);
-    setValueX(1);
-    setValueY(1);
-    setValueZ(1);
+    setValueX(0);
+    setValueY(0);
+    setValueZ(0);
     setOptionRotation('X');
     setOption('rotate');
-    setSelectedLetter('');
+    // setSelectedLetter('');
   };
 
   const handleChageDropdown = (
@@ -109,7 +114,9 @@ export const PivotLetter = () => {
 
   const handleRemoveSphereOption = () => {
     if (selectedLetter === '') return;
-    handleRemoveSphere(selectedLetter);
+    if (selectedLetter === 'all') {
+      objects.forEach((obj) => handleRemoveSphere(obj.id));
+    } else handleRemoveSphere(selectedLetter);
     setSelectedLetter('');
   };
 
@@ -146,7 +153,14 @@ export const PivotLetter = () => {
             label="Selecione a opção desejada"
             options={options}
             selectedKey={option}
-            onChange={(e, v) => setOption(v!.key)}
+            onChange={(e, v) => {
+              setOption(v!.key);
+              if (v!.key === 'scale') {
+                setValueX(1);
+                setValueY(1);
+                setValueZ(1);
+              }
+            }}
             required
           />
           {option === 'rotate' ? (
@@ -169,7 +183,7 @@ export const PivotLetter = () => {
             <Stack tokens={gapStack}>
               <Slider
                 label="Valor X"
-                min={0}
+                min={option === 'scale' ? 1 : -1000}
                 step={option === 'scale' ? 0.1 : 1}
                 max={option === 'scale' ? 10 : 1000}
                 value={valueX}
@@ -178,7 +192,7 @@ export const PivotLetter = () => {
               />
               <Slider
                 label="Valor Y"
-                min={0}
+                min={option === 'scale' ? 1 : -1000}
                 step={option === 'scale' ? 0.1 : 1}
                 // max={10}
                 max={option === 'scale' ? 10 : 1000}
@@ -188,7 +202,7 @@ export const PivotLetter = () => {
               />
               <Slider
                 label="Valor Z"
-                min={0}
+                min={option === 'scale' ? 1 : -1000}
                 max={option === 'scale' ? 10 : 1000}
                 step={option === 'scale' ? 0.1 : 1}
                 value={valueZ}
