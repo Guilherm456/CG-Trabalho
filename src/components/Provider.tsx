@@ -54,8 +54,8 @@ export function ObjectsProvider({ children }: Props) {
     new Camera(
       defaultVRP,
       defaultP,
-      { width: [-500, 500], height: [-500, 500] },
-      { width: [-500, 500], height: [-500, 500] },
+      { width: [-300, 300], height: [-300, 300] },
+      { width: [-300, 300], height: [-300, 300] },
       defaultFar,
       defaultNear,
       defaultLookUp,
