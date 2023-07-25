@@ -28,19 +28,36 @@ const ZBuffer = ({}) => {
     );
   });
 
-  const fillPolygon = (points: vec3[], color?: string) => {
-    const maxY = Math.max(...points.map(([, y]) => y));
-    const minY = Math.min(...points.map(([, y]) => y));
+  function fillPolygon(vertices: any[]) {
+    const minY = Math.min(...vertices.map(([x, y]) => y));
+    const maxY = Math.max(...vertices.map(([x, y]) => y));
 
-    for (let i = 0; i < points.length; i++) {
-      const nextIndex = (i + 1) % points.length;
-      const [x1, y1] = points[i];
-      const [x2, y2] = points[nextIndex];
+    for (let y = minY; y <= maxY; y++) {
+      const intersections: number[] = [];
 
-      const [xMin, xMax] = x1 < x2 ? [x1, x2] : [x2, x1];
-      const [yMin, yMax] = y1 < y2 ? [y1, y2] : [y2, y1];
+      for (let i = 0; i < vertices.length; i++) {
+        const [x1, y1] = vertices[i];
+        const [x2, y2] = vertices[(i + 1) % vertices.length];
+
+        if ((y1 <= y && y2 > y) || (y1 > y && y2 <= y)) {
+          const x = Math.round(x1 + ((y - y1) / (y2 - y1)) * (x2 - x1));
+          intersections.push(x);
+        }
+      }
+
+      intersections.sort((a, b) => a - b);
+
+      for (let i = 0; i < intersections.length; i += 2) {
+        const startX = intersections[i];
+        const endX = intersections[i + 1];
+
+        for (let x = startX; x <= endX; x++) {
+          if (x >= width || y >= height || x < 0 || y < 0) continue;
+          zBuffer[x][y] = 255;
+        }
+      }
     }
-  };
+  }
 
   const draw2D = () => {
     if (!canvas.current) return;
