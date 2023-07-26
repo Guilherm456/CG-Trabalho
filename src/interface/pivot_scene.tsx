@@ -24,6 +24,7 @@ export const PivotScene = () => {
     cameras,
     light,
     setLight,
+    setCamera,
   } = useObjects();
   const [text, setText] = useState(
     objects.map((letter) => letter.typeLetter).join('')
@@ -61,17 +62,18 @@ export const PivotScene = () => {
         camerasLocal.push(
           new Camera(
             camera.VRP,
-            camera.target,
+            camera.P,
             camera.ViewPort,
             camera.WindowPort,
             camera.far,
             camera.near,
+            camera.viewUp,
             camera.projectionPlanDistance,
-            camera.projectionType
+            camera.typeCamera
           )
         );
       }
-      // setCamera(camerasLocal);
+      setCamera(camerasLocal);
 
       const lightLocal = new Light(
         parsedScene.light.position.slice(0, 3),
@@ -103,6 +105,7 @@ export const PivotScene = () => {
         'Ocorreu um erro ao ler o arquivo JSON. Verifique o console para mais detalhes.'
       );
     }
+    e.target.value = '';
   };
 
   const downloadScene = () => {

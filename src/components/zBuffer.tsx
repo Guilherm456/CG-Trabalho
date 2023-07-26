@@ -2,13 +2,14 @@ import {
   Dispatch,
   FC,
   SetStateAction,
-  useCallback,
   useEffect,
   useMemo,
   useRef,
+  useCallback,
 } from 'react';
 import { matrixMul } from 'utils/calculate';
 import { vec3, vec4 } from 'utils/interfaces';
+import { Letter } from './Letter';
 import { useObjects } from './Provider';
 
 interface Props {
@@ -25,7 +26,7 @@ const ZBuffer: FC<Props> = ({
   lastPosition,
   setLastPosition,
 }) => {
-  const { objects, cameras } = useObjects();
+  const { objects, cameras, light } = useObjects();
 
   const canvas = useRef<HTMLCanvasElement>();
 
@@ -61,41 +62,56 @@ const ZBuffer: FC<Props> = ({
   //   return object;
   // });
 
-  function fillPolygon(vertices: vec3[], selected: boolean = false) {
-    const minY = Math.min(...vertices.map(([x, y]) => y));
-    const maxY = Math.max(...vertices.map(([x, y]) => y));
+  function fillPolygon(
+    vertices: vec3[],
+    selected: boolean = false,
+    letter: Letter,
+    indexFace: number
+  ) {
+    const minY = Math.min(...vertices.map(([x, y, z]) => y));
+    const maxY = Math.max(...vertices.map(([x, y, z]) => y));
 
     for (let y = minY; y <= maxY; y++) {
-      const intersections: number[] = [];
+      const intersections: { x: number; z: number }[] = [];
 
       for (let i = 0; i < vertices.length; i++) {
-        const [x1, y1] = vertices[i];
-        const [x2, y2] = vertices[(i + 1) % vertices.length];
+        const [x1, y1, z1] = vertices[i];
+        const [x2, y2, z2] = vertices[(i + 1) % vertices.length];
 
         if ((y1 <= y && y2 > y) || (y1 > y && y2 <= y)) {
-          const m = (y2 - y1) / (x2 - x1);
-          const x = x1 + (y - y1) / m;
+          const t = (y - y1) / (y2 - y1);
+          const x = x1 + t * (x2 - x1);
+          const z = z1 + t * (z2 - z1);
 
-          intersections.push(x);
+          intersections.push({ x: Math.round(x), z });
         }
       }
 
-      intersections.sort((a, b) => a - b);
+      intersections.sort((a, b) => a.x - b.x);
 
       for (let i = 0; i < intersections.length; i += 2) {
-        const startX = intersections[i];
-        const endX = intersections[i + 1];
+        const start = intersections[i];
+        const end = intersections[i + 1];
 
-        for (let x = startX; x <= endX; x++) {
-          if (x >= width || y >= height || x < 0 || y < 0) continue;
+        for (let x = start.x; x <= end.x; x++) {
+          if (x >= width || y >= height || x < 0 || y < 0) break;
 
-          if (selected) {
-            zBuffer[x][y] = [200, 0, 0];
-          } else {
-            zBuffer[x][y] = [200, 200, 200];
+          const t = (x - start.x) / (end.x - start.x);
+          const z = camera.VRP[2] - (start.z + t * (end.z - start.z));
+
+          if (zDepth[x][y] > z) {
+            if (selected) {
+              zBuffer[x][y] = [200, 0, 0, z];
+            } else {
+              zBuffer[x][y] = letter.calculateFlatShading(
+                light,
+                camera,
+                indexFace
+              );
+            }
+
+            zDepth[x][y] = z;
           }
-
-          zDepth[x][y] = 255;
         }
       }
     }
@@ -104,30 +120,37 @@ const ZBuffer: FC<Props> = ({
   const draw2D = useCallback(() => {
     if (!canvas.current) return;
 
-    zBuffer.forEach((line) => line.fill([0, 0, 0]));
     const ctx = canvas.current.getContext('2d', {});
-
     ctx?.fillRect(0, 0, width, height);
-
+    zBuffer.forEach((line) => line.fill([0, 0, 0]));
+    zDepth.forEach((line) => line.fill(Infinity));
     const imageData = ctx?.getImageData(0, 0, width, height);
     const data = imageData?.data;
 
+    objects.sort((a, b) => {
+      return a.center[2] - b.center[2];
+    });
+
     if (data) {
       objects.forEach((object) => {
-        object.faces.forEach((face) => {
-          fillPolygon(
-            face.map((vertex) => {
-              const vertexSRT = matrixMul(
-                vertex,
-                camera.concatedMatrix
-              ) as vec4;
-              const x = Math.round(vertexSRT[0] - camera.ViewPort.width[0]);
-              const y = Math.round(vertexSRT[1] - camera.ViewPort.height[0]);
-              return [x, y, vertex[2]] as vec3;
-            }),
-            selectedLetter.includes(object.id)
-          );
-        });
+        for (let i = 0; i < object.faces.length; i++) {
+          const face = object.faces[i];
+          if (object.isFaceVisible(camera, i))
+            fillPolygon(
+              face.map((vertex) => {
+                const vertexSRT = matrixMul(
+                  vertex,
+                  camera.concatedMatrix
+                ) as vec4;
+                const x = Math.round(vertexSRT[0] - camera.ViewPort.width[0]);
+                const y = Math.round(vertexSRT[1] - camera.ViewPort.height[0]);
+                return [x, y, vertex[2]] as vec3;
+              }),
+              selectedLetter.includes(object.id),
+              object,
+              i
+            );
+        }
       });
 
       for (let i = 0; i < zBuffer.length; i++) {
@@ -187,8 +210,10 @@ const ZBuffer: FC<Props> = ({
     let isInside = false;
 
     const facesSRT = vertices.map((vertex) => {
-      const vertexSRT = matrixMul(vertex, camera.concatedMatrix) as vec3;
-      return vertexSRT;
+      const vertexSRT = matrixMul(vertex, camera.concatedMatrix) as vec4;
+      const x = Math.round(vertexSRT[0]);
+      const y = Math.round(vertexSRT[1]);
+      return [x, y, vertex[2]] as vec3;
     });
 
     const maxY = Math.max(...facesSRT.map((vertex) => vertex[1]));
@@ -251,7 +276,7 @@ const ZBuffer: FC<Props> = ({
     return isInside;
   }
 
-  const mouseDragged = (e: any) => {
+  const mouseDragged = (e: MouseEvent) => {
     if (e && e.buttons) {
       const mouseX = e.clientX;
       const mouseY = e.clientY;
@@ -292,7 +317,7 @@ const ZBuffer: FC<Props> = ({
                 object.translate(
                   0,
                   lastPosition[1] - mouseY,
-                  lastPosition[0] - mouseX
+                  lastPosition[0] - mouseX,
                 );
               }
               break;
@@ -339,18 +364,31 @@ const ZBuffer: FC<Props> = ({
   };
 
   useEffect(() => {
-    setTimeout(draw2D, 100);
-  }, [canvas, camera, objects, draw2D, lastPosition]);
+    setTimeout(draw2D, 25);
+  }, [canvas, cameras, objects, selectedLetter, lastPosition, light]);
 
-  return (
-    <canvas
-      ref={canvas as any}
-      width={width}
-      height={height}
-      onClick={(e) => click(e as any)}
-      onMouseMove={(e) => mouseDragged(e)}
-    />
+  const Canvas = useMemo(
+    () => (
+      <canvas
+        ref={canvas as any}
+        width={width}
+        height={height}
+        onClick={(e) => click(e as any)}
+        onMouseMove={(e) => mouseDragged(e)}
+      />
+    ),
+    [
+      cameras,
+      objects,
+      selectedLetter,
+      lastPosition,
+      light,
+      canvas,
+      width,
+      height,
+    ]
   );
+  return Canvas;
 };
 
 export default ZBuffer;

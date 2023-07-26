@@ -11,6 +11,7 @@ import {
 import { Letter } from 'components/Letter';
 import { useObjects } from 'components/Provider';
 import { FC, useEffect, useState } from 'react';
+import { ModalContent } from './Modal_Modal';
 
 const gapStack = { childrenGap: 5 };
 
@@ -140,7 +141,7 @@ export const PivotLetter: FC = ({}) => {
           split
           title="Editar letra"
           iconProps={{ iconName: 'Edit' }}
-          disabled={selectedLetter === ''}
+          disabled={selectedLetter === '' || selectedLetter === 'all'}
           onClick={handleOpen}
         />
       </Stack>
@@ -180,7 +181,7 @@ export const PivotLetter: FC = ({}) => {
             <Stack tokens={gapStack}>
               <Slider
                 label="Valor X"
-                min={option === 'scale' ? 1 : -1000}
+                min={option === 'scale' ? -10 : -1000}
                 step={option === 'scale' ? 0.1 : 1}
                 max={option === 'scale' ? 10 : 1000}
                 value={valueX}
@@ -189,7 +190,7 @@ export const PivotLetter: FC = ({}) => {
               />
               <Slider
                 label="Valor Y"
-                min={option === 'scale' ? 1 : -1000}
+                min={option === 'scale' ? -10 : -1000}
                 step={option === 'scale' ? 0.1 : 1}
                 // max={10}
                 max={option === 'scale' ? 10 : 1000}
@@ -199,7 +200,7 @@ export const PivotLetter: FC = ({}) => {
               />
               <Slider
                 label="Valor Z"
-                min={option === 'scale' ? 1 : -1000}
+                min={option === 'scale' ? -10 : -1000}
                 max={option === 'scale' ? 10 : 1000}
                 step={option === 'scale' ? 0.1 : 1}
                 value={valueZ}
@@ -211,13 +212,13 @@ export const PivotLetter: FC = ({}) => {
           <DefaultButton text="Aplicar" onClick={handleChange} />
         </>
       ) : null}
-      {/* {modalOpen ? (
+      {modalOpen ? (
         <ModalContent
           handleOpen={handleOpen}
           open={modalOpen}
-          sphere={selectedLetter}
+          letterID={selectedLetter}
         />
-      ) : null} */}
+      ) : null}
     </Stack>
   );
 };

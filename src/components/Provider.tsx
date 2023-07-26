@@ -1,4 +1,10 @@
-import { createContext, useCallback, useContext, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import { Camera } from './Camera';
 
 import { vec3 } from 'utils/interfaces';
@@ -21,6 +27,7 @@ interface ObjectsProviderInterface {
   handleRemoveLetter: (id: string) => void;
   handleChangeLetter: (letter: Letter | Letter[]) => void;
   handleChangeCameras: (camera: Camera | Camera[]) => void;
+  handleChangeLight: (light: Light) => void;
 }
 const ObjectsProviderInitial = {} as ObjectsProviderInterface;
 const ObjectsP = createContext<ObjectsProviderInterface>(
@@ -168,6 +175,14 @@ export function ObjectsProvider({ children }: Props) {
     [cameras]
   );
 
+  const handleChangeLight = useCallback(
+    (newLight: Light) => {
+      setLight(newLight);
+    },
+    [light]
+  );
+
+  useEffect(() => console.debug(light), [light]);
   const values = {
     objects,
     setObjects,
@@ -180,6 +195,7 @@ export function ObjectsProvider({ children }: Props) {
     handleRemoveLetter,
     handleChangeLetter,
     handleChangeCameras,
+    handleChangeLight,
   };
   return <ObjectsP.Provider value={values}>{children}</ObjectsP.Provider>;
 }
