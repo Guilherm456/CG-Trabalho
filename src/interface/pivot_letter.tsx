@@ -180,7 +180,7 @@ export const PivotLetter: FC = ({}) => {
             <Stack tokens={gapStack}>
               <Slider
                 label="Valor X"
-                min={option === 'scale' ? 1 : -1000}
+                min={option === 'scale' ? -10 : -1000}
                 step={option === 'scale' ? 0.1 : 1}
                 max={option === 'scale' ? 10 : 1000}
                 value={valueX}
@@ -189,7 +189,7 @@ export const PivotLetter: FC = ({}) => {
               />
               <Slider
                 label="Valor Y"
-                min={option === 'scale' ? 1 : -1000}
+                min={option === 'scale' ? -10 : -1000}
                 step={option === 'scale' ? 0.1 : 1}
                 // max={10}
                 max={option === 'scale' ? 10 : 1000}
@@ -199,7 +199,7 @@ export const PivotLetter: FC = ({}) => {
               />
               <Slider
                 label="Valor Z"
-                min={option === 'scale' ? 1 : -1000}
+                min={option === 'scale' ? -10 : -1000}
                 max={option === 'scale' ? 10 : 1000}
                 step={option === 'scale' ? 0.1 : 1}
                 value={valueZ}

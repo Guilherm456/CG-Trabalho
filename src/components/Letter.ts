@@ -1,4 +1,3 @@
-import * as nj from 'numjs';
 import p5Types from 'p5';
 import { matrixMul, rotate, scale, translate } from 'utils/calculate';
 import Letters from 'utils/font';
@@ -15,7 +14,7 @@ export class Letter {
 
   edges: [[vec3]] = [[[-1, -1, -1]]];
 
-  private center: vec3 = [0, 0, 0];
+  public center: vec3 = [0, 0, 0];
 
   private ZDepth: number = 0;
 
@@ -158,8 +157,35 @@ export class Letter {
     this.facesNormal = facesNormal;
   }
 
-  findFacesCentroid() {
+  private findFacesCentroid() {
     this.facesCentroid = this.faces.map((face) => getCentroidFaces(face));
+  }
+
+  public setIlumination(Ka?: vec3, Kd?: vec3, Ks?: vec3, n?: number) {
+    if (Ka) this.Ka = Ka;
+    if (Kd) this.Kd = Kd;
+    if (Ks) this.Ks = Ks;
+    if (n) this.n = n;
+  }
+
+  isFaceVisible(camera: Camera, indexFace: number): boolean {
+    const p5 = p5Types.Vector;
+
+    const VRP = new p5(...camera.VRP);
+    const distance = new p5(...camera.N).dot(
+      VRP.sub(new p5(...this.facesCentroid[indexFace]))
+    );
+
+    if (distance < camera.near || distance > camera.far) return false;
+
+    if (!camera.ocultFaces) return true;
+
+    const OVector = VRP.sub(...this.facesCentroid[indexFace]).normalize();
+    const faceNormal = new p5(...this.facesNormal[indexFace]);
+    const dot = OVector.dot(faceNormal);
+
+    //Caso a face esteja na frente da camera, ela será desenhada
+    return dot > 0.00000000001;
   }
 
   draw(
@@ -169,12 +195,6 @@ export class Letter {
     light: Light,
     isSelect?: boolean
   ) {
-    const distance = p5
-      .createVector(...camera.N)
-      .dot(p5.createVector(...camera.VRP).sub(p5.createVector(...this.center)));
-
-    if (distance < camera.near || distance > camera.far) return;
-
     //Repassa os dados para o shader
     // shader?.setUniform('Ka', [...[0.1, 0.5, 0.1]]);
     // shader?.setUniform('Kd', [...[0.1, 0.5, 0.1]]);
@@ -191,16 +211,7 @@ export class Letter {
     for (let i = 0; i < this.faces.length; i++) {
       const face = this.faces[i];
 
-      if (camera.ocultFaces) {
-        const OVector = VRP.sub(...this.facesCentroid[i]).normalize();
-
-        const faceNormal = p5.createVector(...this.facesNormal[i]);
-
-        const dot = OVector.dot(faceNormal);
-
-        //Caso a face esteja na frente da camera, ela será desenhada
-        if (dot < 0.00000000001) continue;
-      }
+      if (!this.isFaceVisible(camera, i)) continue;
 
       // shader?.setUniform('ReferencePointPosition', getCentroidFaces(face));
       // shader?.setUniform('FaceNormal', [...faceNormal.array()]);
@@ -232,7 +243,33 @@ export class Letter {
       p5.endShape(p5.CLOSE);
     }
   }
+  public calculateFlatShading(light: Light, camera: Camera, indexFace: number) {
+    const p5 = p5Types.Vector;
+    const centroid = new p5(...this.facesCentroid[indexFace]);
+    const N = new p5(...this.facesNormal[indexFace]);
 
+    const Ia = new p5(...light.ambientLightIntensity).mult(new p5(...this.Ka));
+
+    const L = new p5(...light.position.slice(0, 3)).sub(centroid).normalize();
+    const dotNL = N.dot(L);
+    if (dotNL < 0) return Ia.array();
+
+    const Id = new p5(...light.lightIntensity)
+      .mult(new p5(...this.Kd))
+      .mult(dotNL);
+
+    const S = new p5(...camera.VRP.slice(0, 3)).sub(centroid).normalize();
+    const R = N.mult(2 * dotNL)
+      .sub(L)
+      .normalize();
+    const dotRS = R.dot(S);
+    if (dotRS < 0) return Ia.add(Id).array();
+
+    const Is = new p5(...light.lightIntensity)
+      .mult(new p5(...this.Ks))
+      .mult(Math.pow(dotRS, this.n));
+    return Ia.add(Id).add(Is).array();
+  }
   public calculatePhong(
     object: {
       Ka: vec3;
@@ -256,7 +293,7 @@ export class Letter {
     normal: vec3
   ) {
     // Convert JavaScript arrays to NumJS ndArrays
-    const Ka = nj.array(object.Ka);
+    // const Ka = nj.array(object.Ka);
     // const Kd = nj.array(object.Kd);
     // const Ks = nj.array(object.Ks);
     // const position = nj.array(light.position);

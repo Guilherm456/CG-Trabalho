@@ -9,23 +9,26 @@ import {
   VerticalDivider,
 } from '@fluentui/react';
 import { useObjects } from 'components/Provider';
-import { useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 
 import { Port } from 'utils/interfaces';
 import { arrayNumberToArrayString } from 'utils/others';
 
 const gapStack = { childrenGap: 5 };
 
-export const PivotCamera = () => {
-  const { cameras } = useObjects();
+export const PivotCamera: FC = () => {
+  const { cameras, handleChangeCameras } = useObjects();
 
   const camera = cameras[3];
+
+  useEffect(() => console.debug(cameras[3]), [cameras]);
 
   const [near, setNear] = useState(camera.near);
   const [far, setFar] = useState(camera.far);
 
   const handleChangeDistance = () => {
     camera.setDistances(far, near);
+    handleChangeCameras(camera);
   };
 
   const [distanceProjection, setDistanceProjection] = useState(
@@ -34,6 +37,7 @@ export const PivotCamera = () => {
 
   const handleChangeDistanceProjection = () => {
     camera.setPlanDistance(distanceProjection / 100);
+    handleChangeCameras(camera);
   };
 
   const [ocultFaces, setOcultFaces] = useState(camera.ocultFaces);
@@ -75,12 +79,17 @@ export const PivotCamera = () => {
       width: [xMinV, xMaxV],
       height: [yMinV, yMaxV],
     };
-    camera.setWindowSize(windowPort, viewport);
+    cameras.forEach((camera) => {
+      camera.setWindowSize(windowPort, viewport);
+    });
+    handleChangeCameras(cameras);
   };
 
   const [viewUp, setviewUp] = useState(arrayNumberToArrayString(camera.viewUp));
+
   const handleChangeviewUp = () => {
     camera.setviewUp([Number(viewUp[0]), Number(viewUp[1]), Number(viewUp[2])]);
+    handleChangeCameras(camera);
   };
 
   return (
@@ -103,8 +112,9 @@ export const PivotCamera = () => {
         label="Ocultação de faces"
         checked={ocultFaces}
         onChange={(_, c) => {
-          camera.setOcultFaces(c!);
           setOcultFaces(c!);
+          camera.setOcultFaces(c!);
+          handleChangeCameras(camera);
         }}
       />
       <PrimaryButton text="Mudar distâncias" onClick={handleChangeDistance} />
@@ -144,7 +154,11 @@ export const PivotCamera = () => {
       </Stack>
       <PrimaryButton
         text="Alterar VRP"
-        onClick={() => camera.setVRP(Number(xVRP), Number(yVRP), Number(zVRP))}
+        onClick={() => {
+          camera.setVRP(Number(xVRP), Number(yVRP), Number(zVRP));
+
+          handleChangeCameras(camera);
+        }}
       />
       <Label>P</Label>
       <Stack horizontal tokens={gapStack}>
@@ -169,7 +183,10 @@ export const PivotCamera = () => {
       </Stack>
       <PrimaryButton
         text="Alterar P"
-        onClick={() => camera.setP(Number(xP), Number(yP), Number(zP))}
+        onClick={() => {
+          camera.setP(Number(xP), Number(yP), Number(zP));
+          handleChangeCameras(camera);
+        }}
       />
       <VerticalDivider />
       <Text variant="mediumPlus">WindowSize</Text>
