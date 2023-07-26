@@ -170,6 +170,28 @@ export class Camera {
     this.WindowPort = windowPort ?? this.WindowPort;
     this.ViewPort = viewPort ?? this.ViewPort;
 
+    if (windowPort) {
+      this.WindowPort.width = [
+        Math.round(windowPort.width[0]),
+        Math.round(windowPort.width[1]),
+      ];
+      this.WindowPort.height = [
+        Math.round(windowPort.height[0]),
+        Math.round(windowPort.height[1]),
+      ];
+    }
+
+    if (viewPort) {
+      this.ViewPort.width = [
+        Math.round(viewPort.width[0]),
+        Math.round(viewPort.width[1]),
+      ];
+      this.ViewPort.height = [
+        Math.round(viewPort.height[0]),
+        Math.round(viewPort.height[1]),
+      ];
+    }
+
     this.matrixView = this.getMatrixView();
     this.concatedMatrix = this.getConcatedMatrix();
   }

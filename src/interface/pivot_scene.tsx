@@ -134,7 +134,7 @@ export const PivotScene = () => {
     char.forEach((letter, index) => {
       if (letter === ' ') return;
       const distanceFromCenter = index - (length - 1) / 2;
-      const x = distanceFromCenter * 10; // Aumenta o espaçamento a cada letra
+      const x = distanceFromCenter * 7; // Aumenta o espaçamento a cada letra
 
       letters.push(new Letter([x, 0, 0], ZDepth, letter as any));
     });

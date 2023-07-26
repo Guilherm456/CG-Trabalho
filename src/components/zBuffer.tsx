@@ -24,8 +24,8 @@ const ZBuffer: FC<Props> = ({
     Math.abs(camera.ViewPort.height[0]) + Math.abs(camera.ViewPort.height[1]);
 
   const zBuffer = new Array(width)
-    .fill(Infinity)
-    .map(() => new Array(height).fill(Infinity));
+    .fill([0, 0, 0])
+    .map(() => new Array(height).fill([0, 0, 0]));
   const zDepth = new Array(width).fill(Infinity).map(() => new Array(height));
 
   const objetsSRT = objects.map((object) => {
@@ -41,7 +41,7 @@ const ZBuffer: FC<Props> = ({
     return object;
   });
 
-  function fillPolygon(vertices: any[]) {
+  function fillPolygon(vertices: vec3[]) {
     const minY = Math.min(...vertices.map(([x, y]) => y));
     const maxY = Math.max(...vertices.map(([x, y]) => y));
 
@@ -69,7 +69,8 @@ const ZBuffer: FC<Props> = ({
         for (let x = startX; x <= endX; x++) {
           if (x >= width || y >= height || x < 0 || y < 0) continue;
 
-          zBuffer[x][y] = 255;
+          zBuffer[x][y] = [50, 200, 100];
+          zDepth[x][y] = 255;
         }
       }
     }
@@ -78,12 +79,11 @@ const ZBuffer: FC<Props> = ({
   const draw2D = () => {
     if (!canvas.current) return;
 
-    zBuffer.forEach((line) => line.fill(Infinity));
+    zBuffer.forEach((line) => line.fill([0, 0, 0]));
     const ctx = canvas.current.getContext('2d', {});
 
     ctx?.fillRect(0, 0, width, height);
 
-    // const a = ctx?.createImageData(500, 500);
     const imageData = ctx?.getImageData(0, 0, width, height);
     const data = imageData?.data;
 
@@ -106,13 +106,11 @@ const ZBuffer: FC<Props> = ({
 
       for (let i = 0; i < zBuffer.length; i++) {
         for (let j = 0; j < zBuffer[0].length; j++) {
-          if (zBuffer[i][j] !== Infinity) {
-            const index = (j * width + i) * 4;
-            data[index] = 255;
-            data[index + 1] = 255;
-            data[index + 2] = 255;
-            data[index + 3] = 255;
-          }
+          const index = (j * width + i) * 4;
+          const [R, G, B] = zBuffer[i][j];
+          data[index] = R;
+          data[index + 1] = G;
+          data[index + 2] = B;
         }
       }
       data.set(data);
@@ -224,15 +222,12 @@ const ZBuffer: FC<Props> = ({
   }, [canvas, camera, objects]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
-      <button onClick={() => draw2D()}>Reload</button>
-      <canvas
-        ref={canvas as any}
-        width={width}
-        height={height}
-        onClick={(e) => click(e as any)}
-      />
-    </div>
+    <canvas
+      ref={canvas as any}
+      width={width}
+      height={height}
+      onClick={(e) => click(e as any)}
+    />
   );
 };
 

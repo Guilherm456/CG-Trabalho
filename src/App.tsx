@@ -28,20 +28,20 @@ function App() {
 
     console.debug('height', heightCanva, 'width', widthCanva);
 
-    // const camerasLocal = cameras.map((camera) => {
-    //   camera.setWindowSize(
-    //     {
-    //       height: [-heightCanva, heightCanva],
-    //       width: [-widthCanva, widthCanva],
-    //     },
-    //     {
-    //       height: [-heightCanva, heightCanva],
-    //       width: [-widthCanva, widthCanva],
-    //     }
-    //   );
-    //   return camera;
-    // });
-    // handleChangeCameras(camerasLocal);
+    const camerasLocal = cameras.map((camera) => {
+      camera.setWindowSize(
+        {
+          height: [-heightCanva, heightCanva],
+          width: [-widthCanva, widthCanva],
+        },
+        {
+          height: [-heightCanva, heightCanva],
+          width: [-widthCanva, widthCanva],
+        }
+      );
+      return camera;
+    });
+    handleChangeCameras(camerasLocal);
   }, []);
 
   return (
@@ -53,8 +53,24 @@ function App() {
           display: 'grid',
           gridTemplate: '1fr 1fr / 1fr 1fr',
           width: '75%',
+          gap: 5,
         }}
       >
+        <ZBuffer
+          indexCamera={0}
+          selectedLetter={selectedLetter}
+          setSelectedLetter={setSelectedLetter}
+        />
+        <ZBuffer
+          indexCamera={1}
+          selectedLetter={selectedLetter}
+          setSelectedLetter={setSelectedLetter}
+        />
+        <ZBuffer
+          indexCamera={2}
+          selectedLetter={selectedLetter}
+          setSelectedLetter={setSelectedLetter}
+        />
         <ZBuffer
           indexCamera={3}
           selectedLetter={selectedLetter}
