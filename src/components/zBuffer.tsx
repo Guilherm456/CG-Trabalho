@@ -4,6 +4,7 @@ import {
   SetStateAction,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
 } from 'react';
 import { matrixMul } from 'utils/calculate';
@@ -35,23 +36,30 @@ const ZBuffer: FC<Props> = ({
   const height =
     Math.abs(camera.ViewPort.height[0]) + Math.abs(camera.ViewPort.height[1]);
 
-  const zBuffer = new Array(width)
-    .fill([0, 0, 0])
-    .map(() => new Array(height).fill([0, 0, 0]));
-  const zDepth = new Array(width).fill(Infinity).map(() => new Array(height));
+  const zBuffer = useMemo(
+    () =>
+      new Array(width)
+        .fill([0, 0, 0])
+        .map(() => new Array(height).fill([0, 0, 0])),
+    [width, height]
+  );
+  const zDepth = useMemo(
+    () => new Array(width).fill(Infinity).map(() => new Array(height)),
+    [width, height]
+  );
 
-  const objetsSRT = objects.map((object) => {
-    object.faces.map((face) => {
-      face.map((vertex) => {
-        const vertexSRT = matrixMul(vertex, camera.concatedMatrix) as vec4;
-        const x = Math.round(vertexSRT[0] - camera.ViewPort.width[0]);
-        const y = Math.round(vertexSRT[1] - camera.ViewPort.height[0]);
-        return [x, y, vertex[2]] as vec3;
-      });
-      return face;
-    });
-    return object;
-  });
+  // const objetsSRT = objects.map((object) => {
+  //   object.faces.map((face) => {
+  //     face.map((vertex) => {
+  //       const vertexSRT = matrixMul(vertex, camera.concatedMatrix) as vec4;
+  //       const x = Math.round(vertexSRT[0] - camera.ViewPort.width[0]);
+  //       const y = Math.round(vertexSRT[1] - camera.ViewPort.height[0]);
+  //       return [x, y, vertex[2]] as vec3;
+  //     });
+  //     return face;
+  //   });
+  //   return object;
+  // });
 
   function fillPolygon(vertices: vec3[], selected: boolean = false) {
     const minY = Math.min(...vertices.map(([x, y]) => y));
@@ -93,7 +101,7 @@ const ZBuffer: FC<Props> = ({
     }
   }
 
-  const draw2D = () => {
+  const draw2D = useCallback(() => {
     if (!canvas.current) return;
 
     zBuffer.forEach((line) => line.fill([0, 0, 0]));
@@ -105,8 +113,8 @@ const ZBuffer: FC<Props> = ({
     const data = imageData?.data;
 
     if (data) {
-      for (let object of objects) {
-        for (let face of object.faces) {
+      objects.forEach((object) => {
+        object.faces.forEach((face) => {
           fillPolygon(
             face.map((vertex) => {
               const vertexSRT = matrixMul(
@@ -119,8 +127,8 @@ const ZBuffer: FC<Props> = ({
             }),
             selectedLetter.includes(object.id)
           );
-        }
-      }
+        });
+      });
 
       for (let i = 0; i < zBuffer.length; i++) {
         for (let j = 0; j < zBuffer[0].length; j++) {
@@ -135,7 +143,7 @@ const ZBuffer: FC<Props> = ({
 
       ctx?.putImageData(imageData, 0, 0);
     }
-  };
+  }, [canvas, camera, objects, fillPolygon, lastPosition]);
 
   const getMouseX = (mouseX: number) => {
     switch (camera.typeCamera) {
@@ -160,8 +168,8 @@ const ZBuffer: FC<Props> = ({
       camera.concatedMatrix
     ) as vec3;
 
-    for (let object of objects) {
-      for (let face of object.faces) {
+    objects.forEach((object) => {
+      object.faces.forEach((face) => {
         if (isPointInsidePolygon(transformedMouse, face)) {
           if (selectedLetter.includes(object.id)) {
             setSelectedLetter(
@@ -171,8 +179,8 @@ const ZBuffer: FC<Props> = ({
             setSelectedLetter([...selectedLetter, object.id]);
           }
         }
-      }
-    }
+      });
+    });
   };
 
   function isPointInsidePolygon(point: vec3, vertices: vec3[]): boolean {
@@ -251,42 +259,82 @@ const ZBuffer: FC<Props> = ({
       const selectedObject = objects.filter((object) =>
         selectedLetter.includes(object.id)
       );
-
-      if (selectedObject.length > 0)
+      if (selectedObject.length > 0) {
         selectedObject.forEach((object) => {
           switch (camera.typeCamera) {
             case 'axonometric-front':
-              object.translate(
-                -(lastPosition[0] - mouseX),
-                lastPosition[1] - mouseY,
-                0
-              );
+              if (e.metaKey) {
+                object.rotate(lastPosition[0] - mouseX, 'X');
+              } else if (e.shiftKey) {
+                object.scale(
+                  lastPosition[0] - mouseX * 0.1,
+                  lastPosition[1] - mouseY * 0.1,
+                  0
+                );
+              } else {
+                object.translate(
+                  -(lastPosition[0] - mouseX),
+                  lastPosition[1] - mouseY,
+                  0
+                );
+              }
               break;
             case 'axonometric-side':
-              object.translate(
-                0,
-                lastPosition[1] - mouseY,
-                lastPosition[0] - mouseX
-              );
+              if (e.metaKey) {
+                object.rotate(lastPosition[0] - mouseX, 'X');
+              } else if (e.shiftKey) {
+                object.scale(
+                  lastPosition[0] - mouseX * 0.1,
+                  lastPosition[1] - mouseY * 0.1,
+                  0
+                );
+              } else {
+                object.translate(
+                  0,
+                  lastPosition[1] - mouseY,
+                  lastPosition[0] - mouseX
+                );
+              }
               break;
             case 'axonometric-top':
-              object.translate(
-                lastPosition[0] - mouseX,
-                0,
-                lastPosition[1] - mouseY
-              );
+              if (e.metaKey) {
+                object.rotate(lastPosition[0] - mouseX, 'X');
+              } else if (e.shiftKey) {
+                object.scale(
+                  lastPosition[0] - mouseX * 0.1,
+                  lastPosition[1] - mouseY * 0.1,
+                  0
+                );
+              } else {
+                object.translate(
+                  lastPosition[0] - mouseX,
+                  0,
+                  lastPosition[1] - mouseY
+                );
+              }
               break;
             case 'perspective':
-              object.translate(
-                -(lastPosition[0] - mouseX),
-                lastPosition[1] - mouseY,
-                0
-              );
+              if (e.metaKey) {
+                object.rotate(lastPosition[0] - mouseX, 'X');
+              } else if (e.shiftKey) {
+                object.scale(
+                  lastPosition[0] - mouseX * 0.1,
+                  lastPosition[1] - mouseY * 0.1,
+                  0
+                );
+              } else {
+                object.translate(
+                  -(lastPosition[0] - mouseX),
+                  lastPosition[1] - mouseY,
+                  0
+                );
+              }
               break;
           }
         });
 
-      setLastPosition([mouseX, mouseY]);
+        setLastPosition([mouseX, mouseY]);
+      }
     }
   };
 
