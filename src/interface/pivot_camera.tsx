@@ -9,7 +9,7 @@ import {
   VerticalDivider,
 } from '@fluentui/react';
 import { useObjects } from 'components/Provider';
-import { FC, useEffect, useState } from 'react';
+import { FC, useState } from 'react';
 
 import { Port } from 'utils/interfaces';
 import { arrayNumberToArrayString } from 'utils/others';
@@ -20,8 +20,6 @@ export const PivotCamera: FC = () => {
   const { cameras, handleChangeCameras } = useObjects();
 
   const camera = cameras[3];
-
-  useEffect(() => console.debug(cameras[3]), [cameras]);
 
   const [near, setNear] = useState(camera.near);
   const [far, setFar] = useState(camera.far);
@@ -113,8 +111,10 @@ export const PivotCamera: FC = () => {
         checked={ocultFaces}
         onChange={(_, c) => {
           setOcultFaces(c!);
-          camera.setOcultFaces(c!);
-          handleChangeCameras(camera);
+          cameras.forEach((camera) => {
+            camera.setOcultFaces(c!);
+          });
+          handleChangeCameras(cameras);
         }}
       />
       <PrimaryButton text="Mudar distâncias" onClick={handleChangeDistance} />
