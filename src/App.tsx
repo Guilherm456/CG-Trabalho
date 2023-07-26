@@ -1,4 +1,5 @@
 import { Pivot, PivotItem } from '@fluentui/react';
+import { Canva } from 'components/Canva';
 import { useObjects } from 'components/Provider';
 import ZBuffer from 'components/zBuffer';
 
@@ -27,8 +28,6 @@ function App() {
     const heightCanva = height ? height / 4 : 0;
     const widthCanva = width ? width / 4 : 0;
 
-    console.debug('height', heightCanva, 'width', widthCanva);
-
     const camerasLocal = cameras.map((camera) => {
       camera.setWindowSize(
         {
@@ -45,6 +44,7 @@ function App() {
     handleChangeCameras(camerasLocal);
   }, []);
 
+  const isTest = false;
   return (
     <div style={{ display: 'flex', height: '95vh' }}>
       <div
@@ -57,34 +57,23 @@ function App() {
           gap: 5,
         }}
       >
-        <ZBuffer
-          indexCamera={0}
-          selectedLetter={selectedLetter}
-          setSelectedLetter={setSelectedLetter}
-          setLastPosition={setLastPosition}
-          lastPosition={lastPosition}
-        />
-        <ZBuffer
-          indexCamera={1}
-          selectedLetter={selectedLetter}
-          setSelectedLetter={setSelectedLetter}
-          setLastPosition={setLastPosition}
-          lastPosition={lastPosition}
-        />
-        <ZBuffer
-          indexCamera={2}
-          selectedLetter={selectedLetter}
-          setSelectedLetter={setSelectedLetter}
-          setLastPosition={setLastPosition}
-          lastPosition={lastPosition}
-        />
-        <ZBuffer
-          indexCamera={3}
-          selectedLetter={selectedLetter}
-          setSelectedLetter={setSelectedLetter}
-          setLastPosition={setLastPosition}
-          lastPosition={lastPosition}
-        />
+        {isTest ? (
+          <Canva
+            selectedLetter={selectedLetter}
+            setSelectedLetter={setSelectedLetter}
+          />
+        ) : (
+          cameras.map((_, index) => (
+            <ZBuffer
+              key={index}
+              selectedLetter={selectedLetter}
+              setSelectedLetter={setSelectedLetter}
+              indexCamera={index}
+              lastPosition={lastPosition}
+              setLastPosition={setLastPosition}
+            />
+          ))
+        )}
       </div>
       <div style={{ width: '25vw', height: '100%', padding: 8 }}>
         <Pivot>
