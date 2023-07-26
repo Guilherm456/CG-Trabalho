@@ -8,9 +8,9 @@ import {
 } from 'utils/calculate';
 import { vec3, vec4 } from 'utils/interfaces';
 
+import nj from '@d4c/numjs';
 import { Camera } from 'components/Camera';
 import { Light } from 'components/Light';
-import * as numJS from 'numjs';
 import { getCentroidFaces, getNormal } from 'utils/others';
 
 interface SphereProps {
@@ -78,9 +78,9 @@ export default class Sphere {
     const intP = 180 / (props.intensityP + 1);
 
     //Cria os vértices zerados
-    this.vertice = numJS
+    this.vertice = nj
       .zeros([props.intensityP + 2, props.intensityM, 3])
-      .tolist();
+      .tolist() as vec3[][];
 
     //Obtem os pontos extremos da esfera (alto e baixo)
     const extremesPoint = this.getExtremePoints();

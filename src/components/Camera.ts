@@ -1,4 +1,4 @@
-import * as numjs from 'numjs';
+import nj from '@d4c/numjs';
 import { Port, vec3 } from 'utils/interfaces';
 
 import p5Types from 'p5';
@@ -345,11 +345,9 @@ export class Camera {
   public getConcatedMatrix(): number[][] {
     const { matrixSRUSRC, matrixProjection, matrixView } = this;
 
-    let concatedMatrix = numjs
-      .dot(matrixView, matrixProjection)
-      .dot(matrixSRUSRC);
+    let concatedMatrix = nj.dot(matrixView, matrixProjection).dot(matrixSRUSRC);
 
-    return concatedMatrix.tolist();
+    return concatedMatrix.tolist() as number[][];
   }
 
   //"Anda" a câmera

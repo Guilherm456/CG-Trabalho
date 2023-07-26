@@ -1,5 +1,5 @@
+import nj from '@d4c/numjs';
 import { vec3, vec4 } from './interfaces';
-import * as numjs from 'numjs';
 
 type MatrixN = number[][];
 
@@ -103,7 +103,7 @@ export function matrixMul(
   if (vec3.length === 3) vec3.push(1);
 
   //Multiplica a matriz pelo vetor
-  const result = numjs.dot(numjs.array(matrixCalc), numjs.array<any>(vec3));
+  const result = nj.dot(nj.array(matrixCalc), nj.array(vec3));
 
   if (vec3.length > 3) return result.tolist() as vec3;
   //Se era um vetor, retira o "1"
@@ -117,7 +117,7 @@ export function matrixMul(
 }
 
 export function transpose(matrix: vec3[]): vec3[] {
-  return numjs.array(matrix).transpose().tolist();
+  return nj.array(matrix).transpose().tolist() as vec3[];
 }
 
 export function toDegrees(angle: number) {
