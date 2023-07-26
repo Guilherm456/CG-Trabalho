@@ -15,6 +15,7 @@ function App() {
     overflowY: 'auto',
   };
   const [selectedLetter, setSelectedLetter] = useState<string[]>([]);
+  const [lastPosition, setLastPosition] = useState([0, 0, 0]);
 
   const { cameras, handleChangeCameras } = useObjects();
 
@@ -60,21 +61,29 @@ function App() {
           indexCamera={0}
           selectedLetter={selectedLetter}
           setSelectedLetter={setSelectedLetter}
+          setLastPosition={setLastPosition}
+          lastPosition={lastPosition}
         />
         <ZBuffer
           indexCamera={1}
           selectedLetter={selectedLetter}
           setSelectedLetter={setSelectedLetter}
+          setLastPosition={setLastPosition}
+          lastPosition={lastPosition}
         />
         <ZBuffer
           indexCamera={2}
           selectedLetter={selectedLetter}
           setSelectedLetter={setSelectedLetter}
+          setLastPosition={setLastPosition}
+          lastPosition={lastPosition}
         />
         <ZBuffer
           indexCamera={3}
           selectedLetter={selectedLetter}
           setSelectedLetter={setSelectedLetter}
+          setLastPosition={setLastPosition}
+          lastPosition={lastPosition}
         />
       </div>
       <div style={{ width: '25vw', height: '100%', padding: 8 }}>

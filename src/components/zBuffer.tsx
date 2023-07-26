@@ -1,4 +1,11 @@
-import { Dispatch, FC, SetStateAction, useEffect, useRef } from 'react';
+import {
+  Dispatch,
+  FC,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useRef,
+} from 'react';
 import { matrixMul } from 'utils/calculate';
 import { vec3, vec4 } from 'utils/interfaces';
 import { useObjects } from './Provider';
@@ -7,13 +14,18 @@ interface Props {
   indexCamera: number;
   selectedLetter: string[];
   setSelectedLetter: Dispatch<SetStateAction<string[]>>;
+  lastPosition: number[];
+  setLastPosition: Dispatch<SetStateAction<number[]>>;
 }
 const ZBuffer: FC<Props> = ({
   indexCamera,
   selectedLetter,
   setSelectedLetter,
+  lastPosition,
+  setLastPosition,
 }) => {
   const { objects, cameras } = useObjects();
+
   const canvas = useRef<HTMLCanvasElement>();
 
   const camera = cameras[indexCamera];
@@ -41,7 +53,7 @@ const ZBuffer: FC<Props> = ({
     return object;
   });
 
-  function fillPolygon(vertices: vec3[]) {
+  function fillPolygon(vertices: vec3[], selected: boolean = false) {
     const minY = Math.min(...vertices.map(([x, y]) => y));
     const maxY = Math.max(...vertices.map(([x, y]) => y));
 
@@ -69,7 +81,12 @@ const ZBuffer: FC<Props> = ({
         for (let x = startX; x <= endX; x++) {
           if (x >= width || y >= height || x < 0 || y < 0) continue;
 
-          zBuffer[x][y] = [50, 200, 100];
+          if (selected) {
+            zBuffer[x][y] = [200, 0, 0];
+          } else {
+            zBuffer[x][y] = [200, 200, 200];
+          }
+
           zDepth[x][y] = 255;
         }
       }
@@ -99,7 +116,8 @@ const ZBuffer: FC<Props> = ({
               const x = Math.round(vertexSRT[0] - camera.ViewPort.width[0]);
               const y = Math.round(vertexSRT[1] - camera.ViewPort.height[0]);
               return [x, y, vertex[2]] as vec3;
-            })
+            }),
+            selectedLetter.includes(object.id)
           );
         }
       }
@@ -119,31 +137,39 @@ const ZBuffer: FC<Props> = ({
     }
   };
 
+  const getMouseX = (mouseX: number) => {
+    switch (camera.typeCamera) {
+      case 'axonometric-front':
+        return mouseX + camera.ViewPort.width[0];
+      case 'axonometric-side':
+        return mouseX + camera.ViewPort.width[0];
+      case 'axonometric-top':
+        return -(mouseX + camera.ViewPort.width[0]);
+      case 'perspective':
+        return mouseX + camera.ViewPort.width[0];
+    }
+  };
+
   const click = (e: MouseEvent) => {
     const mouseX = e.clientX;
     const mouseY = e.clientY;
+    setLastPosition([mouseX, mouseY]);
 
     const transformedMouse = matrixMul(
-      [
-        mouseX + camera.ViewPort.width[0],
-        mouseY + camera.ViewPort.height[0],
-        0,
-      ], // Assume-se que o mouse está na posição Z = 0 na cena
+      [getMouseX(mouseX), mouseY + camera.ViewPort.height[0], 0], // Assume-se que o mouse está na posição Z = 0 na cena
       camera.concatedMatrix
     ) as vec3;
 
     for (let object of objects) {
       for (let face of object.faces) {
         if (isPointInsidePolygon(transformedMouse, face)) {
-          setSelectedLetter((prevState) => {
-            const index = prevState.findIndex((id) => id === object.id);
-            if (index === -1) return [...prevState, object.id];
-            else {
-              const newState = [...prevState];
-              newState.splice(index, 1);
-              return newState;
-            }
-          });
+          if (selectedLetter.includes(object.id)) {
+            setSelectedLetter(
+              selectedLetter.filter((letter) => letter !== object.id)
+            );
+          } else {
+            setSelectedLetter([...selectedLetter, object.id]);
+          }
         }
       }
     }
@@ -217,9 +243,56 @@ const ZBuffer: FC<Props> = ({
     return isInside;
   }
 
+  const mouseDragged = (e: any) => {
+    if (e && e.buttons) {
+      const mouseX = e.clientX;
+      const mouseY = e.clientY;
+
+      const selectedObject = objects.filter((object) =>
+        selectedLetter.includes(object.id)
+      );
+
+      if (selectedObject.length > 0)
+        selectedObject.forEach((object) => {
+          switch (camera.typeCamera) {
+            case 'axonometric-front':
+              object.translate(
+                -(lastPosition[0] - mouseX),
+                lastPosition[1] - mouseY,
+                0
+              );
+              break;
+            case 'axonometric-side':
+              object.translate(
+                0,
+                lastPosition[1] - mouseY,
+                lastPosition[0] - mouseX
+              );
+              break;
+            case 'axonometric-top':
+              object.translate(
+                lastPosition[0] - mouseX,
+                0,
+                lastPosition[1] - mouseY
+              );
+              break;
+            case 'perspective':
+              object.translate(
+                -(lastPosition[0] - mouseX),
+                lastPosition[1] - mouseY,
+                0
+              );
+              break;
+          }
+        });
+
+      setLastPosition([mouseX, mouseY]);
+    }
+  };
+
   useEffect(() => {
     setTimeout(draw2D, 100);
-  }, [canvas, camera, objects]);
+  }, [canvas, camera, objects, draw2D, lastPosition]);
 
   return (
     <canvas
@@ -227,6 +300,7 @@ const ZBuffer: FC<Props> = ({
       width={width}
       height={height}
       onClick={(e) => click(e as any)}
+      onMouseMove={(e) => mouseDragged(e)}
     />
   );
 };
