@@ -11,6 +11,7 @@ import {
 import { Letter } from 'components/Letter';
 import { useObjects } from 'components/Provider';
 import { FC, useEffect, useState } from 'react';
+import { ModalContent } from './Modal_Modal';
 
 const gapStack = { childrenGap: 5 };
 
@@ -140,7 +141,7 @@ export const PivotLetter: FC = ({}) => {
           split
           title="Editar letra"
           iconProps={{ iconName: 'Edit' }}
-          disabled={selectedLetter === ''}
+          disabled={selectedLetter === '' || selectedLetter === 'all'}
           onClick={handleOpen}
         />
       </Stack>
@@ -211,13 +212,13 @@ export const PivotLetter: FC = ({}) => {
           <DefaultButton text="Aplicar" onClick={handleChange} />
         </>
       ) : null}
-      {/* {modalOpen ? (
+      {modalOpen ? (
         <ModalContent
           handleOpen={handleOpen}
           open={modalOpen}
-          sphere={selectedLetter}
+          letterID={selectedLetter}
         />
-      ) : null} */}
+      ) : null}
     </Stack>
   );
 };
