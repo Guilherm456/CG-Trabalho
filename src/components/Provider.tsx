@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useCallback, useContext, useState } from 'react';
 import { Camera } from './Camera';
 
 import { vec3 } from 'utils/interfaces';
@@ -8,8 +8,8 @@ import { Light } from './Light';
 interface ObjectsProviderInterface {
   objects: Letter[];
   setObjects: React.Dispatch<React.SetStateAction<Letter[]>>;
-  camera: Camera;
-  setCamera: React.Dispatch<React.SetStateAction<Camera>>;
+  cameras: Camera[];
+  setCamera: React.Dispatch<React.SetStateAction<Camera[]>>;
   light: Light;
   setLight: React.Dispatch<React.SetStateAction<Light>>;
   /**Limpar a cena */
@@ -18,7 +18,9 @@ interface ObjectsProviderInterface {
   /**Remove a esfera pelo ID
    * @param id ID da esfera
    */
-  handleRemoveSphere: (id: string) => void;
+  handleRemoveLetter: (id: string) => void;
+  handleChangeLetter: (letter: Letter | Letter[]) => void;
+  handleChangeCameras: (camera: Camera | Camera[]) => void;
 }
 const ObjectsProviderInitial = {} as ObjectsProviderInterface;
 const ObjectsP = createContext<ObjectsProviderInterface>(
@@ -50,7 +52,40 @@ export function ObjectsProvider({ children }: Props) {
   const [objects, setObjects] = useState<Letter[]>([]);
 
   //Inicia a câmera
-  const [camera, setCamera] = useState<Camera>(
+  const [cameras, setCamera] = useState<Camera[]>([
+    new Camera(
+      undefined,
+      undefined,
+      { width: [-300, 300], height: [-300, 300] },
+      { width: [-300, 300], height: [-300, 300] },
+      defaultFar,
+      defaultNear,
+      undefined,
+      undefined,
+      'axonometric-front'
+    ),
+    new Camera(
+      undefined,
+      undefined,
+      { width: [-300, 300], height: [-300, 300] },
+      { width: [-300, 300], height: [-300, 300] },
+      defaultFar,
+      defaultNear,
+      undefined,
+      undefined,
+      'axonometric-side'
+    ),
+    new Camera(
+      undefined,
+      undefined,
+      { width: [-300, 300], height: [-300, 300] },
+      { width: [-300, 300], height: [-300, 300] },
+      defaultFar,
+      defaultNear,
+      undefined,
+      undefined,
+      'axonometric-top'
+    ),
     new Camera(
       defaultVRP,
       defaultP,
@@ -60,9 +95,9 @@ export function ObjectsProvider({ children }: Props) {
       defaultNear,
       defaultLookUp,
       100,
-      true
-    )
-  );
+      'perspective'
+    ),
+  ]);
 
   //Inicia a luz
   const [light, setLight] = useState<Light>(
@@ -81,8 +116,9 @@ export function ObjectsProvider({ children }: Props) {
   //Limpa a cena e reseta alguns valores
   const handleClear = () => {
     handleClearObjects();
-    camera.updateVRP_P(defaultVRP, defaultP);
-    camera.setviewUp(defaultLookUp);
+
+    // camera.updateVRP_P(defaultVRP, defaultP);
+    // camera.setviewUp(defaultLookUp);
 
     light.setIntensity(defaultAmbientIntensity, defaultLightIntensity);
     light.setPosition(defaultPositionLight);
@@ -94,16 +130,56 @@ export function ObjectsProvider({ children }: Props) {
     setObjects((prevState) => prevState.filter((object) => object.id !== id));
   };
 
+  const handleChangeLetter = useCallback(
+    (letter: Letter | Letter[]) => {
+      let newObjects = [...objects];
+      if (Array.isArray(letter)) {
+        letter.forEach((obj) => {
+          const index = objects.findIndex((object) => object.id === obj.id);
+          newObjects[index] = obj;
+        });
+      } else {
+        const index = objects.findIndex((object) => object.id === letter.id);
+        newObjects[index] = letter;
+      }
+      setObjects(newObjects);
+    },
+    [objects]
+  );
+
+  const handleChangeCameras = useCallback(
+    (camera: Camera | Camera[]) => {
+      let newCameras = [...cameras];
+      if (Array.isArray(camera)) {
+        camera.forEach((obj) => {
+          const index = cameras.findIndex(
+            (object) => object.typeCamera === obj.typeCamera
+          );
+          newCameras[index] = obj;
+        });
+      } else {
+        const index = cameras.findIndex(
+          (object) => object.typeCamera === camera.typeCamera
+        );
+        newCameras[index] = camera;
+      }
+      setCamera(newCameras);
+    },
+    [cameras]
+  );
+
   const values = {
     objects,
     setObjects,
-    camera,
+    cameras,
     light,
     setLight,
     handleClear,
     handleClearObjects,
     setCamera,
-    handleRemoveSphere: handleRemoveLetter,
+    handleRemoveLetter,
+    handleChangeLetter,
+    handleChangeCameras,
   };
   return <ObjectsP.Provider value={values}>{children}</ObjectsP.Provider>;
 }

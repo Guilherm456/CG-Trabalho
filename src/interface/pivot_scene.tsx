@@ -21,10 +21,9 @@ export const PivotScene = () => {
     handleClearObjects,
     setObjects,
     objects,
-    camera,
+    cameras,
     light,
     setLight,
-    setCamera,
   } = useObjects();
   const [text, setText] = useState(
     objects.map((letter) => letter.typeLetter).join('')
@@ -50,22 +49,29 @@ export const PivotScene = () => {
       if (
         !parsedScene ||
         !Array.isArray(parsedScene.objects) ||
-        !parsedScene.camera ||
+        !parsedScene.cameras ||
         !parsedScene.light
       ) {
         alert('Arquivo JSON inválido. Verifique a estrutura do arquivo.');
         return;
       }
 
-      const cameraLocal = new Camera(
-        parsedScene.camera.VRP,
-        parsedScene.camera.target,
-        parsedScene.camera.ViewPort,
-        parsedScene.camera.WindowPort,
-        parsedScene.camera.far,
-        parsedScene.camera.near
-      );
-      setCamera(cameraLocal);
+      const camerasLocal: Camera[] = [];
+      for (let camera of parsedScene.cameras) {
+        camerasLocal.push(
+          new Camera(
+            camera.VRP,
+            camera.target,
+            camera.ViewPort,
+            camera.WindowPort,
+            camera.far,
+            camera.near,
+            camera.projectionPlanDistance,
+            camera.projectionType
+          )
+        );
+      }
+      // setCamera(camerasLocal);
 
       const lightLocal = new Light(
         parsedScene.light.position.slice(0, 3),
@@ -100,7 +106,7 @@ export const PivotScene = () => {
   };
 
   const downloadScene = () => {
-    const scene = JSON.stringify({ objects, light, camera });
+    const scene = JSON.stringify({ objects, light, cameras });
 
     const element = document.createElement('a');
     const file = new Blob([scene], { type: 'text/plain' });
@@ -124,11 +130,11 @@ export const PivotScene = () => {
     const length = char.length;
 
     //Para cada letra, vai criar uma nova Letter, porém o centro da letra vai se dar pela posição da letra
-    //Onde a letra do meio da frase vai ter o centro em 0,0,0. As posteriores vao aumentar o x em 300, e as anteriores diminuir o x em 300 cada
+    //Onde a letra do meio da frase vai ter o centro em 0,0,0. As posteriores vao aumentar o x em 300, e as anteriores diminuir o x em 10 cada
     char.forEach((letter, index) => {
       if (letter === ' ') return;
       const distanceFromCenter = index - (length - 1) / 2;
-      const x = distanceFromCenter * 6; // Aumenta o espaçamento a cada letra
+      const x = distanceFromCenter * 10; // Aumenta o espaçamento a cada letra
 
       letters.push(new Letter([x, 0, 0], ZDepth, letter as any));
     });

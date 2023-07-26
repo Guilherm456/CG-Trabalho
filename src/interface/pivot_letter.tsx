@@ -10,19 +10,12 @@ import {
 } from '@fluentui/react';
 import { Letter } from 'components/Letter';
 import { useObjects } from 'components/Provider';
-import { Dispatch, FC, SetStateAction, useEffect, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 
 const gapStack = { childrenGap: 5 };
 
-type Props = {
-  selectedLetter: string;
-  setSelectedLetter: Dispatch<SetStateAction<string>>;
-};
-export const PivotLetter: FC<Props> = ({
-  selectedLetter,
-  setSelectedLetter,
-}) => {
-  const { objects, handleRemoveSphere } = useObjects();
+export const PivotLetter: FC = ({}) => {
+  const { objects, handleRemoveLetter, handleChangeLetter } = useObjects();
 
   const options = [
     {
@@ -33,6 +26,8 @@ export const PivotLetter: FC<Props> = ({
     { key: 'translate', text: 'Transladar' },
   ];
   const [option, setOption] = useState('rotate');
+
+  const [selectedLetter, setSelectedLetter] = useState('');
 
   const [optionsSphere, setOptionsSphere] = useState<IDropdownOption[]>([]);
   //Define as letras selecionáveis
@@ -67,6 +62,7 @@ export const PivotLetter: FC<Props> = ({
 
   const handleChange = () => {
     if (option === '' || selectedLetter === '') return;
+
     //Vai selecionar o objeto que está sendo manipulado
     const selectedObjects =
       selectedLetter === 'all'
@@ -93,6 +89,8 @@ export const PivotLetter: FC<Props> = ({
         break;
     }
 
+    handleChangeLetter(selectedObjects as Letter[]);
+
     //Redifine todas opções
     setAngle(0);
     setValueX(0);
@@ -100,7 +98,6 @@ export const PivotLetter: FC<Props> = ({
     setValueZ(0);
     setOptionRotation('X');
     setOption('rotate');
-    // setSelectedLetter('');
   };
 
   const handleChageDropdown = (
@@ -115,8 +112,8 @@ export const PivotLetter: FC<Props> = ({
   const handleRemoveSphereOption = () => {
     if (selectedLetter === '') return;
     if (selectedLetter === 'all') {
-      objects.forEach((obj) => handleRemoveSphere(obj.id));
-    } else handleRemoveSphere(selectedLetter);
+      objects.forEach((obj) => handleRemoveLetter(obj.id));
+    } else handleRemoveLetter(selectedLetter);
     setSelectedLetter('');
   };
 

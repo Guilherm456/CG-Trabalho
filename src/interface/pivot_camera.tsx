@@ -17,7 +17,9 @@ import { arrayNumberToArrayString } from 'utils/others';
 const gapStack = { childrenGap: 5 };
 
 export const PivotCamera = () => {
-  const { camera } = useObjects();
+  const { cameras } = useObjects();
+
+  const camera = cameras[3];
 
   const [near, setNear] = useState(camera.near);
   const [far, setFar] = useState(camera.far);
@@ -31,7 +33,7 @@ export const PivotCamera = () => {
   );
 
   const handleChangeDistanceProjection = () => {
-    camera.setPlanDistance(distanceProjection);
+    camera.setPlanDistance(distanceProjection / 100);
   };
 
   const [ocultFaces, setOcultFaces] = useState(camera.ocultFaces);
@@ -79,11 +81,6 @@ export const PivotCamera = () => {
   const [viewUp, setviewUp] = useState(arrayNumberToArrayString(camera.viewUp));
   const handleChangeviewUp = () => {
     camera.setviewUp([Number(viewUp[0]), Number(viewUp[1]), Number(viewUp[2])]);
-  };
-
-  const [sensitivity, setsensitivity] = useState(camera.sensitivity);
-  const handleChangesensitivity = () => {
-    camera.setSenitivity(sensitivity);
   };
 
   return (
@@ -259,18 +256,6 @@ export const PivotCamera = () => {
         />
       </Stack>
       <PrimaryButton text="Salvar View Up" onClick={handleChangeviewUp} />
-      <VerticalDivider />
-      <Slider
-        label="Sensibilidade"
-        min={1}
-        max={100}
-        value={sensitivity}
-        onChange={(e) => setsensitivity(e)}
-      />
-      <PrimaryButton
-        text="Mudar sensibilidade"
-        onClick={handleChangesensitivity}
-      />
     </Stack>
   );
 };

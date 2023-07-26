@@ -1,3 +1,4 @@
+import * as nj from 'numjs';
 import p5Types from 'p5';
 import { matrixMul, rotate, scale, translate } from 'utils/calculate';
 import Letters from 'utils/font';
@@ -5,7 +6,6 @@ import { TypeLetter, vec3 } from 'utils/interfaces';
 import { amplifierEdges, getCentroidFaces, getNormal } from 'utils/others';
 import { Camera } from './Camera';
 import { Light } from './Light';
-
 export class Letter {
   public faces: vec3[][] = [];
 
@@ -72,7 +72,6 @@ export class Letter {
     const facesZDepth: vec3[] = [];
     for (let edge of edges) {
       const length = edge.length;
-      // Apply displacement when calculating face points
       const firstPoint = amplifierEdges([
         edge[0][0] + displacement[0],
         edge[0][1] + displacement[1],
@@ -170,9 +169,6 @@ export class Letter {
     light: Light,
     isSelect?: boolean
   ) {
-    // const Nvector = p5.createVector(...camera.N);
-    const VRP = p5.createVector(...camera.VRP);
-
     const distance = p5
       .createVector(...camera.N)
       .dot(p5.createVector(...camera.VRP).sub(p5.createVector(...this.center)));
@@ -189,12 +185,15 @@ export class Letter {
     // shader?.setUniform('Ila', [...light.ambientLightIntensity]);
     // shader?.setUniform('Il', [...light.lightIntensity]);
     // shader?.setUniform('uLightType', light.lightType);
+    const VRP = p5.createVector(...camera.VRP);
+    // const OVector = p5.createVector(...camera.N);
 
     for (let i = 0; i < this.faces.length; i++) {
       const face = this.faces[i];
 
       if (camera.ocultFaces) {
-        const OVector = VRP.sub(...camera.P).normalize();
+        const OVector = VRP.sub(...this.facesCentroid[i]).normalize();
+
         const faceNormal = p5.createVector(...this.facesNormal[i]);
 
         const dot = OVector.dot(faceNormal);
@@ -234,36 +233,56 @@ export class Letter {
     }
   }
 
-  public scanline(camera: Camera, zBufferMatrix: number[][]) {
-    const p5 = p5Types.Vector;
-    const VRP = new p5(...camera.VRP);
-
-    const distance = new p5(...camera.N).dot(
-      new p5(...camera.VRP).sub(new p5(...this.center))
-    );
-
-    if (distance < camera.near || distance > camera.far) return;
-
-    for (let i = 0; i < this.faces.length; i++) {
-      const face = this.faces[i];
-
-      const OVector = VRP.sub(...this.facesCentroid[i]).normalize();
-      const faceNormal = new p5(...this.facesNormal[i]);
-
-      const dot = OVector.dot(faceNormal);
-
-      if (dot < 0.00000000001)
-        //Caso a face esteja na frente da camera, ela será desenhada
-        continue;
-
-      //Irá fazer a scanline para o objeto
-      for (let edge of face) {
-        const [x, y, z] = matrixMul(
-          [edge[0], edge[1], edge[2]],
-          camera.concatedMatrix
-        ) as vec3;
-      }
-    }
+  public calculatePhong(
+    object: {
+      Ka: vec3;
+      Kd: vec3;
+      Ks: vec3;
+      n: number;
+    },
+    light: {
+      position: vec3;
+      ambientLightIntensity: vec3;
+      lightIntensity: vec3;
+    },
+    camera: {
+      VRP: vec3;
+      P: vec3;
+      N: vec3;
+      U: vec3;
+      V: vec3;
+    },
+    vertex: vec3,
+    normal: vec3
+  ) {
+    // Convert JavaScript arrays to NumJS ndArrays
+    const Ka = nj.array(object.Ka);
+    // const Kd = nj.array(object.Kd);
+    // const Ks = nj.array(object.Ks);
+    // const position = nj.array(light.position);
+    // const ambientLightIntensity = nj.array(light.ambientLightIntensity);
+    // const lightIntensity = nj.array(light.lightIntensity);
+    // const VRP = nj.array(camera.VRP);
+    // const P = nj.array(camera.P);
+    // const N = nj.array(camera.N);
+    // const U = nj.array(camera.U);
+    // const V = nj.array(camera.V);
+    // const vertexArray = nj.array(vertex);
+    // const normalArray = nj.array(normal);
+    // const ambient = nj.multiply(Ka, ambientLightIntensity);
+    // let lightDir = nj.subtract(position, vertexArray);
+    // lightDir = nj.divide(lightDir, nj.norm(lightDir));
+    // let viewDir = nj.subtract(VRP, vertexArray);
+    // viewDir = nj.divide(viewDir, nj.norm(viewDir));
+    // let diffuse = nj.multiply(Kd, lightIntensity);
+    // diffuse = nj.multiply(diffuse, Math.max(0, nj.dot(normalArray, lightDir)));
+    // let reflection = nj.subtract(lightDir, nj.multiply(2 * nj.dot(lightDir, normalArray), normalArray));
+    // reflection = nj.divide(reflection, nj.norm(reflection));
+    // let specular = nj.multiply(Ks, lightIntensity);
+    // specular = nj.multiply(specular, Math.pow(Math.max(0, nj.dot(reflection, viewDir)), object.n));
+    // let color = nj.add(ambient, nj.add(diffuse, specular));
+    // color = nj.clip(color, 0, 1);
+    // return color;
   }
 
   //Translada a letra

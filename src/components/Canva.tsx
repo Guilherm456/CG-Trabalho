@@ -22,17 +22,13 @@ enum Direction {
 }
 
 type Props = {
-  selectedLetter: string;
-  setSelectedLetter: Dispatch<SetStateAction<string>>;
-  setStep: Dispatch<SetStateAction<string>>;
+  selectedLetter: string[];
+  setSelectedLetter: Dispatch<SetStateAction<string[]>>;
 };
-export const Canva: FC<Props> = ({
-  selectedLetter,
-  setSelectedLetter,
-  setStep,
-}) => {
-  const { objects, camera, light } = useObjects();
+export const Canva: FC<Props> = ({ selectedLetter, setSelectedLetter }) => {
+  const { objects, cameras, light } = useObjects();
 
+  const camera = cameras[3];
   const setup = (val: any, parentCanvas: Element) => {
     const p5 = val as p5Types;
     const parent = document.getElementsByClassName('canvaArea')[0];
@@ -51,7 +47,7 @@ export const Canva: FC<Props> = ({
     shaderInf = p5.createShader(VertShader, FragShader);
     p5.shader(shaderInf);
 
-    p5.frameRate(20);
+    p5.frameRate(15);
     p5.noStroke();
     p5.noFill();
   };
@@ -68,7 +64,13 @@ export const Canva: FC<Props> = ({
 
     p5.push();
     objects.forEach((object) =>
-      object.draw(p5, camera, shaderInf, light, selectedLetter === object.id)
+      object.draw(
+        p5,
+        camera,
+        shaderInf,
+        light,
+        selectedLetter.includes(object.id)
+      )
     );
     p5.pop();
 
@@ -184,8 +186,7 @@ export const Canva: FC<Props> = ({
     for (let object of objects) {
       for (let face of object.faces) {
         if (isPointInsidePolygon(transformedMouse, face)) {
-          setSelectedLetter(object.id);
-          setStep('1');
+          // setSelectedLetter(object.id);
         }
       }
     }

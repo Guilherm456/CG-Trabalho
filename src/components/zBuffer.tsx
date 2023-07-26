@@ -1,12 +1,22 @@
-import p5 from 'p5';
-import { useEffect, useRef } from 'react';
+import { Dispatch, FC, SetStateAction, useEffect, useRef } from 'react';
 import { matrixMul } from 'utils/calculate';
 import { vec3, vec4 } from 'utils/interfaces';
 import { useObjects } from './Provider';
 
-const ZBuffer = ({}) => {
-  const { objects, camera } = useObjects();
+interface Props {
+  indexCamera: number;
+  selectedLetter: string[];
+  setSelectedLetter: Dispatch<SetStateAction<string[]>>;
+}
+const ZBuffer: FC<Props> = ({
+  indexCamera,
+  selectedLetter,
+  setSelectedLetter,
+}) => {
+  const { objects, cameras } = useObjects();
   const canvas = useRef<HTMLCanvasElement>();
+
+  const camera = cameras[indexCamera];
 
   const width =
     Math.abs(camera.ViewPort.width[0]) + Math.abs(camera.ViewPort.width[1]);
@@ -16,16 +26,19 @@ const ZBuffer = ({}) => {
   const zBuffer = new Array(width)
     .fill(Infinity)
     .map(() => new Array(height).fill(Infinity));
+  const zDepth = new Array(width).fill(Infinity).map(() => new Array(height));
 
   const objetsSRT = objects.map((object) => {
-    object.faces.map((face) =>
+    object.faces.map((face) => {
       face.map((vertex) => {
         const vertexSRT = matrixMul(vertex, camera.concatedMatrix) as vec4;
-        const x = Math.round(vertexSRT[0] * 10);
-        const y = Math.round(vertexSRT[1] * 10);
+        const x = Math.round(vertexSRT[0] - camera.ViewPort.width[0]);
+        const y = Math.round(vertexSRT[1] - camera.ViewPort.height[0]);
         return [x, y, vertex[2]] as vec3;
-      })
-    );
+      });
+      return face;
+    });
+    return object;
   });
 
   function fillPolygon(vertices: any[]) {
@@ -40,7 +53,9 @@ const ZBuffer = ({}) => {
         const [x2, y2] = vertices[(i + 1) % vertices.length];
 
         if ((y1 <= y && y2 > y) || (y1 > y && y2 <= y)) {
-          const x = Math.round(x1 + ((y - y1) / (y2 - y1)) * (x2 - x1));
+          const m = (y2 - y1) / (x2 - x1);
+          const x = x1 + (y - y1) / m;
+
           intersections.push(x);
         }
       }
@@ -53,6 +68,7 @@ const ZBuffer = ({}) => {
 
         for (let x = startX; x <= endX; x++) {
           if (x >= width || y >= height || x < 0 || y < 0) continue;
+
           zBuffer[x][y] = 255;
         }
       }
@@ -65,7 +81,6 @@ const ZBuffer = ({}) => {
     zBuffer.forEach((line) => line.fill(Infinity));
     const ctx = canvas.current.getContext('2d', {});
 
-    // ctx?.fillStyle = 'red';
     ctx?.fillRect(0, 0, width, height);
 
     // const a = ctx?.createImageData(500, 500);
@@ -86,23 +101,6 @@ const ZBuffer = ({}) => {
               return [x, y, vertex[2]] as vec3;
             })
           );
-          for (let edge of face) {
-            const edgesSRT = matrixMul(edge, camera.concatedMatrix) as vec4;
-            const distance = new p5.Vector(...camera.N).dot(
-              new p5.Vector(...camera.VRP).sub(
-                new p5.Vector(...edgesSRT.slice(0, 3))
-              )
-            );
-
-            const x = Math.round(edgesSRT[0] - camera.ViewPort.width[0]);
-            const y = Math.round(edgesSRT[1] - camera.ViewPort.height[0]);
-
-            if (x >= width || y >= height || x < 0 || y < 0) continue;
-
-            if (distance < zBuffer[x][y]) {
-              zBuffer[x][y] = distance;
-            }
-          }
         }
       }
 
@@ -139,7 +137,15 @@ const ZBuffer = ({}) => {
     for (let object of objects) {
       for (let face of object.faces) {
         if (isPointInsidePolygon(transformedMouse, face)) {
-          console.debug('achou', object.typeLetter);
+          setSelectedLetter((prevState) => {
+            const index = prevState.findIndex((id) => id === object.id);
+            if (index === -1) return [...prevState, object.id];
+            else {
+              const newState = [...prevState];
+              newState.splice(index, 1);
+              return newState;
+            }
+          });
         }
       }
     }
@@ -180,6 +186,7 @@ const ZBuffer = ({}) => {
           let maxX = -Infinity;
           let minY = Infinity;
           let maxY = -Infinity;
+
           for (let i = index; i < vertices.length; i++) {
             const [x, y, z] = vertices[i];
 
@@ -214,8 +221,6 @@ const ZBuffer = ({}) => {
 
   useEffect(() => {
     setTimeout(draw2D, 100);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canvas, camera, objects]);
 
   return (

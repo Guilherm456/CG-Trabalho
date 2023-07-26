@@ -5,7 +5,11 @@ import p5Types from 'p5';
 const p5 = p5Types.Vector;
 
 //OBS: Alguns valores precisam ser atualizados após a alteração de outro valor
-
+type CameraType =
+  | 'perspective'
+  | 'axonometric-top'
+  | 'axonometric-front'
+  | 'axonometric-side';
 export class Camera {
   //"Posição da câmera"
   public VRP: vec3;
@@ -13,7 +17,7 @@ export class Camera {
   public P: vec3;
 
   //Se é perspectiva ou não
-  public perspective: boolean;
+  public typeCamera: CameraType;
 
   //Vetores que são usados para SRC
   public N: vec3 = [0, 0, 0];
@@ -59,22 +63,34 @@ export class Camera {
 
   //Constrói os valores iniciais da câmera
   constructor(
-    position: vec3,
-    target: vec3,
+    position: vec3 = [0, 0, 100],
+    target: vec3 = [0, 0, 0],
     viewport: Port,
     windowPort: Port,
     far: number,
     near: number,
     lookAp?: vec3,
     planCenterDistance: number = 100,
-    perspective: boolean = true,
+    typeCamera: CameraType = 'perspective',
     ocultFaces: boolean = true
   ) {
-    this.VRP = position;
-    this.P = target ?? [0, 0, 0];
-    this.perspective = perspective;
+    this.typeCamera = typeCamera;
 
-    this.viewUp = lookAp ?? this.viewUp;
+    if (
+      this.typeCamera === 'perspective' ||
+      this.typeCamera === 'axonometric-front'
+    ) {
+      this.VRP = position;
+    } else {
+      if (this.typeCamera === 'axonometric-top') {
+        this.VRP = [0, 100, 0];
+        this.viewUp = [0, 0, 1];
+      } else this.VRP = [100, 0, 0];
+    }
+    this.P = target;
+
+    if (this.typeCamera !== 'axonometric-top')
+      this.viewUp = lookAp ?? this.viewUp;
 
     this.setPlanDistance(planCenterDistance);
     this.ViewPort = viewport;
@@ -128,7 +144,7 @@ export class Camera {
 
   //Configura o plano de projeção
   public setPlanDistance(distance: number) {
-    this.projectionPlanDistance = distance / 100;
+    this.projectionPlanDistance = distance;
     const { VRP, P, projectionPlanDistance } = this;
 
     //Recebe os valores de VRP e P
@@ -159,10 +175,10 @@ export class Camera {
   }
 
   //Configura o tipo de projeção
-  public setTypePerspective(perspective: boolean) {
-    this.perspective = perspective;
-    this.getAllValues();
-  }
+  // public setTypePerspective(perspective: boolean) {
+  //   this.perspective = perspective;
+  //   this.getAllValues();
+  // }
 
   //Calcula os vetores (N,V,U) e já calcula as matrizes SRC e Projeção, com isso concatena
   private getAllValues(): void {
@@ -229,7 +245,7 @@ export class Camera {
   //Calcula a matriz de projeção
   getProjectionMatrix(): number[][] {
     //Caso seja perspectiva
-    if (this.perspective) {
+    if (this.typeCamera === 'perspective') {
       const { VRP, projectionPlan } = this;
 
       const VRPVector = new p5(...VRP);
