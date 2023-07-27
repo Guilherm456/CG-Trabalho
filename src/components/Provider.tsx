@@ -1,10 +1,4 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from 'react';
+import { createContext, useCallback, useContext, useState } from 'react';
 import { Camera } from './Camera';
 
 import { vec3 } from 'utils/interfaces';
@@ -182,7 +176,6 @@ export function ObjectsProvider({ children }: Props) {
     [light]
   );
 
-  useEffect(() => console.debug(light), [light]);
   const values = {
     objects,
     setObjects,

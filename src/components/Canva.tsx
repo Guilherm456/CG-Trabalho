@@ -5,9 +5,6 @@ import { useObjects } from './Provider';
 import { FragShader, VertShader } from '../utils/shader';
 
 import { Dispatch, FC, SetStateAction, useMemo } from 'react';
-import { matrixMul } from 'utils/calculate';
-import { Port } from 'utils/interfaces';
-import { clamp } from 'utils/others';
 
 let shaderInf: p5Types.Shader;
 
@@ -24,24 +21,20 @@ enum Direction {
 type Props = {
   selectedLetter: string[];
   setSelectedLetter: Dispatch<SetStateAction<string[]>>;
+  indexCamera: number;
 };
-export const Canva: FC<Props> = ({ selectedLetter, setSelectedLetter }) => {
+export const Canva: FC<Props> = ({ selectedLetter, indexCamera }) => {
   const { objects, cameras, light } = useObjects();
+  const camera = cameras[indexCamera];
 
-  const camera = cameras[3];
+  const width =
+    Math.abs(camera.ViewPort.width[0]) + Math.abs(camera.ViewPort.width[1]);
+  const height =
+    Math.abs(camera.ViewPort.height[0]) + Math.abs(camera.ViewPort.height[1]);
+
   const setup = (val: any, parentCanvas: Element) => {
     const p5 = val as p5Types;
-    const parent = document.getElementsByClassName('canvaArea')[0];
-    p5.createCanvas(parent.clientWidth, parent.clientHeight, p5.WEBGL).parent(
-      parentCanvas
-    );
-
-    const newWindowSize: Port = {
-      width: [-(parent.clientWidth / 2), parent.clientWidth / 2],
-      height: [-(parent.clientHeight / 2), parent.clientHeight / 2],
-    };
-
-    camera.setWindowSize(newWindowSize, newWindowSize);
+    p5.createCanvas(width, height, p5.WEBGL).parent(parentCanvas);
 
     //Define o shader
     shaderInf = p5.createShader(VertShader, FragShader);
@@ -57,11 +50,6 @@ export const Canva: FC<Props> = ({ selectedLetter, setSelectedLetter }) => {
 
     p5.background(0);
 
-    //Para "debugar"
-    if (p5.keyIsPressed) {
-      cameraSystem(p5.keyCode);
-    }
-
     p5.push();
     objects.forEach((object) =>
       object.draw(
@@ -72,57 +60,6 @@ export const Canva: FC<Props> = ({ selectedLetter, setSelectedLetter }) => {
         selectedLetter.includes(object.id)
       )
     );
-    p5.pop();
-
-    p5.push();
-    const [xL, yL] = matrixMul(
-      light.position,
-      camera.concatedMatrix
-    ) as number[];
-
-    p5.translate(xL, yL, light.position[2]);
-    p5.stroke(
-      light.lightIntensity[0],
-      light.lightIntensity[1],
-      light.lightIntensity[2]
-    );
-    p5.sphere(10);
-    p5.pop();
-
-    drawGizmo(p5);
-  };
-
-  const drawGizmo = (val: any) => {
-    const p5 = val as p5Types;
-    p5.push();
-    const arrowSize = 100;
-    const pos = -p5.width / 5;
-
-    p5.translate(pos, pos);
-    const x = clamp(
-      camera.VRP[0] - camera.projectionPlan[0],
-      -arrowSize,
-      arrowSize
-    );
-    const y = clamp(
-      -(camera.VRP[1] - camera.projectionPlan[1]),
-      -arrowSize,
-      arrowSize
-    );
-    const z = clamp(
-      camera.VRP[2] - camera.projectionPlan[2],
-      -arrowSize,
-      arrowSize
-    );
-
-    p5.strokeWeight(2);
-    p5.stroke(255, 0, 0);
-    p5.line(0, 0, 0, x, 0, 0);
-    p5.stroke(0, 255, 0);
-    p5.line(0, 0, 0, 0, y, 0);
-    p5.stroke(0, 0, 255);
-    p5.line(0, 0, 0, 0, 0, z);
-
     p5.pop();
   };
 
@@ -147,12 +84,6 @@ export const Canva: FC<Props> = ({ selectedLetter, setSelectedLetter }) => {
     return false;
   };
 
-  const windowResized = (val: any) => {
-    const p5 = val as p5Types;
-    const parent = document.getElementsByClassName('canvaArea')[0];
-    p5.resizeCanvas(parent.clientWidth, parent.clientHeight);
-  };
-
   const debug = (val: any) => {
     const p5 = val as p5Types;
     if (p5.keyCode === 8) {
@@ -171,15 +102,25 @@ export const Canva: FC<Props> = ({ selectedLetter, setSelectedLetter }) => {
 
   const memo = useMemo(() => {
     return (
-      // @ts-ignore
-      <Sketch
-        setup={setup}
-        draw={draw}
-        windowResized={windowResized}
-        keyReleased={debug}
-      />
+      <div
+        style={{
+          position: 'relative',
+        }}
+      >
+        <span
+          style={{
+            position: 'absolute',
+            top: 10,
+            left: 10,
+            zIndex: 1,
+            color: 'white',
+            userSelect: 'none',
+          }}
+        ></span>
+        <Sketch setup={setup} draw={draw} keyReleased={debug} />
+      </div>
     );
-  }, [objects, cameras, light, draw, setup, windowResized, debug]);
+  }, [objects, cameras, light, draw, setup, debug]);
 
   return <>{memo}</>;
 };

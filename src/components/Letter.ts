@@ -195,26 +195,10 @@ export class Letter {
     light: Light,
     isSelect?: boolean
   ) {
-    //Repassa os dados para o shader
-    // shader?.setUniform('Ka', [...[0.1, 0.5, 0.1]]);
-    // shader?.setUniform('Kd', [...[0.1, 0.5, 0.1]]);
-    // shader?.setUniform('Ks', [...[0.1, 0.1, 0.1]]);
-    // shader?.setUniform('ObserverPosition', [...camera.VRP]);
-    // shader?.setUniform('LightPosition', [...light.position]);
-    // shader?.setUniform('uN', 1);
-    // shader?.setUniform('Ila', [...light.ambientLightIntensity]);
-    // shader?.setUniform('Il', [...light.lightIntensity]);
-    // shader?.setUniform('uLightType', light.lightType);
-    const VRP = p5.createVector(...camera.VRP);
-    // const OVector = p5.createVector(...camera.N);
-
     for (let i = 0; i < this.faces.length; i++) {
       const face = this.faces[i];
 
       if (!this.isFaceVisible(camera, i)) continue;
-
-      // shader?.setUniform('ReferencePointPosition', getCentroidFaces(face));
-      // shader?.setUniform('FaceNormal', [...faceNormal.array()]);
 
       p5.stroke(isSelect ? 'red' : 'white');
       p5.beginShape();

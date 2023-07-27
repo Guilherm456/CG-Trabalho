@@ -2,10 +2,10 @@ import {
   Dispatch,
   FC,
   SetStateAction,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
-  useCallback,
 } from 'react';
 import { matrixMul } from 'utils/calculate';
 import { vec3, vec4 } from 'utils/interfaces';
@@ -317,7 +317,7 @@ const ZBuffer: FC<Props> = ({
                 object.translate(
                   0,
                   lastPosition[1] - mouseY,
-                  lastPosition[0] - mouseX,
+                  lastPosition[0] - mouseX
                 );
               }
               break;
@@ -374,7 +374,7 @@ const ZBuffer: FC<Props> = ({
         width={width}
         height={height}
         onClick={(e) => click(e as any)}
-        onMouseMove={(e) => mouseDragged(e)}
+        onMouseMove={(e) => mouseDragged(e as any)}
       />
     ),
     [
@@ -388,7 +388,27 @@ const ZBuffer: FC<Props> = ({
       height,
     ]
   );
-  return Canvas;
+  return (
+    <div
+      style={{
+        position: 'relative',
+      }}
+    >
+      <span
+        style={{
+          position: 'absolute',
+          top: 10,
+          left: 10,
+          zIndex: 1,
+          color: 'white',
+          userSelect: 'none',
+        }}
+      >
+        {camera.typeCamera}
+      </span>
+      {Canvas}
+    </div>
+  );
 };
 
 export default ZBuffer;

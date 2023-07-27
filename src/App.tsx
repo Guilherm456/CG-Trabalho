@@ -57,23 +57,34 @@ function App() {
           gap: 5,
         }}
       >
-        {isTest ? (
-          <Canva
-            selectedLetter={selectedLetter}
-            setSelectedLetter={setSelectedLetter}
-          />
-        ) : (
-          cameras.map((_, index) => (
-            <ZBuffer
-              key={index}
-              selectedLetter={selectedLetter}
-              setSelectedLetter={setSelectedLetter}
-              indexCamera={index}
-              lastPosition={lastPosition}
-              setLastPosition={setLastPosition}
-            />
-          ))
-        )}
+        {isTest
+          ? cameras.map((_, index) => (
+              <Canva
+                key={index}
+                selectedLetter={selectedLetter}
+                setSelectedLetter={setSelectedLetter}
+                indexCamera={index}
+              />
+            ))
+          : cameras.map((_, index) =>
+              index !== 3 ? (
+                <Canva
+                  key={index}
+                  selectedLetter={selectedLetter}
+                  setSelectedLetter={setSelectedLetter}
+                  indexCamera={index}
+                />
+              ) : (
+                <ZBuffer
+                  key={index}
+                  selectedLetter={selectedLetter}
+                  setSelectedLetter={setSelectedLetter}
+                  indexCamera={index}
+                  lastPosition={lastPosition}
+                  setLastPosition={setLastPosition}
+                />
+              )
+            )}
       </div>
       <div style={{ width: '25vw', height: '100%', padding: 8 }}>
         <Pivot>
