@@ -40,6 +40,10 @@ export const PivotCamera: FC = () => {
 
   const [ocultFaces, setOcultFaces] = useState(camera.ocultFaces);
 
+  const [perspective, setPerspective] = useState(
+    camera.typeCamera === 'perspective'
+  );
+
   const [xVRP, setXVRP] = useState(camera.VRP[0].toString());
   const [yVRP, setYVRP] = useState(camera.VRP[1].toString());
   const [zVRP, setZVRP] = useState(camera.VRP[2].toString());
@@ -115,6 +119,15 @@ export const PivotCamera: FC = () => {
             camera.setOcultFaces(c!);
           });
           handleChangeCameras(cameras);
+        }}
+      />
+      <Checkbox
+        label="Perspectiva"
+        checked={perspective}
+        onChange={(_, c) => {
+          setPerspective(c!);
+          camera.setCameraType(c!);
+          handleChangeCameras(camera);
         }}
       />
       <PrimaryButton text="Mudar distâncias" onClick={handleChangeDistance} />

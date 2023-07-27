@@ -1,7 +1,7 @@
-import { vec3, vec4 } from './interfaces';
 import { matrixMul } from 'utils/calculate';
 import { Camera } from '../components/Camera';
 import { Letter } from '../components/Letter';
+import { vec3, vec4 } from './interfaces';
 
 const mouseDragged = (
   mouseX: number,
@@ -58,11 +58,7 @@ const mouseDragged = (
           if (metaKey) {
             object.rotate(lastPosition[0] - mouseX, 'Z');
           } else if (shiftKey) {
-            object.scale(
-              1 + (lastPosition[0] - mouseX) * 0.05,
-              1,
-              1,
-            );
+            object.scale(1 + (lastPosition[0] - mouseX) * 0.05, 1, 1);
           } else {
             object.translate(
               lastPosition[0] - mouseX,
@@ -117,7 +113,7 @@ const click = (
   setSelectedLetter: (arg0: any[]) => void
 ) => {
   const transformedMouse = matrixMul(
-    [getMouseX(mouseX, camera), mouseY + camera.ViewPort.height[0], 0], // Assume-se que o mouse está na posição Z = 0 na cena
+    [getMouseX(mouseX, camera)!, mouseY + camera.ViewPort.height[0], 0], // Assume-se que o mouse está na posição Z = 0 na cena
     camera.concatedMatrix
   ) as vec3;
 
@@ -210,4 +206,4 @@ function isPointInsidePolygon(
   return isInside;
 }
 
-export { mouseDragged, click };
+export { click, mouseDragged };
