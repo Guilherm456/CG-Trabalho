@@ -42,10 +42,7 @@ export class Letter {
 
     this.typeLetter = typeLetter;
 
-    this.id = Math.ceil(Math.random() * Date.now())
-      .toPrecision(3)
-      .toString()
-      .replace('.', '');
+    this.id = self.crypto.randomUUID();
 
     if (faces) {
       this.faces = faces;
