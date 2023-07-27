@@ -1,10 +1,13 @@
 import p5Types from 'p5';
 import Sketch from 'react-p5';
 import { useObjects } from './Provider';
+import { vec3 } from 'utils/interfaces';
 
 import { FragShader, VertShader } from '../utils/shader';
 
-import { Dispatch, FC, SetStateAction, useMemo } from 'react';
+import { Dispatch, FC, SetStateAction, useMemo, useState } from 'react';
+import { matrixMul } from 'utils/calculate';
+import { click, mouseDragged } from 'utils/mouse';
 
 let shaderInf: p5Types.Shader;
 
@@ -23,9 +26,14 @@ type Props = {
   setSelectedLetter: Dispatch<SetStateAction<string[]>>;
   indexCamera: number;
 };
-export const Canva: FC<Props> = ({ selectedLetter, indexCamera }) => {
+export const Canva: FC<Props> = ({
+  selectedLetter,
+  setSelectedLetter,
+  indexCamera,
+}) => {
   const { objects, cameras, light } = useObjects();
   const camera = cameras[indexCamera];
+  const [lastPosition, setLastPosition] = useState([0, 0, 0]);
 
   const width =
     Math.abs(camera.ViewPort.width[0]) + Math.abs(camera.ViewPort.width[1]);
@@ -100,6 +108,37 @@ export const Canva: FC<Props> = ({ selectedLetter, indexCamera }) => {
     }
   };
 
+  const onClick = (val: any) => {
+    const p5 = val as p5Types;
+    const mouseX = p5.mouseX;
+    const mouseY = p5.mouseY;
+
+    setLastPosition([mouseX, mouseY]);
+
+    click(mouseX, mouseY, objects, camera, selectedLetter, setSelectedLetter);
+  };
+
+  const onMouseMove = (e: any) => {
+    if (e) {
+      const mouseX = e.mouseX;
+      const mouseY = e.mouseY;
+
+      console.log(mouseX, mouseY, lastPosition, e);
+
+      mouseDragged(
+        mouseX,
+        mouseY,
+        e.metaKey,
+        e.shiftKey,
+        lastPosition,
+        objects,
+        selectedLetter,
+        setLastPosition,
+        camera.typeCamera
+      );
+    }
+  };
+
   const memo = useMemo(() => {
     return (
       <div
@@ -117,7 +156,13 @@ export const Canva: FC<Props> = ({ selectedLetter, indexCamera }) => {
             userSelect: 'none',
           }}
         ></span>
-        <Sketch setup={setup} draw={draw} keyReleased={debug} />
+        <Sketch
+          setup={setup}
+          draw={draw}
+          keyReleased={debug}
+          mouseClicked={onClick}
+          mouseDragged={(e) => onMouseMove(e)}
+        />
       </div>
     );
   }, [objects, cameras, light, draw, setup, debug]);

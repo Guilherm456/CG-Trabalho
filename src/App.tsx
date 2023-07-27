@@ -28,6 +28,8 @@ function App() {
     const heightCanva = height ? height / 4 : 0;
     const widthCanva = width ? width / 4 : 0;
 
+    console.debug('height', heightCanva, 'width', widthCanva);
+
     const camerasLocal = cameras.map((camera) => {
       camera.setWindowSize(
         {
@@ -44,7 +46,6 @@ function App() {
     handleChangeCameras(camerasLocal);
   }, []);
 
-  const isTest = false;
   return (
     <div style={{ display: 'flex', height: '95vh' }}>
       <div
@@ -57,34 +58,34 @@ function App() {
           gap: 5,
         }}
       >
-        {isTest
-          ? cameras.map((_, index) => (
-              <Canva
-                key={index}
-                selectedLetter={selectedLetter}
-                setSelectedLetter={setSelectedLetter}
-                indexCamera={index}
-              />
-            ))
-          : cameras.map((_, index) =>
-              index !== 3 ? (
-                <Canva
-                  key={index}
-                  selectedLetter={selectedLetter}
-                  setSelectedLetter={setSelectedLetter}
-                  indexCamera={index}
-                />
-              ) : (
-                <ZBuffer
-                  key={index}
-                  selectedLetter={selectedLetter}
-                  setSelectedLetter={setSelectedLetter}
-                  indexCamera={index}
-                  lastPosition={lastPosition}
-                  setLastPosition={setLastPosition}
-                />
-              )
-            )}
+        <ZBuffer
+          selectedLetter={selectedLetter}
+          setSelectedLetter={setSelectedLetter}
+          indexCamera={0}
+          setLastPosition={setLastPosition}
+          lastPosition={lastPosition}
+        />
+        <ZBuffer
+          indexCamera={1}
+          selectedLetter={selectedLetter}
+          setSelectedLetter={setSelectedLetter}
+          setLastPosition={setLastPosition}
+          lastPosition={lastPosition}
+        />
+        <ZBuffer
+          indexCamera={2}
+          selectedLetter={selectedLetter}
+          setSelectedLetter={setSelectedLetter}
+          setLastPosition={setLastPosition}
+          lastPosition={lastPosition}
+        />
+        <ZBuffer
+          indexCamera={3}
+          selectedLetter={selectedLetter}
+          setSelectedLetter={setSelectedLetter}
+          setLastPosition={setLastPosition}
+          lastPosition={lastPosition}
+        />
       </div>
       <div style={{ width: '25vw', height: '100%', padding: 8 }}>
         <Pivot>

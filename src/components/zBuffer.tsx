@@ -11,6 +11,7 @@ import { matrixMul } from 'utils/calculate';
 import { vec3, vec4 } from 'utils/interfaces';
 import { Letter } from './Letter';
 import { useObjects } from './Provider';
+import { click, mouseDragged } from 'utils/mouse';
 
 interface Props {
   indexCamera: number;
@@ -181,185 +182,30 @@ const ZBuffer: FC<Props> = ({
     }
   };
 
-  const click = (e: MouseEvent) => {
+  const onClick = (e: MouseEvent) => {
     const mouseX = e.clientX;
     const mouseY = e.clientY;
     setLastPosition([mouseX, mouseY]);
 
-    const transformedMouse = matrixMul(
-      [getMouseX(mouseX), mouseY + camera.ViewPort.height[0], 0], // Assume-se que o mouse está na posição Z = 0 na cena
-      camera.concatedMatrix
-    ) as vec3;
-
-    objects.forEach((object) => {
-      object.faces.forEach((face) => {
-        if (isPointInsidePolygon(transformedMouse, face)) {
-          if (selectedLetter.includes(object.id)) {
-            setSelectedLetter(
-              selectedLetter.filter((letter) => letter !== object.id)
-            );
-          } else {
-            setSelectedLetter([...selectedLetter, object.id]);
-          }
-        }
-      });
-    });
+    click(mouseX, mouseY, objects, camera, selectedLetter, setSelectedLetter);
   };
 
-  function isPointInsidePolygon(point: vec3, vertices: vec3[]): boolean {
-    let isInside = false;
-
-    const facesSRT = vertices.map((vertex) => {
-      const vertexSRT = matrixMul(vertex, camera.concatedMatrix) as vec4;
-      const x = Math.round(vertexSRT[0]);
-      const y = Math.round(vertexSRT[1]);
-      return [x, y, vertex[2]] as vec3;
-    });
-
-    const maxY = Math.max(...facesSRT.map((vertex) => vertex[1]));
-    const minY = Math.min(...facesSRT.map((vertex) => vertex[1]));
-    const maxX = Math.max(...facesSRT.map((vertex) => vertex[0]));
-    const minX = Math.min(...facesSRT.map((vertex) => vertex[0]));
-
-    if (
-      minY <= point[1] &&
-      point[1] <= maxY &&
-      minX <= point[0] &&
-      point[0] <= maxX
-    ) {
-      const indexHoles = vertices.findIndex(
-        ([x, y, z], index) =>
-          z === vertices[0][2] &&
-          x === vertices[0][0] &&
-          y === vertices[0][1] &&
-          index !== 0
-      );
-
-      if (indexHoles && indexHoles + 1 < vertices.length) {
-        let index = indexHoles + 1;
-        while (true) {
-          const [xI, yI, zI] = vertices[index];
-          let minX = Infinity;
-          let maxX = -Infinity;
-          let minY = Infinity;
-          let maxY = -Infinity;
-
-          for (let i = index; i < vertices.length; i++) {
-            const [x, y, z] = vertices[i];
-
-            if (x === xI && y === yI && z === zI && i !== indexHoles) {
-              index = i + 1;
-              break;
-            }
-
-            if (x < minX) minX = x;
-            else if (x > maxX) maxX = x;
-            if (y < minY) minY = y;
-            else if (y > maxY) maxY = y;
-          }
-
-          if (
-            minY <= point[1] &&
-            point[1] <= maxY &&
-            minX <= point[0] &&
-            point[0] <= maxX
-          ) {
-            isInside = !isInside;
-            break;
-          }
-
-          if (index === vertices.length) break;
-        }
-      } else isInside = !isInside;
-    }
-
-    return isInside;
-  }
-
-  const mouseDragged = (e: MouseEvent) => {
+  const onMouseMove = (e: MouseEvent) => {
     if (e && e.buttons) {
       const mouseX = e.clientX;
       const mouseY = e.clientY;
 
-      const selectedObject = objects.filter((object) =>
-        selectedLetter.includes(object.id)
+      mouseDragged(
+        mouseX,
+        mouseY,
+        e.metaKey,
+        e.shiftKey,
+        lastPosition,
+        objects,
+        selectedLetter,
+        setLastPosition,
+        camera.typeCamera
       );
-      if (selectedObject.length > 0) {
-        selectedObject.forEach((object) => {
-          switch (camera.typeCamera) {
-            case 'axonometric-front':
-              if (e.metaKey) {
-                object.rotate(lastPosition[0] - mouseX, 'X');
-              } else if (e.shiftKey) {
-                object.scale(
-                  lastPosition[0] - mouseX * 0.1,
-                  lastPosition[1] - mouseY * 0.1,
-                  0
-                );
-              } else {
-                object.translate(
-                  -(lastPosition[0] - mouseX),
-                  lastPosition[1] - mouseY,
-                  0
-                );
-              }
-              break;
-            case 'axonometric-side':
-              if (e.metaKey) {
-                object.rotate(lastPosition[0] - mouseX, 'X');
-              } else if (e.shiftKey) {
-                object.scale(
-                  lastPosition[0] - mouseX * 0.1,
-                  lastPosition[1] - mouseY * 0.1,
-                  0
-                );
-              } else {
-                object.translate(
-                  0,
-                  lastPosition[1] - mouseY,
-                  lastPosition[0] - mouseX
-                );
-              }
-              break;
-            case 'axonometric-top':
-              if (e.metaKey) {
-                object.rotate(lastPosition[0] - mouseX, 'X');
-              } else if (e.shiftKey) {
-                object.scale(
-                  lastPosition[0] - mouseX * 0.1,
-                  lastPosition[1] - mouseY * 0.1,
-                  0
-                );
-              } else {
-                object.translate(
-                  lastPosition[0] - mouseX,
-                  0,
-                  lastPosition[1] - mouseY
-                );
-              }
-              break;
-            case 'perspective':
-              if (e.metaKey) {
-                object.rotate(lastPosition[0] - mouseX, 'X');
-              } else if (e.shiftKey) {
-                object.scale(
-                  lastPosition[0] - mouseX * 0.1,
-                  lastPosition[1] - mouseY * 0.1,
-                  0
-                );
-              } else {
-                object.translate(
-                  -(lastPosition[0] - mouseX),
-                  lastPosition[1] - mouseY,
-                  0
-                );
-              }
-              break;
-          }
-        });
-
-        setLastPosition([mouseX, mouseY]);
-      }
     }
   };
 
@@ -373,8 +219,8 @@ const ZBuffer: FC<Props> = ({
         ref={canvas as any}
         width={width}
         height={height}
-        onClick={(e) => click(e as any)}
-        onMouseMove={(e) => mouseDragged(e as any)}
+        onClick={(e) => onClick(e as any)}
+        onMouseMove={(e) => onMouseMove(e as any)}
       />
     ),
     [
