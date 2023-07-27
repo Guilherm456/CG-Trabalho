@@ -25,9 +25,9 @@ const mouseDragged = (
             object.rotate(lastPosition[0] - mouseX, 'X');
           } else if (shiftKey) {
             object.scale(
-              lastPosition[0] - mouseX * 0.1,
-              lastPosition[1] - mouseY * 0.1,
-              0
+              1 + (lastPosition[0] - mouseX) * 0.05,
+              1 + (lastPosition[1] - mouseY) * 0.05,
+              1
             );
           } else {
             object.translate(
@@ -39,12 +39,12 @@ const mouseDragged = (
           break;
         case 'axonometric-side':
           if (metaKey) {
-            object.rotate(lastPosition[0] - mouseX, 'X');
+            object.rotate(lastPosition[0] - mouseX, 'Y');
           } else if (shiftKey) {
             object.scale(
-              lastPosition[0] - mouseX * 0.1,
-              lastPosition[1] - mouseY * 0.1,
-              0
+              1 + (lastPosition[0] - mouseX) * 0.05,
+              1 + (-lastPosition[1] - mouseY) * 0.05,
+              1
             );
           } else {
             object.translate(
@@ -52,21 +52,16 @@ const mouseDragged = (
               lastPosition[1] - mouseY,
               lastPosition[0] - mouseX
             );
-            // object.translate(
-            //   0,
-            //   lastPosition[1] - mouseY,
-            //   lastPosition[0] - mouseX
-            // );
           }
           break;
         case 'axonometric-top':
           if (metaKey) {
-            object.rotate(lastPosition[0] - mouseX, 'X');
+            object.rotate(lastPosition[0] - mouseX, 'Z');
           } else if (shiftKey) {
             object.scale(
-              lastPosition[0] - mouseX * 0.1,
-              lastPosition[1] - mouseY * 0.1,
-              0
+              1 + (lastPosition[0] - mouseX) * 0.05,
+              1,
+              1,
             );
           } else {
             object.translate(
@@ -81,9 +76,9 @@ const mouseDragged = (
             object.rotate(lastPosition[0] - mouseX, 'X');
           } else if (shiftKey) {
             object.scale(
-              lastPosition[0] - mouseX * 0.1,
-              lastPosition[1] - mouseY * 0.1,
-              0
+              1 + (lastPosition[0] - mouseX) * 0.05,
+              1 + (lastPosition[1] - mouseY) * 0.05,
+              1
             );
           } else {
             object.translate(
@@ -122,7 +117,7 @@ const click = (
   setSelectedLetter: (arg0: any[]) => void
 ) => {
   const transformedMouse = matrixMul(
-    [mouseX + camera.ViewPort.width[0], mouseY + camera.ViewPort.height[0], 0], // Assume-se que o mouse está na posição Z = 0 na cena
+    [getMouseX(mouseX, camera), mouseY + camera.ViewPort.height[0], 0], // Assume-se que o mouse está na posição Z = 0 na cena
     camera.concatedMatrix
   ) as vec3;
 
