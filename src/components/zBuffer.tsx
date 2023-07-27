@@ -65,7 +65,7 @@ const ZBuffer: FC<Props> = ({
       const intersections: { x: number; z: number }[] = [];
 
       // let firstHole = vertices[0];
-      for (let i = 1; i < vertices.length - 1; i++) {
+      for (let i = 0; i < vertices.length; i++) {
         const [x1, y1, z1] = vertices[i];
         const [x2, y2, z2] = vertices[(i + 1) % vertices.length];
         // if (x1 === firstHole[0] && y1 === firstHole[1] && z1 === firstHole[2]) {
