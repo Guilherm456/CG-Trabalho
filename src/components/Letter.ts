@@ -221,7 +221,7 @@ export class Letter {
           p5.beginShape();
           firstPoint = face[j + 1];
 
-          j++;
+          j += 2;
         }
       }
       p5.endShape(p5.CLOSE);
@@ -234,7 +234,7 @@ export class Letter {
 
     const Ia = new p5(...light.ambientLightIntensity).mult(new p5(...this.Ka));
 
-    const L = new p5(...light.position.slice(0, 3)).sub(centroid).normalize();
+    const L = new p5(...light.position).sub(centroid).normalize();
     const dotNL = N.dot(L);
     if (dotNL < 0) return Ia.array();
 
@@ -242,7 +242,7 @@ export class Letter {
       .mult(new p5(...this.Kd))
       .mult(dotNL);
 
-    const S = new p5(...camera.VRP.slice(0, 3)).sub(centroid).normalize();
+    const S = new p5(...camera.VRP).sub(centroid).normalize();
     const R = N.mult(2 * dotNL)
       .sub(L)
       .normalize();
@@ -254,58 +254,6 @@ export class Letter {
       .mult(Math.pow(dotRS, this.n));
     return Ia.add(Id).add(Is).array();
   }
-  public calculatePhong(
-    object: {
-      Ka: vec3;
-      Kd: vec3;
-      Ks: vec3;
-      n: number;
-    },
-    light: {
-      position: vec3;
-      ambientLightIntensity: vec3;
-      lightIntensity: vec3;
-    },
-    camera: {
-      VRP: vec3;
-      P: vec3;
-      N: vec3;
-      U: vec3;
-      V: vec3;
-    },
-    vertex: vec3,
-    normal: vec3
-  ) {
-    // Convert JavaScript arrays to NumJS ndArrays
-    // const Ka = nj.array(object.Ka);
-    // const Kd = nj.array(object.Kd);
-    // const Ks = nj.array(object.Ks);
-    // const position = nj.array(light.position);
-    // const ambientLightIntensity = nj.array(light.ambientLightIntensity);
-    // const lightIntensity = nj.array(light.lightIntensity);
-    // const VRP = nj.array(camera.VRP);
-    // const P = nj.array(camera.P);
-    // const N = nj.array(camera.N);
-    // const U = nj.array(camera.U);
-    // const V = nj.array(camera.V);
-    // const vertexArray = nj.array(vertex);
-    // const normalArray = nj.array(normal);
-    // const ambient = nj.multiply(Ka, ambientLightIntensity);
-    // let lightDir = nj.subtract(position, vertexArray);
-    // lightDir = nj.divide(lightDir, nj.norm(lightDir));
-    // let viewDir = nj.subtract(VRP, vertexArray);
-    // viewDir = nj.divide(viewDir, nj.norm(viewDir));
-    // let diffuse = nj.multiply(Kd, lightIntensity);
-    // diffuse = nj.multiply(diffuse, Math.max(0, nj.dot(normalArray, lightDir)));
-    // let reflection = nj.subtract(lightDir, nj.multiply(2 * nj.dot(lightDir, normalArray), normalArray));
-    // reflection = nj.divide(reflection, nj.norm(reflection));
-    // let specular = nj.multiply(Ks, lightIntensity);
-    // specular = nj.multiply(specular, Math.pow(Math.max(0, nj.dot(reflection, viewDir)), object.n));
-    // let color = nj.add(ambient, nj.add(diffuse, specular));
-    // color = nj.clip(color, 0, 1);
-    // return color;
-  }
-
   //Translada a letra
   translate(tX: number, tY: number, tZ: number) {
     //Move o centro

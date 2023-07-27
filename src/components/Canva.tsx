@@ -1,12 +1,10 @@
 import p5Types from 'p5';
 import Sketch from 'react-p5';
 import { useObjects } from './Provider';
-import { vec3 } from 'utils/interfaces';
 
 import { FragShader, VertShader } from '../utils/shader';
 
 import { Dispatch, FC, SetStateAction, useMemo, useState } from 'react';
-import { matrixMul } from 'utils/calculate';
 import { click, mouseDragged } from 'utils/mouse';
 
 let shaderInf: p5Types.Shader;

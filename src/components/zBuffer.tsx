@@ -9,9 +9,9 @@ import {
 } from 'react';
 import { matrixMul } from 'utils/calculate';
 import { vec3, vec4 } from 'utils/interfaces';
+import { click, mouseDragged } from 'utils/mouse';
 import { Letter } from './Letter';
 import { useObjects } from './Provider';
-import { click, mouseDragged } from 'utils/mouse';
 
 interface Props {
   indexCamera: number;
@@ -50,18 +50,7 @@ const ZBuffer: FC<Props> = ({
     [width, height]
   );
 
-  // const objetsSRT = objects.map((object) => {
-  //   object.faces.map((face) => {
-  //     face.map((vertex) => {
-  //       const vertexSRT = matrixMul(vertex, camera.concatedMatrix) as vec4;
-  //       const x = Math.round(vertexSRT[0] - camera.ViewPort.width[0]);
-  //       const y = Math.round(vertexSRT[1] - camera.ViewPort.height[0]);
-  //       return [x, y, vertex[2]] as vec3;
-  //     });
-  //     return face;
-  //   });
-  //   return object;
-  // });
+  let fillPolygons = indexCamera === 3;
 
   function fillPolygon(
     vertices: vec3[],
@@ -75,9 +64,15 @@ const ZBuffer: FC<Props> = ({
     for (let y = minY; y <= maxY; y++) {
       const intersections: { x: number; z: number }[] = [];
 
-      for (let i = 0; i < vertices.length; i++) {
+      // let firstHole = vertices[0];
+      for (let i = 1; i < vertices.length - 1; i++) {
         const [x1, y1, z1] = vertices[i];
         const [x2, y2, z2] = vertices[(i + 1) % vertices.length];
+        // if (x1 === firstHole[0] && y1 === firstHole[1] && z1 === firstHole[2]) {
+        //   firstHole = vertices[i + 1];
+        //   i++;
+        //   continue;
+        // }
 
         if ((y1 <= y && y2 > y) || (y1 > y && y2 <= y)) {
           const t = (y - y1) / (y2 - y1);
@@ -117,6 +112,54 @@ const ZBuffer: FC<Props> = ({
       }
     }
   }
+  function drawLines(vertices: vec3[], selected: boolean = false) {
+    let firstHole = vertices[0];
+    for (let i = 1; i < vertices.length - 1; i++) {
+      const [x1, y1, z1] = vertices[i];
+      const [x2, y2, z2] = vertices[i + 1];
+
+      if (x1 === firstHole[0] && y1 === firstHole[1] && z1 === firstHole[2]) {
+        firstHole = vertices[i + 1];
+        i++;
+        continue;
+      }
+
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      const dz = z2 - z1;
+
+      const steps = Math.max(Math.abs(dx), Math.abs(dy));
+
+      const xIncrement = dx / steps;
+      const yIncrement = dy / steps;
+      const zIncrement = dz / steps;
+
+      let x = x1;
+      let y = y1;
+      let z = z1;
+
+      for (let i = 0; i <= steps; i++) {
+        if (x >= width || y >= height || x < 0 || y < 0) break;
+
+        let roundedX = Math.round(x);
+        let roundedY = Math.round(y);
+
+        if (zDepth[roundedX][roundedY] > z) {
+          if (selected) {
+            zBuffer[roundedX][roundedY] = [200, 0, 0];
+          } else {
+            zBuffer[roundedX][roundedY] = [255, 255, 255];
+          }
+
+          zDepth[roundedX][roundedY] = z;
+        }
+
+        x += xIncrement;
+        y += yIncrement;
+        z += zIncrement;
+      }
+    }
+  }
 
   const draw2D = useCallback(() => {
     if (!canvas.current) return;
@@ -135,22 +178,16 @@ const ZBuffer: FC<Props> = ({
     if (data) {
       objects.forEach((object) => {
         for (let i = 0; i < object.faces.length; i++) {
-          const face = object.faces[i];
-          if (object.isFaceVisible(camera, i))
-            fillPolygon(
-              face.map((vertex) => {
-                const vertexSRT = matrixMul(
-                  vertex,
-                  camera.concatedMatrix
-                ) as vec4;
-                const x = Math.round(vertexSRT[0] - camera.ViewPort.width[0]);
-                const y = Math.round(vertexSRT[1] - camera.ViewPort.height[0]);
-                return [x, y, vertex[2]] as vec3;
-              }),
-              selectedLetter.includes(object.id),
-              object,
-              i
-            );
+          if (!object.isFaceVisible(camera, i)) continue;
+          const face = object.faces[i].map((vertex) => {
+            const vertexSRT = matrixMul(vertex, camera.concatedMatrix) as vec4;
+            const x = Math.round(vertexSRT[0] - camera.ViewPort.width[0]);
+            const y = Math.round(vertexSRT[1] - camera.ViewPort.height[0]);
+            return [x, y, vertex[2]] as vec3;
+          });
+
+          if (fillPolygons) fillPolygon(face, false, object, i);
+          else drawLines(face, selectedLetter.includes(object.id));
         }
       });
 
@@ -195,10 +232,13 @@ const ZBuffer: FC<Props> = ({
       const mouseX = e.clientX;
       const mouseY = e.clientY;
 
+      if (mouseX >= width || mouseY >= height || mouseX < 0 || mouseY < 0)
+        return;
+
       mouseDragged(
         mouseX,
         mouseY,
-        e.metaKey,
+        e.altKey,
         e.shiftKey,
         lastPosition,
         objects,
