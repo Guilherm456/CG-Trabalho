@@ -263,6 +263,55 @@ export class Letter {
     this.findFacesCentroid();
   }
 
+  public calculatePhongShading(
+    light: Light,
+    camera: Camera,
+    indexFace: number
+  ) {
+    const p5 = p5Types.Vector;
+    const face = this.faces[indexFace];
+
+    for (let j = 1; j < face.length; j++) {
+      const vertex = face[j];
+
+      const vertexPoint = new p5(vertex[0], vertex[1], vertex[2]);
+      const N = vertexPoint.normalize();
+
+      const Ia = new p5(...light.ambientLightIntensity).mult(
+        new p5(...this.Ka)
+      );
+
+      const L = new p5(...light.position).sub(vertexPoint).normalize();
+      const dotNL = N.dot(L);
+      let Id = new p5(0, 0, 0);
+      if (dotNL < 0) {
+        Id = new p5(0, 0, 0);
+      } else {
+        Id = new p5(...light.lightIntensity)
+          .mult(new p5(...this.Kd))
+          .mult(dotNL);
+      }
+
+      const S = new p5(...camera.VRP).sub(vertexPoint).normalize();
+      const R = N.mult(2 * dotNL)
+        .sub(L)
+        .normalize();
+      const dotRS = R.dot(S);
+      let Is = new p5(0, 0, 0);
+      if (dotRS < 0) {
+        Is = new p5(0, 0, 0);
+      } else {
+        Is = new p5(...light.lightIntensity)
+          .mult(new p5(...this.Ks))
+          .mult(Math.pow(dotRS, this.n));
+      }
+
+      console.log(Ia.add(Id).add(Is).array());
+
+      return Ia.add(Id).add(Is).array();
+    }
+  }
+
   //Rotaciona a letra
   rotate(angle: number, option: 'X' | 'Y' | 'Z') {
     const [x, y, z] = this.center;

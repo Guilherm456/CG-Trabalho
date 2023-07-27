@@ -220,8 +220,8 @@ const ZBuffer: FC<Props> = ({
       const mouseX = e.clientX;
       const mouseY = e.clientY;
 
-      if (mouseX >= width || mouseY >= height || mouseX < 0 || mouseY < 0)
-        return;
+      // if (mouseX >= width || mouseY >= height || mouseX < 0 || mouseY < 0)
+      //   return;
 
       mouseDragged(
         mouseX,
@@ -238,7 +238,7 @@ const ZBuffer: FC<Props> = ({
   };
 
   useEffect(() => {
-    setTimeout(draw2D, 25);
+    setTimeout(draw2D, 0);
   }, [
     canvas,
     cameras,
