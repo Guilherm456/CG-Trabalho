@@ -1,11 +1,15 @@
-import { vec3, Port } from 'utils/interfaces';
-import * as numjs from 'numjs';
+import nj from '@d4c/numjs';
+import { Port, vec3 } from 'utils/interfaces';
 
 import p5Types from 'p5';
 const p5 = p5Types.Vector;
 
 //OBS: Alguns valores precisam ser atualizados após a alteração de outro valor
-
+type CameraType =
+  | 'perspective'
+  | 'axonometric-top'
+  | 'axonometric-front'
+  | 'axonometric-side';
 export class Camera {
   //"Posição da câmera"
   public VRP: vec3;
@@ -13,7 +17,7 @@ export class Camera {
   public P: vec3;
 
   //Se é perspectiva ou não
-  public perspective: boolean;
+  public typeCamera: CameraType;
 
   //Vetores que são usados para SRC
   public N: vec3 = [0, 0, 0];
@@ -52,44 +56,53 @@ export class Camera {
   //Distância minima da visualização
   public near: number = 10;
 
+  public ocultFaces: boolean = true;
+
   //Sensibilidade de mexer a câmera
   public sensitivity: number = 1;
 
-  private p5!: p5Types;
-
   //Constrói os valores iniciais da câmera
   constructor(
-    position: vec3,
-    target: vec3,
+    position: vec3 = [0, 0, 100],
+    target: vec3 = [0, 0, 0],
     viewport: Port,
     windowPort: Port,
     far: number,
     near: number,
     lookAp?: vec3,
-    planCenterDistance?: number,
-    perspective?: boolean
+    planCenterDistance: number = 100,
+    typeCamera: CameraType = 'perspective',
+    ocultFaces: boolean = true
   ) {
-    this.VRP = position;
-    this.P = target ?? [0, 0, 0];
-    this.perspective = perspective ?? true;
+    this.typeCamera = typeCamera;
 
-    this.viewUp = lookAp ?? this.viewUp;
+    if (
+      this.typeCamera === 'perspective' ||
+      this.typeCamera === 'axonometric-front'
+    ) {
+      this.VRP = position;
+    } else {
+      if (this.typeCamera === 'axonometric-top') {
+        this.VRP = [0, 100, 0];
+        this.viewUp = [0, 0, 1];
+      } else this.VRP = [100, 0, 0];
+    }
+    this.P = target;
 
-    this.setPlanDistance(planCenterDistance ?? 100);
+    if (this.typeCamera !== 'axonometric-top')
+      this.viewUp = lookAp ?? this.viewUp;
+
+    this.setPlanDistance(planCenterDistance);
     this.ViewPort = viewport;
 
     this.WindowPort = windowPort;
 
-    if (!this.p5) return;
     this.matrixView = this.getMatrixView();
-    this.getAllValues();
+
+    this.ocultFaces = ocultFaces ?? true;
 
     this.far = far;
     this.near = near;
-  }
-
-  public setP5(p5: p5Types) {
-    this.p5 = p5;
     this.getAllValues();
   }
 
@@ -124,9 +137,14 @@ export class Camera {
     this.sensitivity = sensitivity;
   }
 
+  //Configura se oculta faces ou não
+  public setOcultFaces(ocultFaces: boolean) {
+    this.ocultFaces = ocultFaces;
+  }
+
   //Configura o plano de projeção
   public setPlanDistance(distance: number) {
-    this.projectionPlanDistance = distance / 100;
+    this.projectionPlanDistance = distance;
     const { VRP, P, projectionPlanDistance } = this;
 
     //Recebe os valores de VRP e P
@@ -152,16 +170,37 @@ export class Camera {
     this.WindowPort = windowPort ?? this.WindowPort;
     this.ViewPort = viewPort ?? this.ViewPort;
 
+    if (windowPort) {
+      this.WindowPort.width = [
+        Math.round(windowPort.width[0]),
+        Math.round(windowPort.width[1]),
+      ];
+      this.WindowPort.height = [
+        Math.round(windowPort.height[0]),
+        Math.round(windowPort.height[1]),
+      ];
+    }
+
+    if (viewPort) {
+      this.ViewPort.width = [
+        Math.round(viewPort.width[0]),
+        Math.round(viewPort.width[1]),
+      ];
+      this.ViewPort.height = [
+        Math.round(viewPort.height[0]),
+        Math.round(viewPort.height[1]),
+      ];
+    }
+
     this.matrixView = this.getMatrixView();
-    if (!this.p5) return;
     this.concatedMatrix = this.getConcatedMatrix();
   }
 
   //Configura o tipo de projeção
-  public setTypePerspective(perspective: boolean) {
-    this.perspective = perspective;
-    this.getAllValues();
-  }
+  // public setTypePerspective(perspective: boolean) {
+  //   this.perspective = perspective;
+  //   this.getAllValues();
+  // }
 
   //Calcula os vetores (N,V,U) e já calcula as matrizes SRC e Projeção, com isso concatena
   private getAllValues(): void {
@@ -178,8 +217,8 @@ export class Camera {
   private getN(): vec3 {
     const { VRP, P } = this;
 
-    const PVector = this.p5.createVector(...P);
-    const VRPVector = this.p5.createVector(...VRP);
+    const PVector = new p5(...P);
+    const VRPVector = new p5(...VRP);
     //VRP - P = N (normal)
     return VRPVector.sub(PVector).normalize().array() as vec3;
   }
@@ -188,8 +227,8 @@ export class Camera {
   private getV(): vec3 {
     const { N, viewUp } = this;
 
-    const YVector = this.p5.createVector(...viewUp);
-    const NVector = this.p5.createVector(...N);
+    const YVector = new p5(...viewUp);
+    const NVector = new p5(...N);
 
     const scalar = YVector.dot(NVector);
     //Y - (Y . N) * N = V (normal)
@@ -200,8 +239,8 @@ export class Camera {
   private getU(): vec3 {
     const { V, N } = this;
 
-    const NVector = this.p5.createVector(...N);
-    const VVector = this.p5.createVector(...V);
+    const NVector = new p5(...N);
+    const VVector = new p5(...V);
     //(V X N) = U (normal)
     return VVector.cross(NVector).normalize().array() as vec3;
   }
@@ -210,11 +249,11 @@ export class Camera {
   convertToSRC(): number[][] {
     const { VRP, N, U, V } = this;
     //VRP negativo
-    const negativeVRP = this.p5.createVector(...VRP).mult(-1);
+    const negativeVRP = new p5(...VRP).mult(-1);
 
-    const UVector = this.p5.createVector(...U);
-    const VVector = this.p5.createVector(...V);
-    const NVector = this.p5.createVector(...N);
+    const UVector = new p5(...U);
+    const VVector = new p5(...V);
+    const NVector = new p5(...N);
 
     const MatrixSRU_SRC = [
       [...U, negativeVRP.dot(UVector)],
@@ -228,11 +267,11 @@ export class Camera {
   //Calcula a matriz de projeção
   getProjectionMatrix(): number[][] {
     //Caso seja perspectiva
-    if (this.perspective) {
+    if (this.typeCamera === 'perspective') {
       const { VRP, projectionPlan } = this;
 
-      const VRPVector = this.p5.createVector(...VRP);
-      const ProjectionVector = this.p5.createVector(...projectionPlan);
+      const VRPVector = new p5(...VRP);
+      const ProjectionVector = new p5(...projectionPlan);
 
       //Calcula a distância entre o VRP e o plano de projeção
       const Dp = VRPVector.dist(ProjectionVector);
@@ -298,6 +337,7 @@ export class Camera {
       [0, 0, 1, 0],
       [0, 0, 0, 1],
     ];
+
     return matrix;
   }
 
@@ -305,11 +345,9 @@ export class Camera {
   public getConcatedMatrix(): number[][] {
     const { matrixSRUSRC, matrixProjection, matrixView } = this;
 
-    let concatedMatrix = numjs
-      .dot(matrixView, matrixProjection)
-      .dot(matrixSRUSRC);
+    let concatedMatrix = nj.dot(matrixView, matrixProjection).dot(matrixSRUSRC);
 
-    return concatedMatrix.tolist();
+    return concatedMatrix.tolist() as number[][];
   }
 
   //"Anda" a câmera

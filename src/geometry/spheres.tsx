@@ -1,17 +1,17 @@
-import { vec3, vec4 } from 'utils/interfaces';
 import p5Types from 'p5';
 import {
-  translate,
-  toDegrees,
+  matrixMul,
   rotate,
   scale,
-  matrixMul,
+  toDegrees,
+  translate,
 } from 'utils/calculate';
+import { vec3, vec4 } from 'utils/interfaces';
 
-import * as numJS from 'numjs';
+import nj from '@d4c/numjs';
 import { Camera } from 'components/Camera';
-import { getCentroidFaces, getNormal } from 'utils/others';
 import { Light } from 'components/Light';
+import { getCentroidFaces, getNormal } from 'utils/others';
 
 interface SphereProps {
   center: vec3;
@@ -78,9 +78,9 @@ export default class Sphere {
     const intP = 180 / (props.intensityP + 1);
 
     //Cria os vértices zerados
-    this.vertice = numJS
+    this.vertice = nj
       .zeros([props.intensityP + 2, props.intensityM, 3])
-      .tolist();
+      .tolist() as vec3[][];
 
     //Obtem os pontos extremos da esfera (alto e baixo)
     const extremesPoint = this.getExtremePoints();
@@ -258,7 +258,7 @@ export default class Sphere {
     shader.setUniform('uLightType', light.lightType);
     for (let i = 0; i < this.faces.length; i++) {
       //Vai normalizar a face
-      const facesNormal = getNormal(p5, this.faces[i]);
+      const facesNormal = getNormal(this.faces[i]);
       const dot = Nvector.dot(facesNormal);
 
       //Caso a face esteja na frente da camera, ela será desenhada

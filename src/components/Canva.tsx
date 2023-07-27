@@ -1,12 +1,11 @@
-import Sketch from 'react-p5';
 import p5Types from 'p5';
-import { ObjectsProviderContext } from './Provider';
+import Sketch from 'react-p5';
+import { useObjects } from './Provider';
 
-import { VertShader, FragShader } from '../utils/shader';
+import { FragShader, VertShader } from '../utils/shader';
 
-import { Port } from 'utils/interfaces';
-import { matrixMul } from 'utils/calculate';
-import { clamp } from 'utils/others';
+import { Dispatch, FC, SetStateAction, useMemo, useState } from 'react';
+import { click, mouseDragged } from 'utils/mouse';
 
 let shaderInf: p5Types.Shader;
 
@@ -20,31 +19,36 @@ enum Direction {
   UP = 17, //Ctrl
 }
 
-export default function Canva() {
-  const { objects, camera, light } = ObjectsProviderContext();
+type Props = {
+  selectedLetter: string[];
+  setSelectedLetter: Dispatch<SetStateAction<string[]>>;
+  indexCamera: number;
+};
+export const Canva: FC<Props> = ({
+  selectedLetter,
+  setSelectedLetter,
+  indexCamera,
+}) => {
+  const { objects, cameras, light } = useObjects();
+  const camera = cameras[indexCamera];
+  const [lastPosition, setLastPosition] = useState([0, 0, 0]);
+
+  const width =
+    Math.abs(camera.ViewPort.width[0]) + Math.abs(camera.ViewPort.width[1]);
+  const height =
+    Math.abs(camera.ViewPort.height[0]) + Math.abs(camera.ViewPort.height[1]);
 
   const setup = (val: any, parentCanvas: Element) => {
     const p5 = val as p5Types;
-    const parent = document.getElementsByClassName('canvaArea')[0];
-    p5.createCanvas(parent.clientWidth, parent.clientHeight, p5.WEBGL).parent(
-      parentCanvas
-    );
-
-    const newWindowSize: Port = {
-      width: [-(parent.clientWidth / 2), parent.clientWidth / 2],
-      height: [-(parent.clientHeight / 2), parent.clientHeight / 2],
-    };
-
-    camera.setWindowSize(newWindowSize, newWindowSize);
+    p5.createCanvas(width, height, p5.WEBGL).parent(parentCanvas);
 
     //Define o shader
     shaderInf = p5.createShader(VertShader, FragShader);
     p5.shader(shaderInf);
 
-    p5.frameRate(30);
+    p5.frameRate(15);
     p5.noStroke();
-
-    camera.setP5(p5);
+    p5.noFill();
   };
 
   const draw = (val: any) => {
@@ -52,69 +56,16 @@ export default function Canva() {
 
     p5.background(0);
 
-    //Para "debugar"
-    if (p5.keyIsPressed) {
-      cameraSystem(p5.keyCode);
-    }
-
-    //Vai ficar rotacionando a "luz"
-    if (light.rotate) {
-      light.rotateLight();
-    }
-
     p5.push();
-    objects.forEach((object) => object.drawFaces(p5, camera, shaderInf, light));
-    p5.pop();
-
-    p5.push();
-    const [xL, yL] = matrixMul(
-      light.position,
-      camera.concatedMatrix
-    ) as number[];
-
-    p5.translate(xL, yL, light.position[2]);
-    p5.stroke(
-      light.lightIntensity[0],
-      light.lightIntensity[1],
-      light.lightIntensity[2]
+    objects.forEach((object) =>
+      object.draw(
+        p5,
+        camera,
+        shaderInf,
+        light,
+        selectedLetter.includes(object.id)
+      )
     );
-    p5.sphere(10);
-    p5.pop();
-
-    drawGizmo(p5);
-  };
-
-  const drawGizmo = (val: any) => {
-    const p5 = val as p5Types;
-    p5.push();
-    const arrowSize = 100;
-    const pos = -p5.width / 5;
-
-    p5.translate(pos, pos);
-    const x = clamp(
-      camera.VRP[0] - camera.projectionPlan[0],
-      -arrowSize,
-      arrowSize
-    );
-    const y = clamp(
-      -(camera.VRP[1] - camera.projectionPlan[1]),
-      -arrowSize,
-      arrowSize
-    );
-    const z = clamp(
-      camera.VRP[2] - camera.projectionPlan[2],
-      -arrowSize,
-      arrowSize
-    );
-
-    p5.strokeWeight(2);
-    p5.stroke(255, 0, 0);
-    p5.line(0, 0, 0, x, 0, 0);
-    p5.stroke(0, 255, 0);
-    p5.line(0, 0, 0, 0, y, 0);
-    p5.stroke(0, 0, 255);
-    p5.line(0, 0, 0, 0, 0, z);
-
     p5.pop();
   };
 
@@ -139,12 +90,6 @@ export default function Canva() {
     return false;
   };
 
-  const windowResized = (val: any) => {
-    const p5 = val as p5Types;
-    const parent = document.getElementsByClassName('canvaArea')[0];
-    p5.resizeCanvas(parent.clientWidth, parent.clientHeight);
-  };
-
   const debug = (val: any) => {
     const p5 = val as p5Types;
     if (p5.keyCode === 8) {
@@ -161,13 +106,64 @@ export default function Canva() {
     }
   };
 
-  return (
-    // @ts-ignore
-    <Sketch
-      setup={setup}
-      draw={draw}
-      windowResized={windowResized}
-      keyReleased={debug}
-    />
-  );
-}
+  const onClick = (val: any) => {
+    const p5 = val as p5Types;
+    const mouseX = p5.mouseX;
+    const mouseY = p5.mouseY;
+
+    setLastPosition([mouseX, mouseY]);
+
+    click(mouseX, mouseY, objects, camera, selectedLetter, setSelectedLetter);
+  };
+
+  const onMouseMove = (e: any) => {
+    if (e) {
+      const mouseX = e.mouseX;
+      const mouseY = e.mouseY;
+
+      console.log(mouseX, mouseY, lastPosition, e);
+
+      mouseDragged(
+        mouseX,
+        mouseY,
+        e.metaKey,
+        e.shiftKey,
+        lastPosition,
+        objects,
+        selectedLetter,
+        setLastPosition,
+        camera.typeCamera
+      );
+    }
+  };
+
+  const memo = useMemo(() => {
+    return (
+      <div
+        style={{
+          position: 'relative',
+        }}
+      >
+        <span
+          style={{
+            position: 'absolute',
+            top: 10,
+            left: 10,
+            zIndex: 1,
+            color: 'white',
+            userSelect: 'none',
+          }}
+        ></span>
+        <Sketch
+          setup={setup}
+          draw={draw}
+          keyReleased={debug}
+          mouseClicked={onClick}
+          mouseDragged={(e) => onMouseMove(e)}
+        />
+      </div>
+    );
+  }, [objects, cameras, light, draw, setup, debug]);
+
+  return <>{memo}</>;
+};

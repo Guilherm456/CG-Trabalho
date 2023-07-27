@@ -2,10 +2,12 @@ import p5Types from 'p5';
 import { vec3 } from './interfaces';
 
 //Recebe uma face e retorna a sua normal
-export function getNormal(p5: p5Types, toNormal: number[][]) {
-  const P1 = p5.createVector(...toNormal[0]);
-  const P2 = p5.createVector(...toNormal[1]);
-  const P3 = p5.createVector(...toNormal[2]);
+export function getNormal(toNormal: number[][]) {
+  const p5 = p5Types.Vector;
+
+  const P1 = new p5(...toNormal[0]);
+  const P2 = new p5(...toNormal[1]);
+  const P3 = new p5(...toNormal[2]);
 
   const v1 = P1.sub(P2);
   const v2 = P3.sub(P2);
@@ -44,3 +46,7 @@ export function getCentroidFaces(face: number[][]): vec3 {
   const zCenter = (z[0] + z[1]) / 2;
   return [xCenter, yCenter, zCenter] as vec3;
 }
+
+export const amplifierEdges = (edge: vec3): vec3 => {
+  return [edge[0] * 10, edge[1] * 10, edge[2]];
+};
