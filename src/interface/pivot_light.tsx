@@ -12,12 +12,6 @@ import { vec3 } from 'utils/interfaces';
 
 const gapStack = { childrenGap: 5 };
 
-const optionsDropdown = [
-  { key: 'X', text: 'X' },
-  { key: 'Y', text: 'Y' },
-  { key: 'Z', text: 'Z' },
-];
-
 const optionsDropdownType = [
   { key: 0, text: 'Flat Shading', value: 0 },
   { key: 1, text: 'Phong Shading', value: 1, disabled: true },
@@ -25,7 +19,6 @@ const optionsDropdownType = [
 ];
 export const PivotLight = () => {
   const { light, handleChangeLight } = useObjects();
-
   const [typeShading, setTypeShading] = useState(light.lightType);
 
   const handleChangeTypeLight = () => {

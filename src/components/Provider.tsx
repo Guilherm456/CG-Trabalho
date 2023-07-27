@@ -120,7 +120,6 @@ export function ObjectsProvider({ children }: Props) {
 
     light.setIntensity(defaultAmbientIntensity, defaultLightIntensity);
     light.setPosition(defaultPositionLight);
-    light.setRotate(false);
   };
 
   //Remove uma esfera pelo ID
@@ -167,7 +166,14 @@ export function ObjectsProvider({ children }: Props) {
   );
 
   const handleChangeLight = useCallback(
-    (newLight: Light) => setLight(newLight),
+    (newLight: Light) => {
+      const lightLocal = new Light(
+        newLight.position,
+        newLight.ambientLightIntensity,
+        newLight.lightIntensity
+      );
+      setLight(lightLocal);
+    },
     [light]
   );
 

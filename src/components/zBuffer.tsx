@@ -2,7 +2,6 @@ import {
   Dispatch,
   FC,
   SetStateAction,
-  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -27,7 +26,7 @@ const ZBuffer: FC<Props> = ({
   lastPosition,
   setLastPosition,
 }) => {
-  const { objects, cameras, light } = useObjects();
+  const { objects, cameras, light, handleChangeLight } = useObjects();
 
   const canvas = useRef<HTMLCanvasElement>();
 
@@ -58,21 +57,21 @@ const ZBuffer: FC<Props> = ({
     letter: Letter,
     indexFace: number
   ) {
-    const minY = Math.min(...vertices.map(([x, y, z]) => y));
-    const maxY = Math.max(...vertices.map(([x, y, z]) => y));
+    const minY = Math.min(...vertices.map(([_, y]) => y));
+    const maxY = Math.max(...vertices.map(([_, y]) => y));
 
     for (let y = minY; y <= maxY; y++) {
       const intersections: { x: number; z: number }[] = [];
 
-      let firstHole = vertices[0];
-      for (let i = 1; i < vertices.length - 1; i++) {
+      // let firstHole = vertices[0];
+      for (let i = 0; i < vertices.length; i++) {
         const [x1, y1, z1] = vertices[i];
-        const [x2, y2, z2] = vertices[i + 1];
-        if (x1 === firstHole[0] && y1 === firstHole[1] && z1 === firstHole[2]) {
-          firstHole = vertices[i + 1];
-          i++;
-          continue;
-        }
+        const [x2, y2, z2] = vertices[(i + 1) % vertices.length];
+        // if (x1 === firstHole[0] && y1 === firstHole[1] && z1 === firstHole[2]) {
+        //   firstHole = vertices[i + 1];
+        //   i++;
+        //   continue;
+        // }
 
         if ((y1 <= y && y2 > y) || (y1 > y && y2 <= y)) {
           const t = (y - y1) / (y2 - y1);
@@ -94,7 +93,8 @@ const ZBuffer: FC<Props> = ({
           if (x >= width || y >= height || x < 0 || y < 0) break;
 
           const t = (x - start.x) / (end.x - start.x);
-          const z = camera.VRP[2] - (start.z + t * (end.z - start.z));
+          //Calcula a distância do Z em relação a camera
+          const z = start.z + t * (end.z - start.z);
 
           if (zDepth[x][y] > z) {
             if (selected) {
@@ -162,7 +162,7 @@ const ZBuffer: FC<Props> = ({
     }
   }
 
-  const draw2D = useCallback(() => {
+  const draw2D = () => {
     if (!canvas.current) return;
 
     const ctx = canvas.current.getContext('2d', {});
@@ -205,7 +205,7 @@ const ZBuffer: FC<Props> = ({
 
       ctx?.putImageData(imageData, 0, 0);
     }
-  }, [canvas, camera, objects, fillPolygon, lastPosition]);
+  };
 
   const onClick = (e: MouseEvent) => {
     const mouseX = e.clientX;
@@ -239,7 +239,15 @@ const ZBuffer: FC<Props> = ({
 
   useEffect(() => {
     setTimeout(draw2D, 25);
-  }, [canvas, cameras, objects, selectedLetter, lastPosition, light]);
+  }, [
+    canvas,
+    cameras,
+    objects,
+    selectedLetter,
+    lastPosition,
+    light,
+    handleChangeLight,
+  ]);
 
   const Canvas = useMemo(
     () => (
@@ -260,6 +268,7 @@ const ZBuffer: FC<Props> = ({
       canvas,
       width,
       height,
+      handleChangeLight,
     ]
   );
   return (
