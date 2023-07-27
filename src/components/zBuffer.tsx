@@ -64,15 +64,15 @@ const ZBuffer: FC<Props> = ({
     for (let y = minY; y <= maxY; y++) {
       const intersections: { x: number; z: number }[] = [];
 
-      // let firstHole = vertices[0];
-      for (let i = 0; i < vertices.length; i++) {
+      let firstHole = vertices[0];
+      for (let i = 1; i < vertices.length - 1; i++) {
         const [x1, y1, z1] = vertices[i];
-        const [x2, y2, z2] = vertices[(i + 1) % vertices.length];
-        // if (x1 === firstHole[0] && y1 === firstHole[1] && z1 === firstHole[2]) {
-        //   firstHole = vertices[i + 1];
-        //   i++;
-        //   continue;
-        // }
+        const [x2, y2, z2] = vertices[i + 1];
+        if (x1 === firstHole[0] && y1 === firstHole[1] && z1 === firstHole[2]) {
+          firstHole = vertices[i + 1];
+          i++;
+          continue;
+        }
 
         if ((y1 <= y && y2 > y) || (y1 > y && y2 <= y)) {
           const t = (y - y1) / (y2 - y1);
@@ -89,6 +89,7 @@ const ZBuffer: FC<Props> = ({
         const start = intersections[i];
         const end = intersections[i + 1];
 
+        if (!start || !end) continue;
         for (let x = start.x; x <= end.x; x++) {
           if (x >= width || y >= height || x < 0 || y < 0) break;
 
@@ -205,19 +206,6 @@ const ZBuffer: FC<Props> = ({
       ctx?.putImageData(imageData, 0, 0);
     }
   }, [canvas, camera, objects, fillPolygon, lastPosition]);
-
-  const getMouseX = (mouseX: number) => {
-    switch (camera.typeCamera) {
-      case 'axonometric-front':
-        return mouseX + camera.ViewPort.width[0];
-      case 'axonometric-side':
-        return mouseX + camera.ViewPort.width[0];
-      case 'axonometric-top':
-        return -(mouseX + camera.ViewPort.width[0]);
-      case 'perspective':
-        return mouseX + camera.ViewPort.width[0];
-    }
-  };
 
   const onClick = (e: MouseEvent) => {
     const mouseX = e.clientX;

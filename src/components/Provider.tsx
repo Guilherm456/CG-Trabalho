@@ -118,9 +118,6 @@ export function ObjectsProvider({ children }: Props) {
   const handleClear = () => {
     handleClearObjects();
 
-    // camera.updateVRP_P(defaultVRP, defaultP);
-    // camera.setviewUp(defaultLookUp);
-
     light.setIntensity(defaultAmbientIntensity, defaultLightIntensity);
     light.setPosition(defaultPositionLight);
     light.setRotate(false);
@@ -170,9 +167,7 @@ export function ObjectsProvider({ children }: Props) {
   );
 
   const handleChangeLight = useCallback(
-    (newLight: Light) => {
-      setLight(newLight);
-    },
+    (newLight: Light) => setLight(newLight),
     [light]
   );
 

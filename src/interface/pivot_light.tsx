@@ -20,8 +20,8 @@ const optionsDropdown = [
 
 const optionsDropdownType = [
   { key: 0, text: 'Flat Shading', value: 0 },
-  { key: 1, text: 'Phong Shading', value: 1 },
-  { key: 2, text: 'Gouraud Shading', value: 2 },
+  { key: 1, text: 'Phong Shading', value: 1, disabled: true },
+  // { key: 2, text: 'Gouraud Shading', value: 2 },
 ];
 export const PivotLight = () => {
   const { light, handleChangeLight } = useObjects();
@@ -70,14 +70,14 @@ export const PivotLight = () => {
 
   const handleEditLight = () => {
     const ambientI: vec3 = [
-      parseFloat(ambientLightIntensity[0]),
-      parseFloat(ambientLightIntensity[1]),
-      parseFloat(ambientLightIntensity[2]),
+      Number(ambientLightIntensity[0]),
+      Number(ambientLightIntensity[1]),
+      Number(ambientLightIntensity[2]),
     ];
     const lightI: vec3 = [
-      parseFloat(intensityLight[0]),
-      parseFloat(intensityLight[1]),
-      parseFloat(intensityLight[2]),
+      Number(intensityLight[0]),
+      Number(intensityLight[1]),
+      Number(intensityLight[2]),
     ];
     light.setIntensity(ambientI, lightI);
 
