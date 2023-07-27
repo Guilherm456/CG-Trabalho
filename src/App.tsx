@@ -1,5 +1,4 @@
 import { Pivot, PivotItem } from '@fluentui/react';
-import { Canva } from 'components/Canva';
 import { useObjects } from 'components/Provider';
 import ZBuffer from 'components/zBuffer';
 
@@ -27,8 +26,6 @@ function App() {
 
     const heightCanva = height ? height / 4 : 0;
     const widthCanva = width ? width / 4 : 0;
-
-    console.debug('height', heightCanva, 'width', widthCanva);
 
     const camerasLocal = cameras.map((camera) => {
       camera.setWindowSize(
