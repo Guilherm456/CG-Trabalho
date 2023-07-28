@@ -135,9 +135,10 @@ const getIfInside = (
         ], // Assume-se que o mouse está na posição Z = 0 na cena
         camera.concatedMatrix
       ) as vec3;
+      console.log('axonometric-side', transformedMouseside[1]);
       return (
-        center[2] - 3 < (transformedMouseside[1] + 1500) / 10 &&
-        center[2] + 11 > (transformedMouseside[1] + 1500) / 10 &&
+        center[2] - 3 < (transformedMouseside[1] + 1080) / 10 &&
+        center[2] + 11 > (transformedMouseside[1] + 1080) / 10 &&
         center[1] - 7 < transformedMouseside[0] / 10 &&
         center[1] + 3.5 > transformedMouseside[0] / 10 //certo
       );
@@ -150,11 +151,13 @@ const getIfInside = (
         ],
         camera.concatedMatrix
       ) as vec3;
+      console.log('axonometric-side', transformedMousetop[1]);
+
       return (
         center[0] - 5 < transformedMousetop[0] / 10 &&
         center[0] + 2 > transformedMousetop[0] / 10 &&
-        center[2] - 10.5 < (transformedMousetop[1] + 1000) / 10 &&
-        center[2] + 2 > (transformedMousetop[1] + 1000) / 10
+        center[2] - 10.5 < (transformedMousetop[1] + 800) / 10 &&
+        center[2] + 2 > (transformedMousetop[1] + 800) / 10
       );
     case 'perspective':
       return;
@@ -179,7 +182,6 @@ const click = (
         setSelectedLetter([...selectedLetter, object.id]);
       }
     }
-
   });
 };
 
