@@ -63,7 +63,8 @@ export function ObjectsProvider({ children }: Props) {
       defaultNear,
       undefined,
       undefined,
-      'axonometric-front'
+      'axonometric-front',
+      false
     ),
     new Camera(
       undefined,
@@ -74,7 +75,8 @@ export function ObjectsProvider({ children }: Props) {
       defaultNear,
       undefined,
       undefined,
-      'axonometric-side'
+      'axonometric-side',
+      false
     ),
     new Camera(
       undefined,
@@ -85,7 +87,8 @@ export function ObjectsProvider({ children }: Props) {
       defaultNear,
       undefined,
       undefined,
-      'axonometric-top'
+      'axonometric-top',
+      false
     ),
     new Camera(
       defaultVRP,
@@ -96,7 +99,8 @@ export function ObjectsProvider({ children }: Props) {
       defaultNear,
       defaultLookUp,
       1,
-      'perspective'
+      'perspective',
+      false
     ),
   ]);
 
@@ -170,7 +174,8 @@ export function ObjectsProvider({ children }: Props) {
       const lightLocal = new Light(
         newLight.position,
         newLight.ambientLightIntensity,
-        newLight.lightIntensity
+        newLight.lightIntensity,
+        newLight.lightType
       );
       setLight(lightLocal);
     },

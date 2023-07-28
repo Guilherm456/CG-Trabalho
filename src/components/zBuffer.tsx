@@ -1,3 +1,4 @@
+import p5Types from 'p5';
 import {
   Dispatch,
   FC,
@@ -49,6 +50,8 @@ const ZBuffer: FC<Props> = ({
 
   let fillPolygons = indexCamera === 3;
 
+  const isFlatShading = light.lightType === 0;
+  const p5 = p5Types.Vector;
   function fillPolygon(
     vertices: vec3[],
     selected: boolean = false,
@@ -58,10 +61,18 @@ const ZBuffer: FC<Props> = ({
     const minY = Math.min(...vertices.map(([_, y]) => y));
     const maxY = Math.max(...vertices.map(([_, y]) => y));
 
+    const L = new p5(...light.position)
+      .sub(new p5(...letter.facesCentroid[indexFace]))
+      .normalize();
+    const S = new p5(...camera.VRP)
+      .sub(new p5(...letter.facesCentroid[indexFace]))
+      .normalize();
+
+    const H = L.add(S).normalize();
+
     for (let y = minY; y <= maxY; y++) {
       const intersections: { x: number; z: number }[] = [];
 
-      // let firstHole = vertices[0];
       for (let i = 0; i < vertices.length; i++) {
         const [x1, y1, z1] = vertices[i];
         const [x2, y2, z2] = vertices[(i + 1) % vertices.length];
@@ -94,11 +105,19 @@ const ZBuffer: FC<Props> = ({
             if (selected) {
               zBuffer[x][y] = [200, 0, 0];
             } else {
-              zBuffer[x][y] = letter.calculateFlatShading(
-                light,
-                camera,
-                indexFace
-              );
+              isFlatShading
+                ? (zBuffer[x][y] = letter.calculateFlatShading(
+                    light,
+                    camera,
+                    indexFace
+                  ))
+                : (zBuffer[x][y] = letter.calculatePhongShading(
+                    light,
+
+                    [x, y, z],
+                    H,
+                    L
+                  ));
             }
 
             zDepth[x][y] = distanceZ;

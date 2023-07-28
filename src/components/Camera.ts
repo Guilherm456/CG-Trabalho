@@ -160,9 +160,9 @@ export class Camera {
 
     //Calcula o plano de projeção (VRP+(P-VRP*distancia))
     this.projectionPlan = [
-      xVRP + (xP - xVRP * projectionPlanDistance),
-      yVRP + (yP - yVRP * projectionPlanDistance),
-      zVRP + (zP - zVRP * projectionPlanDistance),
+      xVRP + (xP - xVRP) * (projectionPlanDistance / (zVRP - zP)),
+      yVRP + (yP - yVRP) * (projectionPlanDistance / (zVRP - zP)),
+      zVRP + (zP - zVRP) * (projectionPlanDistance / (zVRP - zP)),
     ];
 
     if (recalculate) this.getAllValues();
