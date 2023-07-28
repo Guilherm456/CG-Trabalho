@@ -107,7 +107,7 @@ const getMouseX = (mouseX: number, camera: Camera) => {
 const getIfInside = (
   mouseX: number,
   mouseY: number,
-  center: number[],
+  center: vec3,
   camera: Camera,
   topOffset = 0,
   leftOffset = 0
