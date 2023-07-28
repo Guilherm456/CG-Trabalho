@@ -1,7 +1,7 @@
 import { matrixMul } from 'utils/calculate';
 import { Camera } from '../components/Camera';
 import { Letter } from '../components/Letter';
-import { vec3, vec4 } from './interfaces';
+import { vec3 } from './interfaces';
 
 const mouseDragged = (
   mouseX: number,
@@ -104,6 +104,63 @@ const getMouseX = (mouseX: number, camera: Camera) => {
   }
 };
 
+const getIfInside = (
+  mouseX: number,
+  mouseY: number,
+  center: number[],
+  camera: Camera
+) => {
+  switch (camera.typeCamera) {
+    case 'axonometric-front':
+      const transformedMousefront = matrixMul(
+        [
+          mouseX + camera.ViewPort.width[0],
+          mouseY + camera.ViewPort.height[0],
+          0,
+        ], // Assume-se que o mouse está na posição Z = 0 na cena
+        camera.concatedMatrix
+      ) as vec3;
+      return (
+        center[0] - 2 < transformedMousefront[0] / 10 &&
+        center[0] + 5 > transformedMousefront[0] / 10 &&
+        center[1] - 6 < transformedMousefront[1] / 10 &&
+        center[1] + 3 > transformedMousefront[1] / 10
+      );
+    case 'axonometric-side':
+      const transformedMouseside = matrixMul(
+        [
+          0,
+          mouseX + camera.ViewPort.width[0],
+          mouseY + camera.ViewPort.height[0],
+        ], // Assume-se que o mouse está na posição Z = 0 na cena
+        camera.concatedMatrix
+      ) as vec3;
+      return (
+        center[2] - 3 < (transformedMouseside[1] + 1500) / 10 &&
+        center[2] + 11 > (transformedMouseside[1] + 1500) / 10 &&
+        center[1] - 7 < transformedMouseside[0] / 10 &&
+        center[1] + 3.5 > transformedMouseside[0] / 10 //certo
+      );
+    case 'axonometric-top':
+      const transformedMousetop = matrixMul(
+        [
+          mouseX + camera.ViewPort.width[0],
+          0,
+          mouseY + camera.ViewPort.height[0],
+        ],
+        camera.concatedMatrix
+      ) as vec3;
+      return (
+        center[0] - 5 < transformedMousetop[0] / 10 &&
+        center[0] + 2 > transformedMousetop[0] / 10 &&
+        center[2] - 10.5 < (transformedMousetop[1] + 1000) / 10 &&
+        center[2] + 2 > (transformedMousetop[1] + 1000) / 10
+      );
+    case 'perspective':
+      return;
+  }
+};
+
 const click = (
   mouseX: number,
   mouseY: number,
@@ -112,98 +169,18 @@ const click = (
   selectedLetter: any[],
   setSelectedLetter: (arg0: any[]) => void
 ) => {
-  const transformedMouse = matrixMul(
-    [getMouseX(mouseX, camera)!, mouseY + camera.ViewPort.height[0], 0], // Assume-se que o mouse está na posição Z = 0 na cena
-    camera.concatedMatrix
-  ) as vec3;
-
   objects.forEach((object) => {
-    object.faces.forEach((face) => {
-      if (isPointInsidePolygon(transformedMouse, face, camera.concatedMatrix)) {
-        if (selectedLetter.includes(object.id)) {
-          setSelectedLetter(
-            selectedLetter.filter((letter) => letter !== object.id)
-          );
-        } else {
-          setSelectedLetter([...selectedLetter, object.id]);
-        }
+    if (getIfInside(mouseX, mouseY, object.center, camera)) {
+      if (selectedLetter.includes(object.id)) {
+        setSelectedLetter(
+          selectedLetter.filter((letter) => letter !== object.id)
+        );
+      } else {
+        setSelectedLetter([...selectedLetter, object.id]);
       }
-    });
+    }
+
   });
 };
-
-function isPointInsidePolygon(
-  point: vec3,
-  vertices: vec3[],
-  concatedMatrix: number[][]
-): boolean {
-  let isInside = false;
-
-  const facesSRT = vertices.map((vertex) => {
-    const vertexSRT = matrixMul(vertex, concatedMatrix) as vec4;
-    const x = Math.round(vertexSRT[0]);
-    const y = Math.round(vertexSRT[1]);
-    return [x, y, vertex[2]] as vec3;
-  });
-
-  const maxY = Math.max(...facesSRT.map((vertex) => vertex[1]));
-  const minY = Math.min(...facesSRT.map((vertex) => vertex[1]));
-  const maxX = Math.max(...facesSRT.map((vertex) => vertex[0]));
-  const minX = Math.min(...facesSRT.map((vertex) => vertex[0]));
-
-  if (
-    minY <= point[1] &&
-    point[1] <= maxY &&
-    minX <= point[0] &&
-    point[0] <= maxX
-  ) {
-    const indexHoles = vertices.findIndex(
-      ([x, y, z], index) =>
-        z === vertices[0][2] &&
-        x === vertices[0][0] &&
-        y === vertices[0][1] &&
-        index !== 0
-    );
-
-    if (indexHoles && indexHoles + 1 < vertices.length) {
-      let index = indexHoles + 1;
-      while (true) {
-        const [xI, yI, zI] = vertices[index];
-        let minX = Infinity;
-        let maxX = -Infinity;
-        let minY = Infinity;
-        let maxY = -Infinity;
-
-        for (let i = index; i < vertices.length; i++) {
-          const [x, y, z] = vertices[i];
-
-          if (x === xI && y === yI && z === zI && i !== indexHoles) {
-            index = i + 1;
-            break;
-          }
-
-          if (x < minX) minX = x;
-          else if (x > maxX) maxX = x;
-          if (y < minY) minY = y;
-          else if (y > maxY) maxY = y;
-        }
-
-        if (
-          minY <= point[1] &&
-          point[1] <= maxY &&
-          minX <= point[0] &&
-          point[0] <= maxX
-        ) {
-          isInside = !isInside;
-          break;
-        }
-
-        if (index === vertices.length) break;
-      }
-    } else isInside = !isInside;
-  }
-
-  return isInside;
-}
 
 export { click, mouseDragged };

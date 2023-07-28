@@ -122,7 +122,7 @@ export function ObjectsProvider({ children }: Props) {
     light.setPosition(defaultPositionLight);
   };
 
-  //Remove uma esfera pelo ID
+  //Remove uma letra pelo ID
   const handleRemoveLetter = (id: string) => {
     setObjects((prevState) => prevState.filter((object) => object.id !== id));
   };

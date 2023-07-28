@@ -19,6 +19,7 @@ interface Props {
   lastPosition: number[];
   setLastPosition: Dispatch<SetStateAction<number[]>>;
 }
+
 const ZBuffer: FC<Props> = ({
   indexCamera,
   selectedLetter,
@@ -208,17 +209,22 @@ const ZBuffer: FC<Props> = ({
   };
 
   const onClick = (e: MouseEvent) => {
-    const mouseX = e.clientX;
-    const mouseY = e.clientY;
+    const offset = canvas.current?.getBoundingClientRect();
+
+    const mouseX = e.clientX + offset!.left;
+    const mouseY = e.clientY + offset!.top;
     setLastPosition([mouseX, mouseY]);
 
     click(mouseX, mouseY, objects, camera, selectedLetter, setSelectedLetter);
+    e.stopPropagation();
   };
 
   const onMouseMove = (e: MouseEvent) => {
     if (e && e.buttons) {
-      const mouseX = e.clientX;
-      const mouseY = e.clientY;
+      const offset = canvas.current?.getBoundingClientRect();
+
+      const mouseX = e.clientX + offset!.left;
+      const mouseY = e.clientY + offset!.top;
 
       // if (mouseX >= width || mouseY >= height || mouseX < 0 || mouseY < 0)
       //   return;
@@ -234,6 +240,8 @@ const ZBuffer: FC<Props> = ({
         setLastPosition,
         camera.typeCamera
       );
+
+      e.stopPropagation();
     }
   };
 
