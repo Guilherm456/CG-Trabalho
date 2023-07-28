@@ -108,8 +108,12 @@ const getIfInside = (
   mouseX: number,
   mouseY: number,
   center: number[],
-  camera: Camera
+  camera: Camera,
+  topOffset = 0,
+  leftOffset = 0
 ) => {
+  const transformedCenter = matrixMul(center, camera.concatedMatrix) as vec3;
+
   switch (camera.typeCamera) {
     case 'axonometric-front':
       const transformedMousefront = matrixMul(
@@ -117,14 +121,15 @@ const getIfInside = (
           mouseX + camera.ViewPort.width[0],
           mouseY + camera.ViewPort.height[0],
           0,
-        ], // Assume-se que o mouse está na posição Z = 0 na cena
+        ],
         camera.concatedMatrix
       ) as vec3;
+
       return (
-        center[0] - 2 < transformedMousefront[0] / 10 &&
-        center[0] + 5 > transformedMousefront[0] / 10 &&
-        center[1] - 6 < transformedMousefront[1] / 10 &&
-        center[1] + 3 > transformedMousefront[1] / 10
+        transformedCenter[0] - 2 < transformedMousefront[0] / 10 &&
+        transformedCenter[0] + 5 > transformedMousefront[0] / 10 &&
+        transformedCenter[1] - 7 < transformedMousefront[1] / 10 &&
+        transformedCenter[1] + 3 > transformedMousefront[1] / 10
       );
     case 'axonometric-side':
       const transformedMouseside = matrixMul(
@@ -132,32 +137,32 @@ const getIfInside = (
           0,
           mouseX + camera.ViewPort.width[0],
           mouseY + camera.ViewPort.height[0],
-        ], // Assume-se que o mouse está na posição Z = 0 na cena
+        ],
         camera.concatedMatrix
       ) as vec3;
-      console.log('axonometric-side', transformedMouseside[1]);
+
       return (
-        center[2] - 3 < (transformedMouseside[1] + 1080) / 10 &&
-        center[2] + 11 > (transformedMouseside[1] + 1080) / 10 &&
-        center[1] - 7 < transformedMouseside[0] / 10 &&
-        center[1] + 3.5 > transformedMouseside[0] / 10 //certo
+        transformedCenter[2] - 8 < (transformedMouseside[1] + topOffset) / 10 &&
+        transformedCenter[2] + 11 >
+          (transformedMouseside[1] + topOffset) / 10 &&
+        transformedCenter[1] - 7 < transformedMouseside[0] / 10 &&
+        transformedCenter[1] + 3 > transformedMouseside[0] / 10
       );
     case 'axonometric-top':
       const transformedMousetop = matrixMul(
         [
-          mouseX + camera.ViewPort.width[0],
+          -(mouseX + camera.ViewPort.width[0]),
           0,
           mouseY + camera.ViewPort.height[0],
         ],
         camera.concatedMatrix
       ) as vec3;
-      console.log('axonometric-side', transformedMousetop[1]);
 
       return (
-        center[0] - 5 < transformedMousetop[0] / 10 &&
-        center[0] + 2 > transformedMousetop[0] / 10 &&
-        center[2] - 10.5 < (transformedMousetop[1] + 800) / 10 &&
-        center[2] + 2 > (transformedMousetop[1] + 800) / 10
+        transformedCenter[0] - 3 < transformedMousetop[0] / 10 &&
+        transformedCenter[0] + 3 > transformedMousetop[0] / 10 &&
+        transformedCenter[2] - 8 < (transformedMousetop[1] + leftOffset) / 10 &&
+        transformedCenter[2] + 8 > (transformedMousetop[1] + leftOffset) / 10
       );
     case 'perspective':
       return;
@@ -170,10 +175,14 @@ const click = (
   objects: Letter[],
   camera: Camera,
   selectedLetter: any[],
-  setSelectedLetter: (arg0: any[]) => void
+  setSelectedLetter: (arg0: any[]) => void,
+  topOffset = 0,
+  leftOffset = 0
 ) => {
   objects.forEach((object) => {
-    if (getIfInside(mouseX, mouseY, object.center, camera)) {
+    if (
+      getIfInside(mouseX, mouseY, object.center, camera, topOffset, leftOffset)
+    ) {
       if (selectedLetter.includes(object.id)) {
         setSelectedLetter(
           selectedLetter.filter((letter) => letter !== object.id)
