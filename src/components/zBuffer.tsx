@@ -178,7 +178,7 @@ const ZBuffer: FC<Props> = ({
             const vertexSRT = matrixMul(vertex, camera.concatedMatrix) as vec4;
             const x = Math.round(vertexSRT[0] - camera.ViewPort.width[0]);
             const y = Math.round(vertexSRT[1] - camera.ViewPort.height[0]);
-            return [x, y, vertexSRT[2]] as vec3;
+            return [x, y, vertex[2]] as vec3;
           });
 
           if (fillPolygons) fillPolygon(face, false, object, i);
