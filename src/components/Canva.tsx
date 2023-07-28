@@ -86,8 +86,6 @@ export const Canva: FC<Props> = ({
       const mouseX = e.mouseX;
       const mouseY = e.mouseY;
 
-      console.log(mouseX, mouseY, lastPosition, e);
-
       mouseDragged(
         mouseX,
         mouseY,
