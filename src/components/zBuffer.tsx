@@ -1,3 +1,4 @@
+import p5Types from 'p5';
 import {
   Dispatch,
   FC,
@@ -11,7 +12,6 @@ import { vec3, vec4 } from 'utils/interfaces';
 import { click, mouseDragged } from 'utils/mouse';
 import { Letter } from './Letter';
 import { useObjects } from './Provider';
-
 interface Props {
   indexCamera: number;
   selectedLetter: string[];
@@ -19,6 +19,7 @@ interface Props {
   lastPosition: number[];
   setLastPosition: Dispatch<SetStateAction<number[]>>;
 }
+
 const ZBuffer: FC<Props> = ({
   indexCamera,
   selectedLetter,
@@ -39,9 +40,7 @@ const ZBuffer: FC<Props> = ({
 
   const zBuffer = useMemo(
     () =>
-      new Array(width)
-        .fill([0, 0, 0])
-        .map(() => new Array(height).fill([0, 0, 0])),
+      new Array(width).fill(null).map(() => new Array(height).fill([0, 0, 0])),
     [width, height]
   );
   const zDepth = useMemo(
@@ -51,6 +50,8 @@ const ZBuffer: FC<Props> = ({
 
   let fillPolygons = indexCamera === 3;
 
+  const isFlatShading = light.lightType === 0;
+  const p5 = p5Types.Vector;
   function fillPolygon(
     vertices: vec3[],
     selected: boolean = false,
@@ -60,22 +61,25 @@ const ZBuffer: FC<Props> = ({
     const minY = Math.min(...vertices.map(([_, y]) => y));
     const maxY = Math.max(...vertices.map(([_, y]) => y));
 
+    const L = new p5(...light.position)
+      .sub(new p5(...letter.facesCentroid[indexFace]))
+      .normalize();
+    const S = new p5(...camera.VRP)
+      .sub(new p5(...letter.facesCentroid[indexFace]))
+      .normalize();
+
+    const H = L.add(S).normalize();
+
     for (let y = minY; y <= maxY; y++) {
       const intersections: { x: number; z: number }[] = [];
 
-      // let firstHole = vertices[0];
       for (let i = 0; i < vertices.length; i++) {
         const [x1, y1, z1] = vertices[i];
         const [x2, y2, z2] = vertices[(i + 1) % vertices.length];
-        // if (x1 === firstHole[0] && y1 === firstHole[1] && z1 === firstHole[2]) {
-        //   firstHole = vertices[i + 1];
-        //   i++;
-        //   continue;
-        // }
 
         if ((y1 <= y && y2 > y) || (y1 > y && y2 <= y)) {
           const t = (y - y1) / (y2 - y1);
-          const x = x1 + t * (x2 - x1);
+          const x = Math.round(x1 + t * (x2 - x1));
           const z = z1 + t * (z2 - z1);
 
           intersections.push({ x: Math.round(x), z });
@@ -91,23 +95,32 @@ const ZBuffer: FC<Props> = ({
         if (!start || !end) continue;
         for (let x = start.x; x <= end.x; x++) {
           if (x >= width || y >= height || x < 0 || y < 0) break;
-
           const t = (x - start.x) / (end.x - start.x);
-          //Calcula a distância do Z em relação a camera
-          const z = start.z + t * (end.z - start.z);
 
-          if (zDepth[x][y] > z) {
+          //Calcula a distância do Z em relação a camera
+          const z = start.z + t;
+          const distanceZ = (z - camera.near) / (camera.far - camera.near);
+
+          if (zDepth[x][y] > distanceZ) {
             if (selected) {
-              zBuffer[x][y] = [200, 0, 0, z];
+              zBuffer[x][y] = [200, 0, 0];
             } else {
-              zBuffer[x][y] = letter.calculateFlatShading(
-                light,
-                camera,
-                indexFace
-              );
+              isFlatShading
+                ? (zBuffer[x][y] = letter.calculateFlatShading(
+                    light,
+                    camera,
+                    indexFace
+                  ))
+                : (zBuffer[x][y] = letter.calculatePhongShading(
+                    light,
+
+                    [x, y, z],
+                    H,
+                    L
+                  ));
             }
 
-            zDepth[x][y] = z;
+            zDepth[x][y] = distanceZ;
           }
         }
       }
@@ -208,17 +221,22 @@ const ZBuffer: FC<Props> = ({
   };
 
   const onClick = (e: MouseEvent) => {
-    const mouseX = e.clientX;
-    const mouseY = e.clientY;
+    const offset = canvas.current?.getBoundingClientRect();
+
+    const mouseX = e.clientX + offset!.left;
+    const mouseY = e.clientY + offset!.top;
     setLastPosition([mouseX, mouseY]);
 
     click(mouseX, mouseY, objects, camera, selectedLetter, setSelectedLetter);
+    e.stopPropagation();
   };
 
   const onMouseMove = (e: MouseEvent) => {
     if (e && e.buttons) {
-      const mouseX = e.clientX;
-      const mouseY = e.clientY;
+      const offset = canvas.current?.getBoundingClientRect();
+
+      const mouseX = e.clientX + offset!.left;
+      const mouseY = e.clientY + offset!.top;
 
       // if (mouseX >= width || mouseY >= height || mouseX < 0 || mouseY < 0)
       //   return;
@@ -234,6 +252,8 @@ const ZBuffer: FC<Props> = ({
         setLastPosition,
         camera.typeCamera
       );
+
+      e.stopPropagation();
     }
   };
 

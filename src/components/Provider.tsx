@@ -63,7 +63,8 @@ export function ObjectsProvider({ children }: Props) {
       defaultNear,
       undefined,
       undefined,
-      'axonometric-front'
+      'axonometric-front',
+      false
     ),
     new Camera(
       undefined,
@@ -74,7 +75,8 @@ export function ObjectsProvider({ children }: Props) {
       defaultNear,
       undefined,
       undefined,
-      'axonometric-side'
+      'axonometric-side',
+      false
     ),
     new Camera(
       undefined,
@@ -85,7 +87,8 @@ export function ObjectsProvider({ children }: Props) {
       defaultNear,
       undefined,
       undefined,
-      'axonometric-top'
+      'axonometric-top',
+      false
     ),
     new Camera(
       defaultVRP,
@@ -95,8 +98,9 @@ export function ObjectsProvider({ children }: Props) {
       defaultFar,
       defaultNear,
       defaultLookUp,
-      100,
-      'perspective'
+      1,
+      'perspective',
+      false
     ),
   ]);
 
@@ -122,7 +126,7 @@ export function ObjectsProvider({ children }: Props) {
     light.setPosition(defaultPositionLight);
   };
 
-  //Remove uma esfera pelo ID
+  //Remove uma letra pelo ID
   const handleRemoveLetter = (id: string) => {
     setObjects((prevState) => prevState.filter((object) => object.id !== id));
   };
@@ -170,7 +174,8 @@ export function ObjectsProvider({ children }: Props) {
       const lightLocal = new Light(
         newLight.position,
         newLight.ambientLightIntensity,
-        newLight.lightIntensity
+        newLight.lightIntensity,
+        newLight.lightType
       );
       setLight(lightLocal);
     },

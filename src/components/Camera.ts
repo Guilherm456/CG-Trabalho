@@ -9,7 +9,8 @@ type CameraType =
   | 'perspective'
   | 'axonometric-top'
   | 'axonometric-front'
-  | 'axonometric-side';
+  | 'axonometric-side'
+  | 'axonometric';
 export class Camera {
   //"Posição da câmera"
   public VRP: vec3;
@@ -70,7 +71,7 @@ export class Camera {
     far: number,
     near: number,
     lookAp?: vec3,
-    planCenterDistance: number = 100,
+    planCenterDistance: number = 1,
     typeCamera: CameraType = 'perspective',
     ocultFaces: boolean = true
   ) {
@@ -132,6 +133,12 @@ export class Camera {
     this.getAllValues();
   }
 
+  public setCameraType(perspective: boolean) {
+    if (perspective) this.typeCamera = 'perspective';
+    else this.typeCamera = 'axonometric';
+    this.getAllValues();
+  }
+
   //Configura a sensibilidade da câmera
   public setSenitivity(sensitivity: number) {
     this.sensitivity = sensitivity;
@@ -143,7 +150,7 @@ export class Camera {
   }
 
   //Configura o plano de projeção
-  public setPlanDistance(distance: number) {
+  public setPlanDistance(distance: number, recalculate?: boolean) {
     this.projectionPlanDistance = distance;
     const { VRP, P, projectionPlanDistance } = this;
 
@@ -153,10 +160,12 @@ export class Camera {
 
     //Calcula o plano de projeção (VRP+(P-VRP*distancia))
     this.projectionPlan = [
-      xVRP + (xP - xVRP * projectionPlanDistance),
-      yVRP + (yP - yVRP * projectionPlanDistance),
-      zVRP + (zP - zVRP * projectionPlanDistance),
+      xVRP + (xP - xVRP) * (projectionPlanDistance / (zVRP - zP)),
+      yVRP + (yP - yVRP) * (projectionPlanDistance / (zVRP - zP)),
+      zVRP + (zP - zVRP) * (projectionPlanDistance / (zVRP - zP)),
     ];
+
+    if (recalculate) this.getAllValues();
   }
 
   //Configura o ViewUp
@@ -196,15 +205,9 @@ export class Camera {
     this.concatedMatrix = this.getConcatedMatrix();
   }
 
-  //Configura o tipo de projeção
-  // public setTypePerspective(perspective: boolean) {
-  //   this.perspective = perspective;
-  //   this.getAllValues();
-  // }
-
   //Calcula os vetores (N,V,U) e já calcula as matrizes SRC e Projeção, com isso concatena
   private getAllValues(): void {
-    this.setPlanDistance(this.projectionPlanDistance * 100);
+    // this.setPlanDistance(this.projectionPlanDistance * 100);
     this.N = this.getN();
     this.V = this.getV();
     this.U = this.getU();

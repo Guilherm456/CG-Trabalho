@@ -25,6 +25,7 @@ export const PivotScene = () => {
     light,
     setLight,
     setCamera,
+    handleChangeLetter,
   } = useObjects();
   const [text, setText] = useState(
     objects.map((letter) => letter.typeLetter).join('')
@@ -187,6 +188,13 @@ export const PivotScene = () => {
         text="Limpar cena"
         onClick={handleClear}
         iconProps={{ iconName: 'ClearFormatting' }}
+      />
+      <DefaultButton
+        text="Recarregar cena"
+        onClick={() => {
+          handleChangeLetter(objects);
+        }}
+        iconProps={{ iconName: 'Refresh' }}
       />
 
       <VerticalDivider />
