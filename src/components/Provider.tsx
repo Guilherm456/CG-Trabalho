@@ -95,7 +95,7 @@ export function ObjectsProvider({ children }: Props) {
       defaultFar,
       defaultNear,
       defaultLookUp,
-      100,
+      1,
       'perspective'
     ),
   ]);

@@ -34,7 +34,7 @@ export const PivotCamera: FC = () => {
   );
 
   const handleChangeDistanceProjection = () => {
-    camera.setPlanDistance(distanceProjection / 100);
+    camera.setPlanDistance(distanceProjection / 100, true);
     handleChangeCameras(camera);
   };
 

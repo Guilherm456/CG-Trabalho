@@ -2,8 +2,6 @@ import p5Types from 'p5';
 import Sketch from 'react-p5';
 import { useObjects } from './Provider';
 
-import { FragShader, VertShader } from '../utils/shader';
-
 import { Dispatch, FC, SetStateAction, useMemo, useState } from 'react';
 import { click, mouseDragged } from 'utils/mouse';
 
@@ -42,10 +40,6 @@ export const Canva: FC<Props> = ({
     const p5 = val as p5Types;
     p5.createCanvas(width, height, p5.WEBGL).parent(parentCanvas);
 
-    //Define o shader
-    shaderInf = p5.createShader(VertShader, FragShader);
-    p5.shader(shaderInf);
-
     p5.frameRate(15);
     p5.noStroke();
     p5.noFill();
@@ -57,37 +51,8 @@ export const Canva: FC<Props> = ({
     p5.background(0);
 
     p5.push();
-    objects.forEach((object) =>
-      object.draw(
-        p5,
-        camera,
-        shaderInf,
-        light,
-        selectedLetter.includes(object.id)
-      )
-    );
+    objects.forEach((object) => object.draw(p5, camera));
     p5.pop();
-  };
-
-  const cameraSystem = (key: number) => {
-    if (key === Direction.FRONT)
-      camera.updatePositionCamera(-camera.sensitivity, 'Z', true);
-
-    if (key === Direction.BACK)
-      camera.updatePositionCamera(camera.sensitivity, 'Z', true);
-
-    if (key === Direction.LEFT)
-      camera.updatePositionCamera(-camera.sensitivity, 'X', true);
-
-    if (key === Direction.RIGHT)
-      camera.updatePositionCamera(camera.sensitivity, 'X', true);
-
-    if (key === Direction.UP)
-      camera.updatePositionCamera(camera.sensitivity, 'Y', true);
-
-    if (key === Direction.DOWN)
-      camera.updatePositionCamera(-camera.sensitivity, 'Y', true);
-    return false;
   };
 
   const debug = (val: any) => {
@@ -163,7 +128,7 @@ export const Canva: FC<Props> = ({
         />
       </div>
     );
-  }, [objects, cameras, light, draw, setup, debug]);
+  }, [objects, cameras, light, draw, setup, debug, width, height]);
 
   return <>{memo}</>;
 };

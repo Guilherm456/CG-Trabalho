@@ -10,7 +10,7 @@ export class Letter {
 
   private facesNormal: vec3[] = [];
 
-  private facesCentroid: vec3[] = [];
+  public facesCentroid: vec3[] = [];
 
   edges: [[vec3]] = [[[-1, -1, -1]]];
 
@@ -137,12 +137,6 @@ export class Letter {
     this.findFacesCentroid();
   }
 
-  isCounterClockwise(a: vec3, b: vec3, c: vec3): boolean {
-    const area =
-      0.5 * ((b[0] - a[0]) * (c[1] - a[1]) - (c[0] - a[0]) * (b[1] - a[1]));
-    return area > 0;
-  }
-
   calculateFacesNormal() {
     const facesNormal: vec3[] = [];
 
@@ -167,7 +161,6 @@ export class Letter {
 
   isFaceVisible(camera: Camera, indexFace: number): boolean {
     const p5 = p5Types.Vector;
-
     const VRP = new p5(...camera.VRP);
     const distance = new p5(...camera.N).dot(
       VRP.sub(new p5(...this.facesCentroid[indexFace]))
@@ -177,7 +170,8 @@ export class Letter {
 
     if (!camera.ocultFaces) return true;
 
-    const OVector = VRP.sub(...this.facesCentroid[indexFace]).normalize();
+    // const OVector = VRP.sub(...camera.P).normalize();
+    const OVector = VRP.sub(new p5(...this.faces[indexFace][0])).normalize();
     const faceNormal = new p5(...this.facesNormal[indexFace]);
     const dot = OVector.dot(faceNormal);
 
@@ -188,8 +182,7 @@ export class Letter {
   draw(
     p5: p5Types,
     camera: Camera,
-    shader: p5Types.Shader,
-    light: Light,
+
     isSelect?: boolean
   ) {
     for (let i = 0; i < this.faces.length; i++) {
@@ -201,6 +194,7 @@ export class Letter {
       p5.beginShape();
 
       let firstPoint = face[0];
+      let index = 0;
       for (let j = 1; j < face.length; j++) {
         const vertex = face[j];
 
@@ -212,11 +206,13 @@ export class Letter {
         if (
           vertex[0] === firstPoint[0] &&
           vertex[1] === firstPoint[1] &&
-          vertex[2] === firstPoint[2]
+          vertex[2] === firstPoint[2] &&
+          j !== index
         ) {
           p5.endShape(p5.CLOSE);
           p5.beginShape();
           firstPoint = face[j + 1];
+          index = j + 1;
 
           j += 2;
         }
@@ -266,50 +262,42 @@ export class Letter {
   public calculatePhongShading(
     light: Light,
     camera: Camera,
-    indexFace: number
+    indexFace: number,
+    vertex: vec3
   ) {
     const p5 = p5Types.Vector;
-    const face = this.faces[indexFace];
 
-    for (let j = 1; j < face.length; j++) {
-      const vertex = face[j];
+    const vertexPoint = new p5(vertex[0], vertex[1], vertex[2]);
+    const N = vertexPoint.normalize();
 
-      const vertexPoint = new p5(vertex[0], vertex[1], vertex[2]);
-      const N = vertexPoint.normalize();
+    const Ia = new p5(...light.ambientLightIntensity).mult(new p5(...this.Ka));
 
-      const Ia = new p5(...light.ambientLightIntensity).mult(
-        new p5(...this.Ka)
-      );
-
-      const L = new p5(...light.position).sub(vertexPoint).normalize();
-      const dotNL = N.dot(L);
-      let Id = new p5(0, 0, 0);
-      if (dotNL < 0) {
-        Id = new p5(0, 0, 0);
-      } else {
-        Id = new p5(...light.lightIntensity)
-          .mult(new p5(...this.Kd))
-          .mult(dotNL);
-      }
-
-      const S = new p5(...camera.VRP).sub(vertexPoint).normalize();
-      const R = N.mult(2 * dotNL)
-        .sub(L)
-        .normalize();
-      const dotRS = R.dot(S);
-      let Is = new p5(0, 0, 0);
-      if (dotRS < 0) {
-        Is = new p5(0, 0, 0);
-      } else {
-        Is = new p5(...light.lightIntensity)
-          .mult(new p5(...this.Ks))
-          .mult(Math.pow(dotRS, this.n));
-      }
-
-      console.log(Ia.add(Id).add(Is).array());
-
-      return Ia.add(Id).add(Is).array();
+    const L = new p5(...light.position).sub(vertexPoint).normalize();
+    const dotNL = N.dot(L);
+    let Id = new p5(0, 0, 0);
+    if (dotNL < 0) {
+      Id = new p5(0, 0, 0);
+    } else {
+      Id = new p5(...light.lightIntensity).mult(new p5(...this.Kd)).mult(dotNL);
     }
+
+    const S = new p5(...camera.VRP).sub(vertexPoint).normalize();
+    const R = N.mult(2 * dotNL)
+      .sub(L)
+      .normalize();
+    const dotRS = R.dot(S);
+    let Is = new p5(0, 0, 0);
+    if (dotRS < 0) {
+      Is = new p5(0, 0, 0);
+    } else {
+      Is = new p5(...light.lightIntensity)
+        .mult(new p5(...this.Ks))
+        .mult(Math.pow(dotRS, this.n));
+    }
+
+    console.log(Ia.add(Id).add(Is).array());
+
+    return Ia.add(Id).add(Is).array();
   }
 
   //Rotaciona a letra
