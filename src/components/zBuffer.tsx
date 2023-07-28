@@ -227,7 +227,16 @@ const ZBuffer: FC<Props> = ({
     const mouseY = e.clientY + offset!.top;
     setLastPosition([mouseX, mouseY]);
 
-    click(mouseX, mouseY, objects, camera, selectedLetter, setSelectedLetter);
+    click(
+      mouseX,
+      mouseY,
+      objects,
+      camera,
+      selectedLetter,
+      setSelectedLetter,
+      offset!.left * 2,
+      offset!.top * 2
+    );
     e.stopPropagation();
   };
 
@@ -237,9 +246,6 @@ const ZBuffer: FC<Props> = ({
 
       const mouseX = e.clientX + offset!.left;
       const mouseY = e.clientY + offset!.top;
-
-      // if (mouseX >= width || mouseY >= height || mouseX < 0 || mouseY < 0)
-      //   return;
 
       mouseDragged(
         mouseX,
